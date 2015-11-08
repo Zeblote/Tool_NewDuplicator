@@ -1,0 +1,3 @@
+Title: New Duplicator
+Author: Zeblote (1163)
+New lag-free duplicator with intelligent selection modes
