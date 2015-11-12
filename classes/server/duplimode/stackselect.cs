@@ -47,15 +47,15 @@ function NDDM_StackSelect::onChangeMode(%this, %client, %nextMode)
 
 			//Clear selection
 			if(isObject(%client.ndSelection))
-				%client.ndSelection.clear();
+				%client.ndSelection.clearData();
 
 			//Remove highlight box
 			if(isObject(%client.ndHighlightBox))
 				%client.ndHighlightBox.delete();
 
 			//If there's a dehighlight task that isn't started yet, start it
-			if(isObject(%client.highlightSet))
-				%client.highlightSet.deHighlight();
+			if(isObject(%client.ndHighlightSet))
+				%client.ndHighlightSet.deHighlight();
 
 		case $NDDM::Disabled:
 
@@ -68,16 +68,18 @@ function NDDM_StackSelect::onChangeMode(%this, %client, %nextMode)
 				%client.ndHighlightBox.delete();
 
 			//If there's a dehighlight task that isn't started yet, start it
-			if(isObject(%client.highlightSet))
-				%client.highlightSet.deHighlight();
+			if(isObject(%client.ndHighlightSet))
+				%client.ndHighlightSet.deHighlight();
 
 		case $NDDM::PlaceCopy:
 
 			//If there's a dehighlight task that isn't started yet, start it
-			if(isObject(%client.highlightSet))
-				%client.highlightSet.deHighlight();
+			if(isObject(%client.ndHighlightSet))
+				%client.ndHighlightSet.deHighlight();
 	}
 }
+
+
 
 //Duplicator image callbacks
 ///////////////////////////////////////////////////////////////////////////
@@ -90,46 +92,23 @@ function NDDM_StackSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 	
 	//Prepare a selection to copy the bricks
 	if(isObject(%client.ndSelection))
-		%client.ndSelection.clear();
+		%client.ndSelection.clearData();
 	else
-		%client.ndSelection = ND_Selection();
+		%client.ndSelection = ND_Selection(%client);
 
 	//If the client already has a highlight set, start it first
-	if(isObject(%client.highlightSet))
-		%client.highlightSet.deHighlight(%client);
+	if(isObject(%client.ndHighlightSet))
+		%client.ndHighlightSet.deHighlight();
 
 	//Prepare a new highlight set
-	%client.highlightSet = ND_HighlightSet();
+	%client.ndHighlightSet = ND_HighlightSet();
 
-	//Start selection task
-	%client.ndSelectTask = NDAT_StackSelect(%client, %client.ndSelection, 
-		%client.highlightSet, %obj, %client.ndDirection, %client.ndLimited);
-
-	%client.ndSelectTask.start();
-
-	//If the select task didn't finish instantly, change mode
-	if(isObject(%client.ndSelectTask))
-	{
-		%client.ndSetMode(NDDM_StackSelectProgress);
-		%client.ndSelectTask.addCallback(NDDM_StackSelectProgress, onSelectionFinish, %client);
-	}
-	else
-	{
-		//Create box to show total size of selection
-		if(!isObject(%client.ndHighlightBox))
-			%client.ndHighlightBox = ND_HighlightBox();
-
-		%min = vectorAdd(%client.ndSelection.minSize, $NDS[%client.ndSelection, "RootPos"]);
-		%max = vectorAdd(%client.ndSelection.maxSize, $NDS[%client.ndSelection, "RootPos"]);
-		
-		%client.ndHighlightBox.resize(%min, %max);
-			
-		//Schedule a new dehighlight task for the selected bricks
-		%client.highlightSet.deHighlightDelayed($ND::HighlightTime);
-
-		%client.ndUpdateBottomPrint();
-	}
+	//Start selection
+	%client.ndSetMode(NDDM_StackSelectProgress);
+	%client.ndSelection.startStackSelection(%obj, %client.ndDirection, %client.ndLimited, %client.ndHighlightSet);
 }
+
+
 
 //Generic inputs
 ///////////////////////////////////////////////////////////////////////////
@@ -139,6 +118,8 @@ function NDDM_StackSelect::onLight(%this, %client)
 {
 	//Change to cube select mode
 	%client.ndSetMode(NDDM_CubeSelect);
+
+	%client.play2d(lightOnSound);
 }
 
 //Next Seat
@@ -147,6 +128,14 @@ function NDDM_StackSelect::onNextSeat(%this, %client)
 	//Toggle direction up/down
 	%client.ndDirection = !%client.ndDirection;
 	%client.ndUpdateBottomPrint();
+
+	if($ND::PlayMenuSounds)
+	{
+		if(%client.ndDirection)
+			%client.play2d(lightOnSound);
+		else
+			%client.play2d(lightOffSound);
+	}
 }
 
 //Prev Seat
@@ -155,24 +144,34 @@ function NDDM_StackSelect::onPrevSeat(%this, %client)
 	//Toggle limited mode
 	%client.ndLimited = !%client.ndLimited;
 	%client.ndUpdateBottomPrint();
+
+	if($ND::PlayMenuSounds)
+	{
+		if(%client.ndLimited)
+			%client.play2d(lightOnSound);
+		else
+			%client.play2d(lightOffSound);
+	}
 }
 
 //Plant Brick
 function NDDM_StackSelect::onPlantBrick(%this, %client)
 {
-	if(!isObject(%client.ndSelection) || !$NDS[%client.ndSelection, "Count"])
+	if(!isObject(%client.ndSelection) || !$NS[%client.ndSelection, "Count"])
 		return;
 
 	%client.ndSetMode(NDDM_PlaceCopy);
 }
 
+
+
 //Interface
 ///////////////////////////////////////////////////////////////////////////
 
-//Build a bottomprint
+//Create bottomprint for client
 function NDDM_StackSelect::getBottomPrint(%this, %client)
 {
-	if(!isObject(%client.ndSelection) || !$NDS[%client.ndSelection, "Count"])
+	if(!isObject(%client.ndSelection) || !$NS[%client.ndSelection, "Count"])
 	{
 		%title = "Selection Mode";
 		%r0 = "Click Brick: Select stack " @ (%client.ndDirection ? "up" : "down");
@@ -180,7 +179,7 @@ function NDDM_StackSelect::getBottomPrint(%this, %client)
 	}
 	else
 	{
-		%count = $NDS[%client.ndSelection, "Count"];
+		%count = $NS[%client.ndSelection, "Count"];
 
 		%title = "Selection Mode (\c3" @ %count @ "\c6 Brick" @ (%count > 1 ? "s)" : ")");
 		%r0 = "Click Brick: Select again";
@@ -191,5 +190,5 @@ function NDDM_StackSelect::getBottomPrint(%this, %client)
 	%l1 = "Limited: " @ (%client.ndLimited ? "\c3Yes" : "\c0No") @ " \c6[Prev Seat]";
 	%l2 = "Direction: \c3" @ (%client.ndDirection ? "Up" : "Down") @ " \c6[Next Seat]";
 
-	return ND_FormatMessage(%title, %l0, %r0, %l1, %r1, %l2);
+	return ndFormatMessage(%title, %l0, %r0, %l1, %r1, %l2);
 }

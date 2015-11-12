@@ -46,7 +46,7 @@ function NDDM_CubeSelect::onChangeMode(%this, %client, %nextMode)
 
 			//Clear selection
 			if(isObject(%client.ndSelection))
-				%client.ndSelection.clear();
+				%client.ndSelection.clearData();
 
 			//Remove the selection box
 			if(isObject(%client.ndSelectionBox))
@@ -63,6 +63,8 @@ function NDDM_CubeSelect::onChangeMode(%this, %client, %nextMode)
 				%client.ndSelectionBox.delete();
 	}
 }
+
+
 
 //Duplicator image callbacks
 ///////////////////////////////////////////////////////////////////////////
@@ -83,6 +85,8 @@ function NDDM_CubeSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 	}
 }
 
+
+
 //Generic inputs
 ///////////////////////////////////////////////////////////////////////////
 
@@ -91,12 +95,9 @@ function NDDM_CubeSelect::onLight(%this, %client)
 {
 	//Change to stack select mode
 	%client.ndSetMode(NDDM_StackSelect);
-}
 
-//Next Seat
-function NDDM_CubeSelect::onNextSeat(%this, %client)
-{
-
+	if($ND::PlayMenuSounds)
+		%client.play2d(lightOffSound);
 }
 
 //Prev Seat
@@ -105,6 +106,14 @@ function NDDM_CubeSelect::onPrevSeat(%this, %client)
 	//Toggle limited mode
 	%client.ndLimited = !%client.ndLimited;
 	%client.ndUpdateBottomPrint();
+
+	if($ND::PlayMenuSounds)
+	{
+		if(%client.ndLimited)
+			%client.play2d(lightOnSound);
+		else
+			%client.play2d(lightOffSound);
+	}
 }
 
 //Shift Brick
@@ -170,10 +179,12 @@ function NDDM_CubeSelect::onCancelBrick(%this, %client)
 	%client.ndUpdateBottomPrint();
 }
 
+
+
 //Interface
 ///////////////////////////////////////////////////////////////////////////
 
-//Build a bottomprint
+//Create bottomprint for client
 function NDDM_CubeSelect::getBottomPrint(%this, %client)
 {		
 	%title = "Selection Mode";
@@ -204,5 +215,5 @@ function NDDM_CubeSelect::getBottomPrint(%this, %client)
 		%r2 = "";
 	}
 
-	return ND_FormatMessage(%title, %l0, %r0, %l1, %r1, %l2, %r2);
+	return ndFormatMessage(%title, %l0, %r0, %l1, %r1, %l2, %r2);
 }

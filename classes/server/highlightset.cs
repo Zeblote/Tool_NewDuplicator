@@ -21,10 +21,10 @@ function ND_HighlightSet()
 //Destroy highlight set
 function ND_HighlightSet::onRemove(%this)
 {
-	if(!$NDH[%this, "Count"])
+	if(!$NH[%this, "Count"])
 		return;
 
-	deleteVariables("$NDH" @ %this @ "_*");
+	deleteVariables("$NH" @ %this @ "_*");
 }
 
 //Add a brick to the set and highlight it
@@ -49,8 +49,8 @@ function ND_HighlightSet::addBrick(%this, %brick)
 	%brick.ndHighlightSet = %this;
 
 	//Add brick to highlight set
-	%i = $NDH[%this, "Count"]++;
-	$NDH[%this, %i - 1] = %brick;
+	%i = $NH[%this, "Count"]++;
+	$NH[%this, %i - 1] = %brick;
 }
 
 //Immediately start de-highlighting bricks
@@ -68,7 +68,7 @@ function ND_HighlightSet::deHighlightDelayed(%this, %delay)
 //Un-highlight some of the bricks (if finished, delete set)
 function ND_HighlightSet::removeHighlightTick(%this, %start)
 {
-	%end = $NDH[%this, "Count"];
+	%end = $NH[%this, "Count"];
 
 	if(%end - %start > $ND::DeHighlightPerTick)
 		%end = %start + $ND::DeHighlightPerTick;
@@ -77,7 +77,7 @@ function ND_HighlightSet::removeHighlightTick(%this, %start)
 
 	for(%i = %start; %i < %end; %i++)
 	{
-		%brick = $NDH[%this, %i];
+		%brick = $NH[%this, %i];
 		
 		//Only un-highlight this brick if it actually belongs in this set
 		if(%brick.ndHighlightSet == %this)

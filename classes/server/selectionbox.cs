@@ -223,6 +223,8 @@ function ND_SelectionBox::resize(%this, %point1, %point2)
 //Select a side of the box
 function ND_SelectionBox::selectSide(%this, %x, %y, %z)
 {
+	%old = %this.selectedSide;
+
 	if(%x > 0)
 		%side = "+X";
 	else if(%x < 0)
@@ -240,6 +242,11 @@ function ND_SelectionBox::selectSide(%this, %x, %y, %z)
 
 	//Visualize selected side
 	%this.recolor();
+
+	if(%this.selectedSide $= %old)
+		return;
+
+	serverPlay3d(BrickRotateSound, %this.getSelectedSideCenter());
 }
 
 //Deselect the side
@@ -254,6 +261,9 @@ function ND_SelectionBox::deselectSide(%this)
 //Move the selected side of the box in or out
 function ND_SelectionBox::stepSide(%this, %dir)
 {
+	%oldP1 = %this.point1;
+	%oldP2 = %this.point2;
+
 	//Really ugly switch ahead (possible to optimize it?)
 	if(%dir == -1)
 	{
@@ -340,5 +350,41 @@ function ND_SelectionBox::stepSide(%this, %dir)
 		}
 
 		%this.resize(%this.point1, %this.point2);
+	}
+
+	if(%this.point1 $= %oldP1 && %this.point2 $= %oldP2)
+		return;
+
+	serverPlay3d(BrickMoveSound, %this.getSelectedSideCenter());
+}
+
+//Get center of currently selected side
+function ND_SelectionBox::getSelectedSideCenter(%this)
+{
+	%halfDiag = vectorSub(%this.point2, %this.point1);
+
+	%halfX = getWord(%halfDiag, 0);
+	%halfY = getWord(%halfDiag, 1);
+	%halfZ = getWord(%halfDiag, 2);
+
+	switch$(%this.selectedSide)
+	{
+	case "+X":
+		return vectorSub(%this.point2, 0 SPC %halfY SPC %halfZ);
+
+	case "-X":
+		return vectorAdd(%this.point1, 0 SPC %halfY SPC %halfZ);
+
+	case "+Y":
+		return vectorSub(%this.point2, %halfX SPC 0 SPC %halfZ);
+
+	case "-Y":
+		return vectorAdd(%this.point1, %halfX SPC 0 SPC %halfZ);
+
+	case "+Z":
+		return vectorSub(%this.point2, %halfX SPC %halfY SPC 0);
+
+	case "-Z":
+		return vectorAdd(%this.point1, %halfX SPC %halfY SPC 0);
 	}
 }

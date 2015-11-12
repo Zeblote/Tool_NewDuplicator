@@ -73,7 +73,7 @@ function GameConnection::ndSetMode(%this, %newMode)
 }
 
 //Format bottomprint message with left and right justified text
-function ND_FormatMessage(%title, %l0, %r0, %l1, %r1, %l2, %r2, %l3, %r3, %l4, %r4, %l5, %r5)
+function ndFormatMessage(%title, %l0, %r0, %l1, %r1, %l2, %r2, %l3, %r3, %l4, %r4, %l5, %r5)
 {
 	%lastAlign = false;
 	%message = "<font:Arial:22>";
@@ -126,9 +126,9 @@ function GameConnection::ndUpdateBottomPrint(%this)
 ///////////////////////////////////////////////////////////////////////////
 
 //Equip a duplicator
-function GameConnection::ndHandleCommand(%this, %a0, %a1, %a2)
+function GameConnection::ndHandleCommand(%this, %a)
 {
-	switch$(%a0)
+	switch$(%a)
 	{
 		case "version" or "v":
 
@@ -143,25 +143,7 @@ function GameConnection::ndHandleCommand(%this, %a0, %a1, %a2)
 
 		case "prefs" or "p":
 
-			messageClient(%this, '', "\c6New Duplicator pref values");			
-			messageClient(%this, '', "\c6Admin Only: \c3" @ ($ND::AdminOnly ? "Y" : "N"));
-
-			messageClient(%this, '', "\c6Highlight Color: \c3" @ $ND::BrickHighlightColor);
-			messageClient(%this, '', "\c6Highlight Color Fx: \c3" @ $ND::BrickHighlightColorFx);
-
-			messageClient(%this, '', "\c6Highlight Time: \c3" @ $ND::HighlightTime);
-			messageClient(%this, '', "\c6De-Highlight Tick Delay: \c3" @ $ND::DeHighlightTickDelay);
-			messageClient(%this, '', "\c6De-Highlight per Tick: \c3" @ $ND::DeHighlightPerTick);
-
-			messageClient(%this, '', "\c6Stack Select Tick Delay: \c3" @ $ND::StackSelectTickDelay);
-			messageClient(%this, '', "\c6Stack Select per Tick: \c3" @ $ND::StackSelectPerTick);
-
-			messageClient(%this, '', "\c6Ghost by Selection Order: \c3" @ ($ND::GhostBySelectionOrder ? "Y" : "N"));
-			messageClient(%this, '', "\c6Instant Ghost Bricks: \c3" @ $ND::InstantGhostBricks);
-			messageClient(%this, '', "\c6Max Ghost Bricks: \c3" @ $ND::MaxGhostBricks);
-			messageClient(%this, '', "\c6Move Ghost Bricks Initial Delay: \c3" @ $ND::GhostBricksInitialDelay);
-			messageClient(%this, '', "\c6Move Ghost Bricks Tick Delay: \c3" @ $ND::GhostBricksTickDelay);
-			messageClient(%this, '', "\c6Move Ghost Bricks per Tick: \c3" @ $ND::GhostBricksPerTick);
+			ND_PrefManager.dumpPrefs(%this);
 
 		default:
 
@@ -187,16 +169,16 @@ function GameConnection::ndHandleCommand(%this, %a0, %a1, %a2)
 }
 
 //Commands to equip a duplicator
-function serverCmdDuplicator(%this, %a0, %a1, %a2){%this.ndHandleCommand(%a0, %a1, %a2);}
-function serverCmdDuplicato (%this, %a0, %a1, %a2){%this.ndHandleCommand(%a0, %a1, %a2);}
-function serverCmdDuplicat  (%this, %a0, %a1, %a2){%this.ndHandleCommand(%a0, %a1, %a2);}
-function serverCmdDuplica   (%this, %a0, %a1, %a2){%this.ndHandleCommand(%a0, %a1, %a2);}
-function serverCmdDuplic    (%this, %a0, %a1, %a2){%this.ndHandleCommand(%a0, %a1, %a2);}
-function serverCmdDupli     (%this, %a0, %a1, %a2){%this.ndHandleCommand(%a0, %a1, %a2);}
-function serverCmdDupl      (%this, %a0, %a1, %a2){%this.ndHandleCommand(%a0, %a1, %a2);}
-function serverCmdDup       (%this, %a0, %a1, %a2){%this.ndHandleCommand(%a0, %a1, %a2);}
-function serverCmdDu        (%this, %a0, %a1, %a2){%this.ndHandleCommand(%a0, %a1, %a2);}
-function serverCmdD         (%this, %a0, %a1, %a2){%this.ndHandleCommand(%a0, %a1, %a2);}
+function serverCmdDuplicator(%this, %a){%this.ndHandleCommand(%a);}
+function serverCmdDuplicato (%this, %a){%this.ndHandleCommand(%a);}
+function serverCmdDuplicat  (%this, %a){%this.ndHandleCommand(%a);}
+function serverCmdDuplica   (%this, %a){%this.ndHandleCommand(%a);}
+function serverCmdDuplic    (%this, %a){%this.ndHandleCommand(%a);}
+function serverCmdDupli     (%this, %a){%this.ndHandleCommand(%a);}
+function serverCmdDupl      (%this, %a){%this.ndHandleCommand(%a);}
+function serverCmdDup       (%this, %a){%this.ndHandleCommand(%a);}
+function serverCmdDu        (%this, %a){%this.ndHandleCommand(%a);}
+function serverCmdD         (%this, %a){%this.ndHandleCommand(%a);}
 
 //Existing keybinds used to control the duplicator
 package NewDuplicator_Server

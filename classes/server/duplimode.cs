@@ -12,9 +12,10 @@
 $NDDM::Disabled               =      0;
 $NDDM::StackSelect            = 1 << 0;
 $NDDM::CubeSelect             = 1 << 1;
-$NDDM::StackSelectProgress    = 1 << 2;
-$NDDM::CubeSelectProgress     = 1 << 3;
-$NDDM::PlaceCopy              = 1 << 4;
+$NDDM::PlaceCopy              = 1 << 2;
+$NDDM::StackSelectProgress    = 1 << 3;
+$NDDM::CubeSelectProgress     = 1 << 4;
+$NDDM::PlaceCopyProgress      = 1 << 5;
 
 //Disabled dupli mode (does nothing)
 if(isObject(NDDM_Disabled))
@@ -55,6 +56,8 @@ function ND_DupliMode::onChangeMode(%this, %client, %nextMode)
 
 }
 
+
+
 //Duplicator image callbacks
 ///////////////////////////////////////////////////////////////////////////
 
@@ -63,6 +66,8 @@ function ND_DupliMode::onSelectObject(%this, %client, %obj, %pos, %normal)
 {
 
 }
+
+
 
 //Generic inputs
 ///////////////////////////////////////////////////////////////////////////
@@ -115,10 +120,12 @@ function ND_DupliMode::onCancelBrick(%this, %client)
 
 }
 
+
+
 //Interface
 ///////////////////////////////////////////////////////////////////////////
 
-//Build a bottomprint
+//Create bottomprint for client
 function ND_DupliMode::getBottomPrint(%this, %client)
 {
 

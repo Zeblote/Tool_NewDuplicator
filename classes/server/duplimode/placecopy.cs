@@ -18,7 +18,8 @@ ND_ServerGroup.add(
 		class = "ND_DupliMode";
 		num = $NDDM::PlaceCopy;
 
-		allowedModes = $NDDM::StackSelect;
+		allowedModes = $NDDM::StackSelect
+			| $NDDM::PlaceCopyProgress;
 
 		allowSwinging = true;
 	}
@@ -32,15 +33,18 @@ ND_ServerGroup.add(
 //Switch to this mode
 function NDDM_PlaceCopy::onStartMode(%this, %client, %lastMode)
 {
-	%client.ndSelection.spawnGhostBricks($NDS[%client.ndSelection, "RootPos"], 0);
+	if(%lastMode != $NDDM::PlaceCopyProgress)
+	{
+		%client.ndSelection.spawnGhostBricks($NS[%client.ndSelection, "RootPos"], 0);
 
-	//Create blue highlight box around ghost selection
-	if(!isObject(%client.ndHighlightBox))
-		%client.ndHighlightBox = ND_HighlightBox();
+		//Create blue highlight box around ghost selection
+		if(!isObject(%client.ndHighlightBox))
+			%client.ndHighlightBox = ND_HighlightBox();
 
-	%client.ndHighlightBox.resize(%client.ndSelection.getGhostWorldBox());
-	%client.ndHighlightBox.borderColor = "0.2 0.2 1 1";
-	%client.ndHighlightBox.recolor();
+		%client.ndHighlightBox.resize(%client.ndSelection.getGhostWorldBox());
+		%client.ndHighlightBox.borderColor = "0.2 0.2 1 1";
+		%client.ndHighlightBox.recolor();
+	}
 
 	%client.ndUpdateBottomPrint();
 }
@@ -67,6 +71,8 @@ function NDDM_PlaceCopy::onChangeMode(%this, %client, %nextMode)
 			%client.ndSelection.clearGhostBricks();
 	}
 }
+
+
 
 //Duplicator image callbacks
 ///////////////////////////////////////////////////////////////////////////
@@ -118,26 +124,24 @@ function NDDM_PlaceCopy::onSelectObject(%this, %client, %obj, %pos, %normal)
 	%client.ndHighlightBox.resize(%client.ndSelection.getGhostWorldBox());
 }
 
+
+
 //Generic inputs
 ///////////////////////////////////////////////////////////////////////////
-
-//Light key
-function NDDM_PlaceCopy::onLight(%this, %client)
-{
-
-}
-
-//Next Seat
-function NDDM_PlaceCopy::onNextSeat(%this, %client)
-{
-
-}
 
 //Prev Seat
 function NDDM_PlaceCopy::onPrevSeat(%this, %client)
 {
 	%client.ndPivot = !%client.ndPivot;
 	%client.ndUpdateBottomPrint();
+
+	if($ND::PlayMenuSounds)
+	{
+		if(%client.ndPivot)
+			%client.play2d(lightOnSound);
+		else
+			%client.play2d(lightOffSound);
+	}
 }
 
 //Shift Brick
@@ -194,7 +198,11 @@ function NDDM_PlaceCopy::onRotateBrick(%this, %client, %direction)
 //Plant Brick
 function NDDM_PlaceCopy::onPlantBrick(%this, %client)
 {
+	%pos = %client.ndSelection.ghostPosition;
+	%ang = %client.ndSelection.ghostAngleID;
 
+	%client.ndSetMode(NDDM_PlaceCopyProgress);
+	%client.ndSelection.startPlanting(%pos, %ang);
 }
 
 //Cancel Brick
@@ -203,32 +211,34 @@ function NDDM_PlaceCopy::onCancelBrick(%this, %client)
 	%client.ndSetMode(%client.ndLastSelectMode);
 }
 
+
+
 //Interface
 ///////////////////////////////////////////////////////////////////////////
 
-//Build a bottomprint
+//Create bottomprint for client
 function NDDM_PlaceCopy::getBottomPrint(%this, %client)
 {
-	%count = $NDS[%client.ndSelection, "Count"];
+	%count = $NS[%client.ndSelection, "Count"];
 
 	%size = vectorSub(%client.ndSelection.maxSize, %client.ndSelection.minSize);
 
-	%x = (getWord(%size, 0) * 2) | 0;
-	%y = (getWord(%size, 1) * 2) | 0;
-	%z = (getWord(%size, 2) * 5) | 0;
+	%x = mFloor(getWord(%size, 0) * 2);
+	%y = mFloor(getWord(%size, 1) * 2);
+	%z = mFloor(getWord(%size, 2) * 5);
 
 	if(%count == 1)
 		%title = "Place Mode (\c31\c6 Brick)";
 	else if(%count <= $ND::MaxGhostBricks)
 		%title = "Place Mode (\c3" @ %count @ "\c6 Bricks)";
 	else
-		%title = "Place Mode (\c3" @ %count @ "\c6 Bricks, \c3" @ (($ND::MaxGhostBricks * 100 / %count) | 0) @ "%\c6 Ghosted)";
+		%title = "Place Mode (\c3" @ %count @ "\c6 Bricks, \c3" @ mFloor($ND::MaxGhostBricks * 100 / %count) @ "%\c6 Ghosted)";
 
-	%l0 = "Pivot: \c3" @ (%client.ndPivot ? "Selection" : "Start Brick") @ "\c6 [Prev Seat]";
-	%l1 = "Size: \c3" @ %x @ "\c6 x \c3" @ %y @ "\c6 x \c3" @ %z;
+	%l0 = "Pivot: \c3" @ (%client.ndPivot ? "Whole Selection" : "Start Brick") @ "\c6 [Prev Seat]";
+	%l1 = "Size: \c3" @ %x @ "\c6 x \c3" @ %y @ "\c6 x \c3" @ %z @ "\c6 Plates";
 
 	%r0 = "Use normal ghost brick controls";
 	%r1 = "[Cancel Brick] to exit place mode";
 
-	return ND_FormatMessage(%title, %l0, %r0, %l1, %r1);
+	return ndFormatMessage(%title, %l0, %r0, %l1, %r1);
 }
