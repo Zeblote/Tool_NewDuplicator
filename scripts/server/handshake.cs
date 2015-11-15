@@ -65,7 +65,7 @@ function serverCmdNdHandshake(%this, %clientVersion)
 	switch(ND_CompareVersion($ND::Version, %clientVersion))
 	{
 		case 0:
-			echo("ND: Client " @ %this.getPlayerName() @ " has the same version of the \c3New Duplicator\c6. (" @ %clientVersion @ ");");
+			echo("ND: Client " @ %this.getPlayerName() @ " has the same version of the New Duplicator. (" @ %clientVersion @ ");");
 
 		case 1:
 			messageClient(%this, '', "\c6Your version of the \c3New Duplicator\c6 is outdated! Some features might not work. (Server Version: \c3" @ $ND::Version @ "\c6 | Your Version: \c0" @ %clientVersion @ "\c6)");

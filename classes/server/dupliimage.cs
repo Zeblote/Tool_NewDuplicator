@@ -28,6 +28,10 @@ package NewDuplicator_Server
 			return;
 		}
 
+		//Remove temp brick
+		if(isObject(%player.tempBrick))
+			%player.tempBrick.delete();
+
 		//Should resume last used select mode
 		if(isObject(%client.ndLastSelectMode))
 			%client.ndSetMode(%client.ndLastSelectMode);

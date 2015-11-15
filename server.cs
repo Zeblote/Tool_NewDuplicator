@@ -30,11 +30,12 @@ echo(" \n--- Loading Server Classes ---");
 exec($ND::ClassPath @ "server/prefmanager.cs");
 
 exec($ND::ClassPath @ "server/duplimode.cs");
-exec($ND::ClassPath @ "server/duplimode/stackselect.cs");
 exec($ND::ClassPath @ "server/duplimode/cubeselect.cs");
+exec($ND::ClassPath @ "server/duplimode/cubeselectprogress.cs");
 exec($ND::ClassPath @ "server/duplimode/placecopy.cs");
-exec($ND::ClassPath @ "server/duplimode/stackselectprogress.cs");
 exec($ND::ClassPath @ "server/duplimode/placecopyprogress.cs");
+exec($ND::ClassPath @ "server/duplimode/stackselect.cs");
+exec($ND::ClassPath @ "server/duplimode/stackselectprogress.cs");
 
 exec($ND::ClassPath @ "server/dupliimage.cs");
 exec($ND::ClassPath @ "server/selectionbox.cs");

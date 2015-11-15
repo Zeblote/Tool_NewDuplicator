@@ -39,11 +39,11 @@ function ND_PrefManager::registerRTBPrefs(%this)
 	RTB_registerPref("Admin Only",                  "New Duplicator | General",     "$ND::AdminOnly",               "bool",             "Tool_NewDuplicator", false,   false, false, "");
 	RTB_registerPref("Max Bricks (Admin)",          "New Duplicator | General",     "$ND::MaxBricksAdmin",          "int 1000 1000000", "Tool_NewDuplicator", 1000000, false, false, "");
 	RTB_registerPref("Max Bricks (non-Admin)",      "New Duplicator | General",     "$ND::MaxBricksNonAdmin",       "int 1000 1000000", "Tool_NewDuplicator", 50000,   false, false, "");
-	RTB_registerPref("Enable Menu Sounds",          "New Duplicator | General",     "$ND::PlayMenuSounds",          "bool",             "Tool_NewDuplicator", true,   false, false, "");
+	RTB_registerPref("Enable Menu Sounds",          "New Duplicator | General",     "$ND::PlayMenuSounds",          "bool",             "Tool_NewDuplicator", true,    false, false, "");
 
 	//Colors
-	RTB_registerPref("Highlight Color",             "New Duplicator | Colors",      "$ND::BrickHighlightColor",     "int 0 63",         "Tool_NewDuplicator", 3,       false, false, "");
-	RTB_registerPref("Highlight Color Fx",          "New Duplicator | Colors",      "$ND::BrickHighlightColorFx",   "int 0 4",          "Tool_NewDuplicator", 3,       false, false, "");
+	RTB_registerPref("Highlight Color Id",          "New Duplicator | Colors",      "$ND::BrickHighlightColor",     "int 0 63",         "Tool_NewDuplicator", 3,       false, false, "");
+	RTB_registerPref("Highlight Color Fx Id",       "New Duplicator | Colors",      "$ND::BrickHighlightColorFx",   "int 0 6",          "Tool_NewDuplicator", 3,       false, false, "");
 
 	//Highlight
 	RTB_registerPref("Highlight Time (ms)",         "New Duplicator | Highlight",   "$ND::HighlightTime",           "int 0 50000",      "Tool_NewDuplicator", 8000,    false, false, "");
@@ -54,11 +54,15 @@ function ND_PrefManager::registerRTBPrefs(%this)
 	RTB_registerPref("Stack Select Tick (ms)",      "New Duplicator | Selection",   "$ND::StackSelectTickDelay",    "int 1 50000",      "Tool_NewDuplicator", 30,      false, false, "");
 	RTB_registerPref("Stack Select per Tick",       "New Duplicator | Selection",   "$ND::StackSelectPerTick",      "int 1 50000",      "Tool_NewDuplicator", 400,     false, false, "");
 
-	//Ghosting
-	RTB_registerPref("Scatter Ghost Bricks",        "New Duplicator | Ghosting",    "$ND::ScatterGhostBricks",      "bool",             "Tool_NewDuplicator", true,   false, false, "");
+	RTB_registerPref("Cube Select Tick (ms)",       "New Duplicator | Selection",   "$ND::CubeSelectTickDelay",     "int 1 50000",      "Tool_NewDuplicator", 30,      false, false, "");
+	RTB_registerPref("Cube Select per Tick",        "New Duplicator | Selection",   "$ND::CubeSelectPerTick",       "int 1 50000",      "Tool_NewDuplicator", 400,    false, false, "");
+	RTB_registerPref("Cube Select Chunk Size",      "New Duplicator | Selection",   "$ND::CubeSelectChunkSize",     "int 1 50000",      "Tool_NewDuplicator", 48,      false, false, "");
 
-	RTB_registerPref("Instant Ghost Bricks",        "New Duplicator | Ghosting",    "$ND::InstantGhostBricks",      "int 1 50000",      "Tool_NewDuplicator", 150,     false, false, "");
+	//Ghosting
+	RTB_registerPref("Scatter Ghost Bricks",        "New Duplicator | Ghosting",    "$ND::ScatterGhostBricks",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
+
 	RTB_registerPref("Max Ghost Bricks",            "New Duplicator | Ghosting",    "$ND::MaxGhostBricks",          "int 1 50000",      "Tool_NewDuplicator", 5000,    false, false, "");
+	RTB_registerPref("Instant Ghost Bricks",        "New Duplicator | Ghosting",    "$ND::InstantGhostBricks",      "int 1 50000",      "Tool_NewDuplicator", 150,     false, false, "");
 
 	RTB_registerPref("Instant Ghost Delay (ms)",    "New Duplicator | Ghosting",    "$ND::GhostBricksInitialDelay", "int 1 50000",      "Tool_NewDuplicator", 350,     false, false, "");
 	RTB_registerPref("Move Ghost Bricks Tick (ms)", "New Duplicator | Ghosting",    "$ND::GhostBricksTickDelay",    "int 1 50000",      "Tool_NewDuplicator", 30,      false, false, "");
@@ -96,11 +100,15 @@ function ND_PrefManager::setDefaultValues(%this)
 	$ND::StackSelectTickDelay    = 30;
 	$ND::StackSelectPerTick      = 400;
 
+	$ND::CubeSelectTickDelay     = 30;
+	$ND::CubeSelectChunkSize     = 48;
+	$ND::CubeSelectPerTick       = 400;
+
 	//Ghosting
 	$ND::ScatterGhostBricks      = true;
 
-	$ND::InstantGhostBricks      = 150;
 	$ND::MaxGhostBricks          = 5000;
+	$ND::InstantGhostBricks      = 150;
 
 	$ND::GhostBricksInitialDelay = 350;
 	$ND::GhostBricksTickDelay    = 30;
@@ -136,11 +144,14 @@ function ND_PrefManager::dumpPrefs(%this, %client)
 	messageClient(%client, '', "\c7Selection");
 	messageClient(%client, '', "\c6      Stack Select Tick (ms): \c3" @ $ND::StackSelectTickDelay);
 	messageClient(%client, '', "\c6      Stack Select per Tick: \c3" @ $ND::StackSelectPerTick);
+	messageClient(%client, '', "\c6      Cube Select Tick (ms): \c3" @ $ND::CubeSelectTickDelay);
+	messageClient(%client, '', "\c6      Cube Select per Tick: \c3" @ $ND::CubeSelectPerTick);
+	messageClient(%client, '', "\c6      Cube Select Chunk Size: \c3" @ $ND::CubeSelectChunkSize);
 
 	messageClient(%client, '', "\c7Ghosting");
 	messageClient(%client, '', "\c6      Scatter Ghost Bricks: \c3" @ ($ND::ScatterGhostBricks ? "Y" : "N"));
-	messageClient(%client, '', "\c6      Instant Ghost Bricks: \c3" @ $ND::InstantGhostBricks);
 	messageClient(%client, '', "\c6      Max Ghost Bricks: \c3" @ $ND::MaxGhostBricks);
+	messageClient(%client, '', "\c6      Instant Ghost Bricks: \c3" @ $ND::InstantGhostBricks);
 	messageClient(%client, '', "\c6      Instant Ghost Delay (ms): \c3" @ $ND::GhostBricksInitialDelay);
 	messageClient(%client, '', "\c6      Move Ghost Bricks Tick (ms): \c3" @ $ND::GhostBricksTickDelay);
 	messageClient(%client, '', "\c6      Move Ghost Bricks per Tick: \c3" @ $ND::GhostBricksPerTick);

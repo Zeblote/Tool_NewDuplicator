@@ -56,6 +56,8 @@ function NDDM_PlaceCopyProgress::onCancelBrick(%this, %client)
 	//Cancel selecting
 	%client.ndSelection.cancelPlanting();
 
+	commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Planting canceled!", 4);
+
 	//Switch back to stack selection
 	%client.ndSetMode(NDDM_PlaceCopy);
 }
@@ -68,10 +70,25 @@ function NDDM_PlaceCopyProgress::onCancelBrick(%this, %client)
 //Create bottomprint for client
 function NDDM_PlaceCopyProgress::getBottomPrint(%this, %client)
 {
-	%count = %client.ndSelection.plantSuccessCount;
-	%fCount = %client.ndSelection.plantFailCount + %client.ndSelection.trustFailCount;
+	%qIndex = %client.ndSelection.plantQueueIndex;
+	%qCount = %client.ndSelection.plantQueueCount;
 
-	%title = "Planting... (\c3" @ %count @ "\c6 planted, \c3" @ %fCount @ "\c6 failed)";
+	%count = $NS[%client.ndSelection, "Count"];
+	%planted = %client.ndSelection.plantSuccessCount;
+
+	if(%qIndex == %qCount)
+	{
+		//Searching for a brick
+		%pIndex = %client.ndSelection.plantSearchIndex;
+		%title = "Finding Next Brick... (\c3" @ %pIndex @ "\c6 / \c3" @ %count @ "\c6, \c3" @ %planted @ "\c6 planted)";
+	}
+	else
+	{
+		//Planting bricks
+		%failed = %client.ndSelection.plantTrustFailCount + %client.ndSelection.plantBlockedFailCount;
+		%title = "Planting... (\c3" @ %planted @ "\c6 Bricks, \c3" @ %failed @ "\c6 failed)";
+	}
+
 	%l0 = "[Cancel Brick]: Cancel planting";
 
 	return ndFormatMessage(%title, %l0);

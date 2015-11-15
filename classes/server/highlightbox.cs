@@ -76,27 +76,6 @@ function ND_HighlightBox::resize(%this, %point1, %point2)
 	%y2 = getWord(%point2, 1);
 	%z2 = getWord(%point2, 2);
 
-	if(%x1 > %x2)
-	{
-		%temp = %x1;
-		%x1 = %x2;
-		%x2 = %temp;
-	}
-
-	if(%y1 > %y2)
-	{
-		%temp = %y1;
-		%y1 = %y2;
-		%y2 = %temp;
-	}
-
-	if(%z1 > %z2)
-	{
-		%temp = %z1;
-		%z1 = %z2;
-		%z2 = %temp;
-	}
-
 	%len_x = %x2 - %x1;
 	%len_y = %y2 - %y1;
 	%len_z = %z2 - %z1;

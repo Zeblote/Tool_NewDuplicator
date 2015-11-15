@@ -34,14 +34,12 @@ function ND_HighlightSet::addBrick(%this, %brick)
 	if(!%brick.ndHighlightSet)
 	{
 		//Store current color to remove highlight later
-		%brick.ndColor = %brick.getColorID();
+		%brick.ndColor = %brick.colorID;
+		%brick.ndColorFx = %brick.colorFxID;
 
 		//If the brick already has the highlight color, apply color fx instead
 		if(%brick.ndColor == $ND::BrickHighlightColor)
-		{
-			%brick.ndColorFx = %brick.getColorFxId();
 			%brick.setColorFx($ND::BrickHighlightColorFx);
-		}
 		else
 			%brick.setColor($ND::BrickHighlightColor);
 	}

@@ -19,6 +19,7 @@ ND_ServerGroup.add(
 		num = $NDDM::PlaceCopy;
 
 		allowedModes = $NDDM::StackSelect
+			| $NDDM::CubeSelect
 			| $NDDM::PlaceCopyProgress;
 
 		allowSwinging = true;
@@ -63,6 +64,14 @@ function NDDM_PlaceCopy::onChangeMode(%this, %client, %nextMode)
 			%client.ndSelection.delete();
 
 		case $NDDM::StackSelect:
+
+			//Delete highlight box
+			%client.ndHighlightBox.delete();
+
+			//Remove ghost bricks
+			%client.ndSelection.clearGhostBricks();
+
+		case $NDDM::CubeSelect:
 
 			//Delete highlight box
 			%client.ndHighlightBox.delete();
@@ -202,7 +211,7 @@ function NDDM_PlaceCopy::onPlantBrick(%this, %client)
 	%ang = %client.ndSelection.ghostAngleID;
 
 	%client.ndSetMode(NDDM_PlaceCopyProgress);
-	%client.ndSelection.startPlanting(%pos, %ang);
+	%client.ndSelection.startPlant(%pos, %ang);
 }
 
 //Cancel Brick

@@ -187,3 +187,9 @@ datablock StaticShapeData(ND_SelectionCubeBorderDts)
 {
 	shapeFile = $ND::ResourcePath @ "server/selectioncube_border.dts";
 };
+
+//Empty shape to hold shapename
+datablock StaticShapeData(ND_ShapeNameDts)
+{
+	shapeFile = "base/data/shapes/empty.dts";
+};

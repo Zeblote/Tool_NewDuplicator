@@ -119,7 +119,8 @@ function NDDM_StackSelect::onLight(%this, %client)
 	//Change to cube select mode
 	%client.ndSetMode(NDDM_CubeSelect);
 
-	%client.play2d(lightOnSound);
+	if($ND::PlayMenuSounds)
+		%client.play2d(lightOnSound);
 }
 
 //Next Seat

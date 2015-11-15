@@ -9,7 +9,7 @@
 // * ######################################################################
 
 //Create a new selection box
-function ND_SelectionBox()
+function ND_SelectionBox(%shapeName)
 {
 	ND_ServerGroup.add(
 		%this = new ScriptObject(ND_SelectionBox)
@@ -17,6 +17,7 @@ function ND_SelectionBox()
 
 	%this.innerCube = new StaticShape(){datablock = ND_SelectionCubeInnerDts;};
 	%this.outerCube = new StaticShape(){datablock = ND_SelectionCubeOuterDts;};
+	%this.shapeName = new StaticShape(){datablock = ND_ShapeNameDts;};
 
 	for(%i = 0; %i < 4; %i++)
 	{
@@ -33,6 +34,9 @@ function ND_SelectionBox()
 	%this.outerColorSelected = "1 0 0 0.4";
 	%this.borderColorSelected = "1 0 0 1";
 
+	%this.shapeName.setShapeNameColor(%this.borderColor);
+	%this.shapeName.setShapeName(%shapeName);
+
 	%this.recolor();
 
 	return %this;
@@ -43,6 +47,7 @@ function ND_SelectionBox::onRemove(%this)
 {
 	%this.innerCube.delete();
 	%this.outerCube.delete();
+	%this.shapeName.delete();
 
 	for(%i = 0; %i < 4; %i++)
 	{
@@ -137,27 +142,6 @@ function ND_SelectionBox::resize(%this, %point1, %point2)
 	%y2 = getWord(%point2, 1);
 	%z2 = getWord(%point2, 2);
 
-	if(%x1 > %x2)
-	{
-		%temp = %x1;
-		%x1 = %x2;
-		%x2 = %temp;
-	}
-
-	if(%y1 > %y2)
-	{
-		%temp = %y1;
-		%y1 = %y2;
-		%y2 = %temp;
-	}
-
-	if(%z1 > %z2)
-	{
-		%temp = %z1;
-		%z1 = %z2;
-		%z2 = %temp;
-	}
-
 	%len_x = %x2 - %x1;
 	%len_y = %y2 - %y1;
 	%len_z = %z2 - %z1;
@@ -172,6 +156,7 @@ function ND_SelectionBox::resize(%this, %point1, %point2)
 
 	%this.innerCube.setTransform(%center_x SPC %center_y SPC %center_z);
 	%this.outerCube.setTransform(%center_x SPC %center_y SPC %center_z);
+	%this.shapeName.setTransform(%center_X SPC %center_y SPC %z2);
 
 	%this.border_x0.setTransform(%center_x SPC %y1 SPC %z1 SPC %rot_x);
 	%this.border_x1.setTransform(%center_x SPC %y2 SPC %z1 SPC %rot_x);
@@ -264,97 +249,67 @@ function ND_SelectionBox::stepSide(%this, %dir)
 	%oldP1 = %this.point1;
 	%oldP2 = %this.point2;
 
-	//Really ugly switch ahead (possible to optimize it?)
 	if(%dir == -1)
 	{
 		switch$(%this.selectedSide)
 		{
 		case "+X":
-			%new = getWord(%this.point2, 0) - 0.5;
+			%tmp = vectorAdd(%this.point2, "-0.5 0 0");
 
-			if(%new < getWord(%this.point1, 0) + 0.4)
-				return;
-
-			%this.point2 = setWord(%this.point2, 0, %new);
+			if(getWord(vectorSub(%tmp, %this.point1), 0) > 0.4)
+				%this.point2 = %tmp;
 
 		case "-X":
-			%new = getWord(%this.point1, 0) + 0.5;
-			
-			if(%new > getWord(%this.point2, 0) - 0.4)
-				return;
+			%tmp = vectorAdd(%this.point1, "0.5 0 0");
 
-			%this.point1 = setWord(%this.point1, 0, %new);
+			if(getWord(vectorSub(%this.point2, %tmp), 0) > 0.4)
+				%this.point1 = %tmp;
 
 		case "+Y":
-			%new = getWord(%this.point2, 1) - 0.5;
-			
-			if(%new < getWord(%this.point1, 1) + 0.4)
-				return;
+			%tmp = vectorAdd(%this.point2, "0 -0.5 0");
 
-			%this.point2 = setWord(%this.point2, 1, %new);
+			if(getWord(vectorSub(%tmp, %this.point1), 1) > 0.4)
+				%this.point2 = %tmp;
 
 		case "-Y":
-			%new = getWord(%this.point1, 1) + 0.5;
-			
-			if(%new > getWord(%this.point2, 1) - 0.4)
-				return;
+			%tmp = vectorAdd(%this.point1, "0 0.5 0");
 
-			%this.point1 = setWord(%this.point1, 1, %new);
+			if(getWord(vectorSub(%this.point2, %tmp), 1) > 0.4)
+				%this.point1 = %tmp;
 
 		case "+Z":
-			%new = getWord(%this.point2, 2) - 0.2;
-			
-			if(%new < getWord(%this.point1, 2) + 0.1)
-				return;
+			%tmp = vectorAdd(%this.point2, "0 0 -0.2");
 
-			%this.point2 = setWord(%this.point2, 2, %new);
+			if(getWord(vectorSub(%tmp, %this.point1), 2) > 0.1)
+				%this.point2 = %tmp;
 
 		case "-Z":
-			%new = getWord(%this.point1, 2) + 0.2;
-			
-			if(%new > getWord(%this.point2, 2) - 0.1)
-				return;
+			%tmp = vectorAdd(%this.point1, "0 0 0.2");
 
-			%this.point1 = setWord(%this.point1, 2, %new);
+			if(getWord(vectorSub(%this.point2, %tmp), 2) > 0.1)
+				%this.point1 = %tmp;
 		}
-
-		%this.resize(%this.point1, %this.point2);
 	}
 	else if(%dir == 1)
 	{
 		switch$(%this.selectedSide)
 		{
-		case "+X":
-			%new = getWord(%this.point2, 0) + 0.5;
-			%this.point2 = setWord(%this.point2, 0, %new);
-
-		case "-X":
-			%new = getWord(%this.point1, 0) - 0.5;
-			%this.point1 = setWord(%this.point1, 0, %new);
-
-		case "+Y":
-			%new = getWord(%this.point2, 1) + 0.5;
-			%this.point2 = setWord(%this.point2, 1, %new);
-
-		case "-Y":
-			%new = getWord(%this.point1, 1) - 0.5;
-			%this.point1 = setWord(%this.point1, 1, %new);
-
-		case "+Z":
-			%new = getWord(%this.point2, 2) + 0.2;
-			%this.point2 = setWord(%this.point2, 2, %new);
-
-		case "-Z":
-			%new = getWord(%this.point1, 2) - 0.2;
-			%this.point1 = setWord(%this.point1, 2, %new);
+			case "+X": %this.point2 = vectorAdd(%this.point2, "0.5 0 0");
+			case "-X": %this.point1 = vectorAdd(%this.point1, "-0.5 0 0");
+			case "+Y": %this.point2 = vectorAdd(%this.point2, "0 0.5 0");
+			case "-Y": %this.point1 = vectorAdd(%this.point1, "0 -0.5 0");
+			case "+Z": %this.point2 = vectorAdd(%this.point2, "0 0 0.2");
+			case "-Z": %this.point1 = vectorAdd(%this.point1, "0 0 -0.2");
 		}
-
-		%this.resize(%this.point1, %this.point2);
 	}
 
 	if(%this.point1 $= %oldP1 && %this.point2 $= %oldP2)
+	{
+		serverPlay3d(errorSound, %this.getSelectedSideCenter());
 		return;
+	}
 
+	%this.resize(%this.point1, %this.point2);
 	serverPlay3d(BrickMoveSound, %this.getSelectedSideCenter());
 }
 
@@ -369,22 +324,11 @@ function ND_SelectionBox::getSelectedSideCenter(%this)
 
 	switch$(%this.selectedSide)
 	{
-	case "+X":
-		return vectorSub(%this.point2, 0 SPC %halfY SPC %halfZ);
-
-	case "-X":
-		return vectorAdd(%this.point1, 0 SPC %halfY SPC %halfZ);
-
-	case "+Y":
-		return vectorSub(%this.point2, %halfX SPC 0 SPC %halfZ);
-
-	case "-Y":
-		return vectorAdd(%this.point1, %halfX SPC 0 SPC %halfZ);
-
-	case "+Z":
-		return vectorSub(%this.point2, %halfX SPC %halfY SPC 0);
-
-	case "-Z":
-		return vectorAdd(%this.point1, %halfX SPC %halfY SPC 0);
+		case "+X": return vectorSub(%this.point2, 0      SPC %halfY SPC %halfZ);
+		case "-X": return vectorAdd(%this.point1, 0      SPC %halfY SPC %halfZ);
+		case "+Y": return vectorSub(%this.point2, %halfX SPC 0      SPC %halfZ);
+		case "-Y": return vectorAdd(%this.point1, %halfX SPC 0      SPC %halfZ);
+		case "+Z": return vectorSub(%this.point2, %halfX SPC %halfY SPC 0     );
+		case "-Z": return vectorAdd(%this.point1, %halfX SPC %halfY SPC 0     );
 	}
 }
