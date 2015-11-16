@@ -254,11 +254,77 @@ package NewDuplicator_Server
 		else
 			parent::serverCmdCancelBrick(%client);
 	}
+
+	//Undo bricks
+	function serverCmdUndoBrick(%client)
+	{
+		if(%client.ndUndoInProgress)
+			return;
+
+		%state = %client.undoStack.pop();
+
+		if(getField(%state, 1) $= "DUPLICATE")
+		{
+			%group = getField(%state, 0);
+			
+			if(%count = %group.getCount())
+			{
+				%client.ndLastMessageTime = $Sim::Time;
+				%client.ndUndoInProgress = true;
+				%client.ndUndoTick(%group, %count);
+			}
+			else
+				%group.delete();
+
+			if(isObject(%client.player))
+				%client.player.playThread(3, "undo");
+
+			return;
+		}
+
+		%client.undoStack.push(%state);
+		parent::serverCmdUndoBrick(%client);
+	}
 };
 
-
-
 //This should go somewhere else later
+
+//Tick undo bricks
+function GameConnection::ndUndoTick(%this, %group, %count)
+{
+	if(%count > %group.getCount())
+		%start = %group.getCount();
+	else
+		%start = %count;
+
+	%end = %start - $ND::PlantBricksPerTick;
+
+	if(%end <= 0)
+		%end = 0;
+
+	for(%i = %start - 1; %i >= %end; %i--)
+	{
+		%brick = %group.getObject(%i);
+
+		if(!%brick.isDead())
+			%brick.killBrick();
+	}
+
+	//If undo is taking long, tell the client how far we get
+	if(%this.ndLastMessageTime + 0.2 < $Sim::Time)
+	{
+		commandToClient(%this, 'centerPrint', "<font:Verdana:20>\c6Undo in progress...\n<font:Verdana:17>\c3" @ %end @ "\c6 remaining.", 1);
+		%this.ndLastMessageTime = $Sim::Time;
+	}
+
+	if(!%end)
+	{
+		%group.delete();
+		%this.ndUndoInProgress = false;
+	}
+	else
+		%this.schedule($ND::PlantBricksTickDelay, ndUndoTick, %group, %end);
+}
 
 //Rotate vector around +Z in 90 degree steps
 function ndRotateVector(%vector, %steps)

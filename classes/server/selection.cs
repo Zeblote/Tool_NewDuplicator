@@ -40,6 +40,9 @@ function ND_Selection::onRemove(%this)
 {	
 	%this.clearData();
 	%this.clearGhostBricks();
+
+	if(isEventPending(%this.plantSchedule))
+		%this.cancelPlanting();
 }
 
 
@@ -222,10 +225,10 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 	}
 
 	//Tell the client how much we selected this tick
-	if(%this.lastMessageTime + 0.2 < $Sim::Time)
+	if(%this.client.ndLastMessageTime + 0.2 < $Sim::Time)
 	{
 		%this.client.ndUpdateBottomPrint();
-		%this.lastMessageTime = $Sim::Time;
+		%this.client.ndLastMessageTime = $Sim::Time;
 	}
 
 	//Schedule next tick
@@ -399,10 +402,10 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited)
 	$NS[%this, "QueueCount"] = %i;
 	
 	//Tell the client which chunk we just processed
-	if(%this.lastMessageTime + 0.2 < $Sim::Time)
+	if(%this.client.ndLastMessageTime + 0.2 < $Sim::Time)
 	{
 		%this.client.ndUpdateBottomPrint();
-		%this.lastMessageTime = $Sim::Time;
+		%this.client.ndLastMessageTime = $Sim::Time;
 	}
 
 	//Set next chunk index or finish
@@ -516,10 +519,10 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 	$NS[%this, "Count"] = %i;
 
 	//Tell the client how much we selected this tick
-	if(%this.lastMessageTime + 0.2 < $Sim::Time)
+	if(%this.client.ndLastMessageTime + 0.2 < $Sim::Time)
 	{
 		%this.client.ndUpdateBottomPrint();
-		%this.lastMessageTime = $Sim::Time;
+		%this.client.ndLastMessageTime = $Sim::Time;
 	}
 
 	if(%i >= $NS[%this, "QueueCount"])
@@ -1104,6 +1107,9 @@ function ND_Selection::startPlant(%this, %position, %angleID)
 	%this.plantTrustFailCount = 0;
 	%this.plantBlockedFailCount = 0;
 
+	%this.undoGroup = new SimSet();
+	ND_ServerGroup.add(%this.undoGroup);
+
 	messageClient(%this.client, 'MsgUploadStart', "");
 
 	%this.tickPlantSearch($ND::PlantBricksPerTick, %position, %angleID);
@@ -1131,6 +1137,7 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 		{
 			//Success! Add connected bricks to plant queue
 			%this.plantSuccessCount++;
+			%this.undoGroup.add(%brick);
 
 			$NP[%this, %i] = true;
 			%pt = %this.plantQueueCount;
@@ -1186,10 +1193,10 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 	%this.plantSearchIndex = %i;
 
 	//Tell the client how far we got
-	if(%this.lastMessageTime + 0.2 < $Sim::Time)
+	if(%this.client.ndLastMessageTime + 0.2 < $Sim::Time)
 	{
 		%this.client.ndUpdateBottomPrint();
-		%this.lastMessageTime = $Sim::Time;
+		%this.client.ndLastMessageTime = $Sim::Time;
 	}
 
 	if(%end < $NS[%this, "Count"] && %this.plantSuccessCount < $NS[%this, "Count"])
@@ -1223,6 +1230,7 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 		{
 			//Success! Add connected bricks to plant queue
 			%this.plantSuccessCount++;
+			%this.undoGroup.add(%brick);
 
 			$NP[%this, %bId] = true;
 			%pt = %this.plantQueueCount;
@@ -1268,10 +1276,10 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 	}
 
 	//Tell the client how far we got
-	if(%this.lastMessageTime + 0.2 < $Sim::Time)
+	if(%this.client.ndLastMessageTime + 0.2 < $Sim::Time)
 	{
 		%this.client.ndUpdateBottomPrint();
-		%this.lastMessageTime = $Sim::Time;
+		%this.client.ndLastMessageTime = $Sim::Time;
 	}
 
 	%this.plantQueueIndex = %i;
@@ -1486,9 +1494,14 @@ function ND_Selection::finishPlant(%this)
 		%message = %message @ "\n<font:Verdana:17>\c3" @ %floating @ "\c6 could not be planted in mid air.";
 
 
-	commandToClient(%this.client, 'centerPrint', %message, 10);
+	commandToClient(%this.client, 'centerPrint', %message, 4);
 
 	deleteVariables("$NP" @ %this @ "*");
+
+	if(%this.undoGroup.getCount())
+		%this.client.undoStack.push(%this.undoGroup TAB "DUPLICATE");
+	else
+		%this.undoGroup.delete();
 
 	%this.client.ndSetMode(NDDM_PlaceCopy);
 }
@@ -1498,4 +1511,9 @@ function ND_Selection::cancelPlanting(%this)
 {
 	cancel(%this.plantSchedule);
 	deleteVariables("$NP" @ %this @ "*");
+
+	if(%this.undoGroup.getCount())
+		%this.client.undoStack.push(%this.undoGroup TAB "DUPLICATE");
+	else
+		%this.undoGroup.delete();
 }
