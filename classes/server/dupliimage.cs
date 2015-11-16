@@ -24,7 +24,7 @@ package NewDuplicator_Server
 		//Client is allowed to use the duplicator
 		if($ND::AdminOnly && !%client.isAdmin)
 		{
-			commandToClient(%this, 'bottomPrint', "<font:Verdana:16>\c6Oops! The duplicator is admin only.", 5, true);
+			commandToClient(%this, 'bottomPrint', "<font:Verdana:17>\c6Oops! The duplicator is admin only.", 5, true);
 			return;
 		}
 

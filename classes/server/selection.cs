@@ -548,7 +548,7 @@ function ND_Selection::finishCubeSelection(%this)
 	%this.client.ndHighlightBox.resize(%min, %max);
 
 	messageClient(%this.client, 'MsgUploadEnd', "");
-	commandToClient(%this.client, 'centerPrint', "<font:Verdana:20>\c6Selected \c3" @ $NS[%this, "Count"] @ "\c6 Bricks!\n<font:Verdana:16>\c6Press [Plant Brick] again to copy.", 5);
+	commandToClient(%this.client, 'centerPrint', "<font:Verdana:20>\c6Selected \c3" @ $NS[%this, "Count"] @ "\c6 Bricks!\n<font:Verdana:17>\c6Press [Plant Brick] again to copy.", 5);
 
 	%this.client.ndSelectionChanged = false;
 	%this.client.ndSetMode(NDDM_CubeSelect);
@@ -1477,13 +1477,13 @@ function ND_Selection::finishPlant(%this)
 	%message = "<font:Verdana:20>\c6Planted \c3" @ %this.plantSuccessCount @ "\c6 / \c3" @ %count @ "\c6 Bricks!";
 
 	if(%blocked)
-		%message = %message @ "\n<font:Verdana:16>\c3" @ %blocked @ "\c6 overlapped other bricks or shapes.";
+		%message = %message @ "\n<font:Verdana:17>\c3" @ %blocked @ "\c6 overlapped other bricks or shapes.";
 
 	if(%trusted)
-		%message = %message @ "\n<font:Verdana:16>\c3" @ %trusted @ "\c6 did not have sufficient trust. :(";
+		%message = %message @ "\n<font:Verdana:17>\c3" @ %trusted @ "\c6 did not have sufficient trust. :(";
 
 	if(%floating)
-		%message = %message @ "\n<font:Verdana:16>\c3" @ %floating @ "\c6 could not be planted in mid air.";
+		%message = %message @ "\n<font:Verdana:17>\c3" @ %floating @ "\c6 could not be planted in mid air.";
 
 
 	commandToClient(%this.client, 'centerPrint', %message, 10);

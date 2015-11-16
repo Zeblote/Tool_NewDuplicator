@@ -38,7 +38,9 @@ function ND_PrefManager::registerRTBPrefs(%this)
 	//General
 	RTB_registerPref("Admin Only",                  "New Duplicator | General",     "$ND::AdminOnly",               "bool",             "Tool_NewDuplicator", false,   false, false, "");
 	RTB_registerPref("Max Bricks (Admin)",          "New Duplicator | General",     "$ND::MaxBricksAdmin",          "int 1000 1000000", "Tool_NewDuplicator", 1000000, false, false, "");
-	RTB_registerPref("Max Bricks (non-Admin)",      "New Duplicator | General",     "$ND::MaxBricksNonAdmin",       "int 1000 1000000", "Tool_NewDuplicator", 50000,   false, false, "");
+	RTB_registerPref("Max Bricks (Player)",         "New Duplicator | General",     "$ND::MaxBricksPlayer",         "int 1000 1000000", "Tool_NewDuplicator", 10000,   false, false, "");
+	RTB_registerPref("Max Cube Size (Admin)",       "New Duplicator | General",     "$ND::MaxCubeSizeAdmin",        "int 1 50000",      "Tool_NewDuplicator", 1024,    false, false, "");
+	RTB_registerPref("Max Cube Size (Player)",      "New Duplicator | General",     "$ND::MaxCubeSizePlayer",       "int 1 50000",      "Tool_NewDuplicator", 32,      false, false, "");
 	RTB_registerPref("Enable Menu Sounds",          "New Duplicator | General",     "$ND::PlayMenuSounds",          "bool",             "Tool_NewDuplicator", true,    false, false, "");
 
 	//Colors
@@ -48,29 +50,29 @@ function ND_PrefManager::registerRTBPrefs(%this)
 	//Highlight
 	RTB_registerPref("Highlight Time (ms)",         "New Duplicator | Highlight",   "$ND::HighlightTime",           "int 0 50000",      "Tool_NewDuplicator", 8000,    false, false, "");
 	RTB_registerPref("De-Highlight Tick (ms)",      "New Duplicator | Highlight",   "$ND::DeHighlightTickDelay",    "int 1 50000",      "Tool_NewDuplicator", 30,      false, false, "");
-	RTB_registerPref("De-Highlight per Tick",       "New Duplicator | Highlight",   "$ND::DeHighlightPerTick",      "int 1 50000",      "Tool_NewDuplicator", 400,     false, false, "");
+	RTB_registerPref("De-Highlight per Tick",       "New Duplicator | Highlight",   "$ND::DeHighlightPerTick",      "int 1 50000",      "Tool_NewDuplicator", 300,     false, false, "");
 
 	//Selection
 	RTB_registerPref("Stack Select Tick (ms)",      "New Duplicator | Selection",   "$ND::StackSelectTickDelay",    "int 1 50000",      "Tool_NewDuplicator", 30,      false, false, "");
-	RTB_registerPref("Stack Select per Tick",       "New Duplicator | Selection",   "$ND::StackSelectPerTick",      "int 1 50000",      "Tool_NewDuplicator", 400,     false, false, "");
+	RTB_registerPref("Stack Select per Tick",       "New Duplicator | Selection",   "$ND::StackSelectPerTick",      "int 1 50000",      "Tool_NewDuplicator", 300,     false, false, "");
 
 	RTB_registerPref("Cube Select Tick (ms)",       "New Duplicator | Selection",   "$ND::CubeSelectTickDelay",     "int 1 50000",      "Tool_NewDuplicator", 30,      false, false, "");
-	RTB_registerPref("Cube Select per Tick",        "New Duplicator | Selection",   "$ND::CubeSelectPerTick",       "int 1 50000",      "Tool_NewDuplicator", 400,    false, false, "");
-	RTB_registerPref("Cube Select Chunk Size",      "New Duplicator | Selection",   "$ND::CubeSelectChunkSize",     "int 1 50000",      "Tool_NewDuplicator", 48,      false, false, "");
+	RTB_registerPref("Cube Select per Tick",        "New Duplicator | Selection",   "$ND::CubeSelectPerTick",       "int 1 50000",      "Tool_NewDuplicator", 300,    false, false, "");
+	RTB_registerPref("Cube Select Chunk Size",      "New Duplicator | Selection",   "$ND::CubeSelectChunkSize",     "int 1 50000",      "Tool_NewDuplicator", 32,      false, false, "");
 
 	//Ghosting
 	RTB_registerPref("Scatter Ghost Bricks",        "New Duplicator | Ghosting",    "$ND::ScatterGhostBricks",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
 
-	RTB_registerPref("Max Ghost Bricks",            "New Duplicator | Ghosting",    "$ND::MaxGhostBricks",          "int 1 50000",      "Tool_NewDuplicator", 5000,    false, false, "");
+	RTB_registerPref("Max Ghost Bricks",            "New Duplicator | Ghosting",    "$ND::MaxGhostBricks",          "int 1 50000",      "Tool_NewDuplicator", 1000,    false, false, "");
 	RTB_registerPref("Instant Ghost Bricks",        "New Duplicator | Ghosting",    "$ND::InstantGhostBricks",      "int 1 50000",      "Tool_NewDuplicator", 150,     false, false, "");
 
-	RTB_registerPref("Instant Ghost Delay (ms)",    "New Duplicator | Ghosting",    "$ND::GhostBricksInitialDelay", "int 1 50000",      "Tool_NewDuplicator", 350,     false, false, "");
+	RTB_registerPref("Instant Ghost Delay (ms)",    "New Duplicator | Ghosting",    "$ND::GhostBricksInitialDelay", "int 1 50000",      "Tool_NewDuplicator", 400,     false, false, "");
 	RTB_registerPref("Move Ghost Bricks Tick (ms)", "New Duplicator | Ghosting",    "$ND::GhostBricksTickDelay",    "int 1 50000",      "Tool_NewDuplicator", 30,      false, false, "");
-	RTB_registerPref("Move Ghost Bricks per Tick",  "New Duplicator | Ghosting",    "$ND::GhostBricksPerTick",      "int 1 50000",      "Tool_NewDuplicator", 500,     false, false, "");
+	RTB_registerPref("Move Ghost Bricks per Tick",  "New Duplicator | Ghosting",    "$ND::GhostBricksPerTick",      "int 1 50000",      "Tool_NewDuplicator", 300,     false, false, "");
 
 	//Planting
 	RTB_registerPref("Plant Bricks Tick (ms)",      "New Duplicator | Planting",    "$ND::PlantBricksTickDelay",    "int 1 50000",      "Tool_NewDuplicator", 30,      false, false, "");
-	RTB_registerPref("Plant Bricks per Tick",       "New Duplicator | Planting",    "$ND::PlantBricksPerTick",      "int 1 50000",      "Tool_NewDuplicator", 400,     false, false, "");
+	RTB_registerPref("Plant Bricks per Tick",       "New Duplicator | Planting",    "$ND::PlantBricksPerTick",      "int 1 50000",      "Tool_NewDuplicator", 300,     false, false, "");
 
 	//Restore default prefs
 	RTB_registerPref("Check to restore defaults",   "New Duplicator | Reset Prefs", "$ND::RestoreDefaultPrefs",     "bool",             "Tool_NewDuplicator", false,   false, false, "ndResetPrefs");
@@ -84,7 +86,9 @@ function ND_PrefManager::setDefaultValues(%this)
 	//General
 	$ND::AdminOnly               = false;
 	$ND::MaxBricksAdmin          = 1000000;
-	$ND::MaxBricksNonAdmin       = 50000;
+	$ND::MaxBricksPlayer         = 10000;
+	$ND::MaxCubeSizeAdmin        = 1024;
+	$ND::MaxCubeSizePlayer       = 32;
 	$ND::PlayMenuSounds          = true;
 
 	//Colors
@@ -94,29 +98,29 @@ function ND_PrefManager::setDefaultValues(%this)
 	//Highlight
 	$ND::HighlightTime           = 8000;
 	$ND::DeHighlightTickDelay    = 30;
-	$ND::DeHighlightPerTick      = 400;
+	$ND::DeHighlightPerTick      = 300;
 
 	//Selection
 	$ND::StackSelectTickDelay    = 30;
-	$ND::StackSelectPerTick      = 400;
+	$ND::StackSelectPerTick      = 300;
 
 	$ND::CubeSelectTickDelay     = 30;
-	$ND::CubeSelectChunkSize     = 48;
-	$ND::CubeSelectPerTick       = 400;
+	$ND::CubeSelectPerTick       = 300;
+	$ND::CubeSelectChunkSize     = 32;
 
 	//Ghosting
 	$ND::ScatterGhostBricks      = true;
 
-	$ND::MaxGhostBricks          = 5000;
+	$ND::MaxGhostBricks          = 1000;
 	$ND::InstantGhostBricks      = 150;
 
-	$ND::GhostBricksInitialDelay = 350;
+	$ND::GhostBricksInitialDelay = 400;
 	$ND::GhostBricksTickDelay    = 30;
-	$ND::GhostBricksPerTick      = 500;
+	$ND::GhostBricksPerTick      = 300;
 
 	//Planting
 	$ND::PlantBricksTickDelay    = 30;
-	$ND::PlantBricksPerTick      = 400;
+	$ND::PlantBricksPerTick      = 300;
 
 	//Always set this to false
 	$ND::RestoreDefaultPrefs     = false;
@@ -129,7 +133,9 @@ function ND_PrefManager::dumpPrefs(%this, %client)
 	messageClient(%client, '', "\c7General");
 	messageClient(%client, '', "\c6      Admin Only: \c3" @ ($ND::AdminOnly ? "Y" : "N"));
 	messageClient(%client, '', "\c6      Max Bricks (Admin): \c3" @ $ND::MaxBricksAdmin);
-	messageClient(%client, '', "\c6      Max Bricks (non-Admin): \c3" @ $ND::MaxBricksNonAdmin);
+	messageClient(%client, '', "\c6      Max Bricks (Player): \c3" @ $ND::MaxBricksPlayer);
+	messageClient(%client, '', "\c6      Max Cube Size (Admin): \c3" @ $ND::MaxCubeSizeAdmin);
+	messageClient(%client, '', "\c6      Max Cube Size (Player): \c3" @ $ND::MaxCubeSizePlayer);
 	messageClient(%client, '', "\c6      Enable Menu Sounds: \c3" @ ($ND::PlayMenuSounds ? "Y" : "N"));
 
 	messageClient(%client, '', "\c7Colors");

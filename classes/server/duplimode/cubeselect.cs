@@ -114,7 +114,7 @@ function NDDM_CubeSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 		if(!%client.ndSelectionChanged)
 		{
 			messageClient(%client, 'MsgError', "");
-			commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection Box has been changed!\n<font:Verdana:16>\c6Press [Plant Brick] to select again.", 5);	
+			commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection Box has been changed!\n<font:Verdana:17>\c6Press [Plant Brick] to select again.", 5);	
 			%client.ndSelectionChanged = true;	
 
 			if(isObject(%client.ndHighlightBox))
@@ -152,7 +152,7 @@ function NDDM_CubeSelect::onPrevSeat(%this, %client)
 	if(!%client.ndSelectionChanged)
 	{
 		messageClient(%client, 'MsgError', "");
-		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection Box has been changed!\n<font:Verdana:16>\c6Press [Plant Brick] to select again.", 5);	
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection Box has been changed!\n<font:Verdana:17>\c6Press [Plant Brick] to select again.", 5);	
 		%client.ndSelectionChanged = true;	
 
 		if(isObject(%client.ndHighlightBox))
@@ -217,14 +217,22 @@ function NDDM_CubeSelect::onRotateBrick(%this, %client, %direction)
 	if(!isObject(%client.ndSelectionBox))
 		return;
 
+	if(!%client.ndSelectionBox.selectedSide)
+	return;
+
+	if(%client.isAdmin)
+		%limit = $ND::MaxCubeSizeAdmin;
+	else
+		%limit = $ND::MaxCubeSizePlayer;
+
 	//Extend or retract the side
-	if(isObject(%client.ndSelectionBox) && strLen(%client.ndSelectionBox.selectedSide))
-		%client.ndSelectionBox.stepSide(%direction);
+	if(%client.ndSelectionBox.stepSide(%direction, %limit))
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Oops!\n<font:Verdana:17>\c6Your selection box is limited to \c3" @ mFloor(%limit * 2) @ " \c6studs.", 5);	
 
 	if(!%client.ndSelectionChanged)
 	{
 		messageClient(%client, 'MsgError', "");
-		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection Box has been changed!\n<font:Verdana:16>\c6Press [Plant Brick] to select again.", 5);	
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection Box has been changed!\n<font:Verdana:17>\c6Press [Plant Brick] to select again.", 5);	
 		%client.ndSelectionChanged = true;	
 
 		if(isObject(%client.ndHighlightBox))
@@ -296,7 +304,7 @@ function NDDM_CubeSelect::getBottomPrint(%this, %client)
 
 	if(isObject(%client.ndSelectionBox))
 	{
-		if(strLen(%client.ndSelectionBox.selectedSide))
+		if(%client.ndSelectionBox.selectedSide)
 		{
 			%r0 = "[Move Brick]: Select side";
 			%r1 = "[Rotate Brick]: Extend side";

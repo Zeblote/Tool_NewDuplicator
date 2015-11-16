@@ -34,10 +34,9 @@ function ND_SelectionBox(%shapeName)
 	%this.outerColorSelected = "1 0 0 0.4";
 	%this.borderColorSelected = "1 0 0 1";
 
-	%this.shapeName.setShapeNameColor(%this.borderColor);
-	%this.shapeName.setShapeName(%shapeName);
-
 	%this.recolor();
+
+	%this.shapeName.setShapeName(%shapeName);
 
 	return %this;
 }
@@ -63,55 +62,69 @@ function ND_SelectionBox::recolor(%this)
 	%this.innerCube.setNodeColor("ALL", %this.innerColor);
 	%this.outerCube.setNodeColor("ALL", %this.outerColor);
 
+	%this.shapeName.setShapeNameColor(%this.outerColor);
+
 	for(%i = 0; %i < 4; %i++)
 	{
-		%this.border_x[%i].setNodeColor("border", %this.borderColor);
-		%this.border_y[%i].setNodeColor("border", %this.borderColor);
-		%this.border_z[%i].setNodeColor("border", %this.borderColor);
+		%this.border_x[%i].setNodeColor("ALL", %this.borderColor);
+		%this.border_y[%i].setNodeColor("ALL", %this.borderColor);
+		%this.border_z[%i].setNodeColor("ALL", %this.borderColor);
 	}
 
-	if(strLen(%this.selectedSide))
+	if(%this.selectedSide)
 	{
-		%this.innerCube.setNodeColor("in" @ %this.selectedSide, %this.innerColorSelected);
-		%this.outerCube.setNodeColor("out" @ %this.selectedSide, %this.outerColorSelected);	
-
-		switch$(%this.selectedSide)
+		switch(%this.selectedSide)
 		{
-		case "+X":
-			%this.border_y1.setNodeColor("border", %this.borderColorSelected);
-			%this.border_y2.setNodeColor("border", %this.borderColorSelected);
-			%this.border_z1.setNodeColor("border", %this.borderColorSelected);
-			%this.border_z2.setNodeColor("border", %this.borderColorSelected);
+			case 1: %str = "+X";
+			case 2: %str = "+Y";
+			case 3: %str = "+Z";
+			case 4: %str = "-X";
+			case 5: %str = "-Y";
+			case 6: %str = "-Z";
+		}
 
-		case "-X":
-			%this.border_y0.setNodeColor("border", %this.borderColorSelected);
-			%this.border_y3.setNodeColor("border", %this.borderColorSelected);
-			%this.border_z0.setNodeColor("border", %this.borderColorSelected);
-			%this.border_z3.setNodeColor("border", %this.borderColorSelected);
+		%this.innerCube.setNodeColor("in" @ %str, %this.innerColorSelected);
+		%this.outerCube.setNodeColor("out" @ %str, %this.outerColorSelected);
 
-		case "+Y":
-			%this.border_x1.setNodeColor("border", %this.borderColorSelected);
-			%this.border_x2.setNodeColor("border", %this.borderColorSelected);
-			%this.border_z2.setNodeColor("border", %this.borderColorSelected);
-			%this.border_z3.setNodeColor("border", %this.borderColorSelected);
+		%bColor = %this.borderColorSelected;
 
-		case "-Y":
-			%this.border_x0.setNodeColor("border", %this.borderColorSelected);
-			%this.border_x3.setNodeColor("border", %this.borderColorSelected);
-			%this.border_z0.setNodeColor("border", %this.borderColorSelected);
-			%this.border_z1.setNodeColor("border", %this.borderColorSelected);
+		switch(%this.selectedSide)
+		{
+		case 1: //+X
+			%this.border_y1.setNodeColor("ALL", %bColor);
+			%this.border_y2.setNodeColor("ALL", %bColor);
+			%this.border_z1.setNodeColor("ALL", %bColor);
+			%this.border_z2.setNodeColor("ALL", %bColor);
 
-		case "+Z":
-			%this.border_x2.setNodeColor("border", %this.borderColorSelected);
-			%this.border_x3.setNodeColor("border", %this.borderColorSelected);
-			%this.border_y2.setNodeColor("border", %this.borderColorSelected);
-			%this.border_y3.setNodeColor("border", %this.borderColorSelected);
+		case 2: //+Y
+			%this.border_x1.setNodeColor("ALL", %bColor);
+			%this.border_x2.setNodeColor("ALL", %bColor);
+			%this.border_z2.setNodeColor("ALL", %bColor);
+			%this.border_z3.setNodeColor("ALL", %bColor);
 
-		case "-Z":
-			%this.border_x0.setNodeColor("border", %this.borderColorSelected);
-			%this.border_x1.setNodeColor("border", %this.borderColorSelected);
-			%this.border_y0.setNodeColor("border", %this.borderColorSelected);
-			%this.border_y1.setNodeColor("border", %this.borderColorSelected);
+		case 3: //+Z
+			%this.border_x2.setNodeColor("ALL", %bColor);
+			%this.border_x3.setNodeColor("ALL", %bColor);
+			%this.border_y2.setNodeColor("ALL", %bColor);
+			%this.border_y3.setNodeColor("ALL", %bColor);
+
+		case 4: //-X
+			%this.border_y0.setNodeColor("ALL", %bColor);
+			%this.border_y3.setNodeColor("ALL", %bColor);
+			%this.border_z0.setNodeColor("ALL", %bColor);
+			%this.border_z3.setNodeColor("ALL", %bColor);
+
+		case 5: //-Y
+			%this.border_x0.setNodeColor("ALL", %bColor);
+			%this.border_x3.setNodeColor("ALL", %bColor);
+			%this.border_z0.setNodeColor("ALL", %bColor);
+			%this.border_z1.setNodeColor("ALL", %bColor);
+
+		case 6: //-Z
+			%this.border_x0.setNodeColor("ALL", %bColor);
+			%this.border_x1.setNodeColor("ALL", %bColor);
+			%this.border_y0.setNodeColor("ALL", %bColor);
+			%this.border_y1.setNodeColor("ALL", %bColor);
 		}
 	}
 }
@@ -208,109 +221,102 @@ function ND_SelectionBox::resize(%this, %point1, %point2)
 //Select a side of the box
 function ND_SelectionBox::selectSide(%this, %x, %y, %z)
 {
-	%old = %this.selectedSide;
-
 	if(%x > 0)
-		%side = "+X";
-	else if(%x < 0)
-		%side = "-X";
+		%side = 1;
 	else if(%y > 0)
-		%side = "+Y";
-	else if(%y < 0)
-		%side = "-Y";
+		%side = 2;
 	else if(%z > 0)
-		%side = "+Z";
+		%side = 3;
+	else if(%x < 0)
+		%side = 4;
+	else if(%y < 0)
+		%side = 5;
+	else if(%z < 0)
+		%side = 6;
 	else
-		%side = "-Z";
+		%side = 0;
 
-	%this.selectedSide = %side;
+	if(%this.selectedSide != %side)
+	{
+		%this.selectedSide = %side;
+		%this.recolor();
 
-	//Visualize selected side
-	%this.recolor();
-
-	if(%this.selectedSide $= %old)
-		return;
-
-	serverPlay3d(BrickRotateSound, %this.getSelectedSideCenter());
+		serverPlay3d(BrickRotateSound, %this.getSelectedSideCenter());
+	}
 }
 
 //Deselect the side
 function ND_SelectionBox::deselectSide(%this)
 {
-	%this.selectedSide = "";
+	if(%this.selectedSide != 0)
+	{
+		serverPlay3d(BrickRotateSound, %this.getSelectedSideCenter());
 
-	//Visualize selected side
-	%this.recolor();
+		%this.selectedSide = 0;
+		%this.recolor();
+	}
 }
 
 //Move the selected side of the box in or out
-function ND_SelectionBox::stepSide(%this, %dir)
+function ND_SelectionBox::stepSide(%this, %distance, %limit)
 {
+	if(!%this.selectedSide)
+		return;
+
+	%distance = mFloor(%distance);
 	%oldP1 = %this.point1;
 	%oldP2 = %this.point2;
 
-	if(%dir == -1)
+	switch(%this.selectedSide)
 	{
-		switch$(%this.selectedSide)
-		{
-		case "+X":
-			%tmp = vectorAdd(%this.point2, "-0.5 0 0");
-
-			if(getWord(vectorSub(%tmp, %this.point1), 0) > 0.4)
-				%this.point2 = %tmp;
-
-		case "-X":
-			%tmp = vectorAdd(%this.point1, "0.5 0 0");
-
-			if(getWord(vectorSub(%this.point2, %tmp), 0) > 0.4)
-				%this.point1 = %tmp;
-
-		case "+Y":
-			%tmp = vectorAdd(%this.point2, "0 -0.5 0");
-
-			if(getWord(vectorSub(%tmp, %this.point1), 1) > 0.4)
-				%this.point2 = %tmp;
-
-		case "-Y":
-			%tmp = vectorAdd(%this.point1, "0 0.5 0");
-
-			if(getWord(vectorSub(%this.point2, %tmp), 1) > 0.4)
-				%this.point1 = %tmp;
-
-		case "+Z":
-			%tmp = vectorAdd(%this.point2, "0 0 -0.2");
-
-			if(getWord(vectorSub(%tmp, %this.point1), 2) > 0.1)
-				%this.point2 = %tmp;
-
-		case "-Z":
-			%tmp = vectorAdd(%this.point1, "0 0 0.2");
-
-			if(getWord(vectorSub(%this.point2, %tmp), 2) > 0.1)
-				%this.point1 = %tmp;
-		}
-	}
-	else if(%dir == 1)
-	{
-		switch$(%this.selectedSide)
-		{
-			case "+X": %this.point2 = vectorAdd(%this.point2, "0.5 0 0");
-			case "-X": %this.point1 = vectorAdd(%this.point1, "-0.5 0 0");
-			case "+Y": %this.point2 = vectorAdd(%this.point2, "0 0.5 0");
-			case "-Y": %this.point1 = vectorAdd(%this.point1, "0 -0.5 0");
-			case "+Z": %this.point2 = vectorAdd(%this.point2, "0 0 0.2");
-			case "-Z": %this.point1 = vectorAdd(%this.point1, "0 0 -0.2");
-		}
+		case 1: %newPoint = vectorAdd(%this.point2, vectorScale("0.5 0 0", %distance));
+		case 2: %newPoint = vectorAdd(%this.point2, vectorScale("0 0.5 0", %distance));
+		case 3: %newPoint = vectorAdd(%this.point2, vectorScale("0 0 0.2", %distance));
+		case 4: %newPoint = vectorSub(%this.point1, vectorScale("0.5 0 0", %distance));
+		case 5: %newPoint = vectorSub(%this.point1, vectorScale("0 0.5 0", %distance));
+		case 6: %newPoint = vectorSub(%this.point1, vectorScale("0 0 0.2", %distance));
 	}
 
-	if(%this.point1 $= %oldP1 && %this.point2 $= %oldP2)
+	//Validate box size
+	if(%this.selectedSide > 3)
 	{
+		%offset = vectorSub(%this.point2, %newPoint);
+
+		%x = mClampF(getWord(%offset, 0), 0.5, %limit);
+		%y = mClampF(getWord(%offset, 1), 0.5, %limit);
+		%z = mClampF(getWord(%offset, 2), 0.2, %limit);
+
+		%newOffset = %x SPC %y SPC %z;
+		%this.point1 = vectorSub(%this.point2, %newOffset);
+
+		if(vectorLen(%newOffset) < vectorLen(%offset))
+			%limitReached = true;
+	}
+	else
+	{
+		%offset = vectorSub(%newPoint, %this.point1);
+
+		%x = mClampF(getWord(%offset, 0), 0.5, %limit);
+		%y = mClampF(getWord(%offset, 1), 0.5, %limit);
+		%z = mClampF(getWord(%offset, 2), 0.2, %limit);
+
+		%newOffset = %x SPC %y SPC %z;
+		%this.point2 = vectorAdd(%this.point1, %newOffset);
+
+		if(vectorLen(%newOffset) < vectorLen(%offset))
+			%limitReached = true;
+	}
+
+
+	if(%this.point1 !$= %oldP1 || %this.point2 !$= %oldP2)
+	{
+		%this.resize(%this.point1, %this.point2);
+		serverPlay3d(BrickMoveSound, %this.getSelectedSideCenter());
+	}
+	else
 		serverPlay3d(errorSound, %this.getSelectedSideCenter());
-		return;
-	}
 
-	%this.resize(%this.point1, %this.point2);
-	serverPlay3d(BrickMoveSound, %this.getSelectedSideCenter());
+	return %limitReached;
 }
 
 //Get center of currently selected side
@@ -322,13 +328,13 @@ function ND_SelectionBox::getSelectedSideCenter(%this)
 	%halfY = getWord(%halfDiag, 1);
 	%halfZ = getWord(%halfDiag, 2);
 
-	switch$(%this.selectedSide)
+	switch(%this.selectedSide)
 	{
-		case "+X": return vectorSub(%this.point2, 0      SPC %halfY SPC %halfZ);
-		case "-X": return vectorAdd(%this.point1, 0      SPC %halfY SPC %halfZ);
-		case "+Y": return vectorSub(%this.point2, %halfX SPC 0      SPC %halfZ);
-		case "-Y": return vectorAdd(%this.point1, %halfX SPC 0      SPC %halfZ);
-		case "+Z": return vectorSub(%this.point2, %halfX SPC %halfY SPC 0     );
-		case "-Z": return vectorAdd(%this.point1, %halfX SPC %halfY SPC 0     );
+		case 1: return vectorSub(%this.point2, 0      SPC %halfY SPC %halfZ);
+		case 2: return vectorSub(%this.point2, %halfX SPC 0      SPC %halfZ);
+		case 3: return vectorSub(%this.point2, %halfX SPC %halfY SPC 0     );
+		case 4: return vectorAdd(%this.point1, 0      SPC %halfY SPC %halfZ);
+		case 5: return vectorAdd(%this.point1, %halfX SPC 0      SPC %halfZ);
+		case 6: return vectorAdd(%this.point1, %halfX SPC %halfY SPC 0     );
 	}
 }
