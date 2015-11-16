@@ -647,6 +647,12 @@ function ND_Selection::recordBrickData(%this, %i)
 		$NS[%this, "ItemTime", %i] = %brick.itemRespawnTime;
 	}
 
+	if(%brick.vehicleDataBlock)
+	{
+		$NS[%this, "Vehicle", %i] = %brick.vehicleDataBlock;
+		$NS[%this, "VehColor", %i] = %brick.reColorVehicle;
+	}
+
 	if(!%brick.isRaycasting())
 		$NS[%this, "NoRay", %i] = true;
 
@@ -1399,6 +1405,12 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		%brick.itemDirection = %dir;
 		%brick.itemRespawnTime = $NS[%this, "ItemTime", %i];
 		%brick.setItem(%tmp);
+	}
+
+	if(%tmp = $NS[%this, "Vehicle", %i])
+	{
+		%brick.reColorVehicle = $NS[%this, "VehColor", %i];
+		%brick.setVehicle(%tmp);
 	}
 
 	//Events
