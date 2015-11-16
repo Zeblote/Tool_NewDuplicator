@@ -1294,10 +1294,12 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		case 3: %bRot = "0 0 -1 90.0002";
 	}
 
+	%datablock = $NS[%this, "Data", %i];
+
 	//Attempt to plant brick	
 	%brick = new FxDTSBrick()
 	{
-		datablock = $NS[%this, "Data", %i];
+		datablock = %datablock;
 		isPlanted = true;
 
 		position = %bPos;
@@ -1449,6 +1451,13 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 			%brick.eventOutputParameter[%j, 3] = $NS[%this, "EvPar3", %i, %j];
 			%brick.eventOutputParameter[%j, 4] = $NS[%this, "EvPar4", %i, %j];
 		}
+	}
+
+	//Hole bots... I guess it works
+	if(%datablock.isBotHole)
+	{
+		%brick.isBotHole = true;
+		%brick.onHoleSpawnPlanted();
 	}
 
 	return %brick;
