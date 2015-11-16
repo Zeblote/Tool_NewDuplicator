@@ -653,6 +653,9 @@ function ND_Selection::recordBrickData(%this, %i)
 		$NS[%this, "VehColor", %i] = %brick.reColorVehicle;
 	}
 
+	if(%brick.AudioEmitter)
+		$NS[%this, "Music", %i] = %brick.AudioEmitter.profile.getID();
+
 	if(!%brick.isRaycasting())
 		$NS[%this, "NoRay", %i] = true;
 
@@ -1412,6 +1415,9 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		%brick.reColorVehicle = $NS[%this, "VehColor", %i];
 		%brick.setVehicle(%tmp);
 	}
+
+	if(%tmp = $NS[%this, "Music", %i])
+		%brick.setSound(%tmp);
 
 	//Events
 	if(%numEvents = $NS[%this, "EvNum", %i])
