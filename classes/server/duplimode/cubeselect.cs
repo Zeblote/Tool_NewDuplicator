@@ -249,7 +249,13 @@ function NDDM_CubeSelect::onCancelBrick(%this, %client)
 //Create bottomprint for client
 function NDDM_CubeSelect::getBottomPrint(%this, %client)
 {		
-	%title = "Selection Mode";
+	if(isObject(%client.ndSelection) && %client.ndSelection.brickCount)
+	{
+		%count = %client.ndSelection.brickCount;
+		%title = "Selection Mode (\c3" @ %count @ "\c6 Brick" @ (%count > 1 ? "s)" : ")");
+	}
+	else
+		%title = "Selection Mode";
 
 	%l0 = "Type: \c3Cubic \c6[Light]";
 	%l1 = "Limited: " @ (%client.ndLimited ? "\c3Yes" : "\c0No") @ " \c6[Prev Seat]";
