@@ -4,23 +4,19 @@
 // *    NDDM_StackSelectProgress
 // *
 // *    -------------------------------------------------------------------
-// *    Stack select progress dupli mode
+// *    Handles inputs for stack selection mode (in progress)
 // *
 // * ######################################################################
 
 //Create object to receive callbacks
-if(isObject(NDDM_StackSelectProgress))
-	NDDM_StackSelectProgress.delete();
-
 ND_ServerGroup.add(
 	new ScriptObject(NDDM_StackSelectProgress)
 	{
-		class = "ND_DupliMode";
-		num = $NDDM::StackSelectProgress;
+		class = "NewDuplicatorMode";
+		index = $NDDM::StackSelectProgress;
 
-		allowedModes = $NDDM::StackSelect;
-
-		allowSwinging = false;
+		allowSelecting = false;
+		allowUnMount   = false;
 	}
 );
 
@@ -29,23 +25,11 @@ ND_ServerGroup.add(
 //Changing modes
 ///////////////////////////////////////////////////////////////////////////
 
-//Switch away from this mode
-function NDDM_StackSelectProgress::onChangeMode(%this, %client, %nextMode)
+//Kill this mode
+function NDDM_StackSelectProgress::onKillMode(%this, %client)
 {
-	switch(%nextMode)
-	{
-		case $NDDM::Disabled:
-
-			//Destroy the selection
-			%client.ndSelection.delete();
-
-			//Start de-highlighting the bricks
-			%client.ndHighlightSet.deHighlight();
-
-			//Remove highlight box
-			if(isObject(%client.ndHighlightBox))
-				%client.ndHighlightBox.delete();
-	}
+	//Destroy the selection
+	%client.ndSelection.delete();
 }
 
 
@@ -56,12 +40,9 @@ function NDDM_StackSelectProgress::onChangeMode(%this, %client, %nextMode)
 //Cancel Brick
 function NDDM_StackSelectProgress::onCancelBrick(%this, %client)
 {
-	//Cancel selecting
-	%client.ndSelection.cancelStackSelection();
-
 	commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection canceled!", 4);
-
-	//Switch back to stack selection
+	
+	%client.ndSelection.cancelStackSelection();
 	%client.ndSetMode(NDDM_StackSelect);
 }
 
@@ -73,8 +54,8 @@ function NDDM_StackSelectProgress::onCancelBrick(%this, %client)
 //Create bottomprint for client
 function NDDM_StackSelectProgress::getBottomPrint(%this, %client)
 {
-	%count = $NS[%client.ndSelection, "Count"];
-	%qCount = $NS[%client.ndSelection, "QueueCount"] - %count;
+	%count = %client.ndSelection.brickCount;
+	%qCount = %client.ndSelection.queueCount - %count;
 
 	%title = "Selecting... (\c3" @ %count @ "\c6 Bricks, \c3" @ %qCount @ "\c6 in Queue)";
 	%l0 = "[Cancel Brick]: Cancel selection";

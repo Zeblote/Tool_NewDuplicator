@@ -15,28 +15,28 @@ function ND_SelectionBox(%shapeName)
 		%this = new ScriptObject(ND_SelectionBox)
 	);
 
-	%this.innerCube = new StaticShape(){datablock = ND_SelectionCubeInnerDts;};
-	%this.outerCube = new StaticShape(){datablock = ND_SelectionCubeOuterDts;};
-	%this.shapeName = new StaticShape(){datablock = ND_ShapeNameDts;};
+	%this.innerCube = new StaticShape(){datablock = ND_SelectionCubeInner;};
+	%this.outerCube = new StaticShape(){datablock = ND_SelectionCubeOuter;};
+	%this.shapeName = new StaticShape(){datablock = ND_SelectionCubeShapeName;};
 
 	for(%i = 0; %i < 4; %i++)
 	{
-		%this.border_x[%i] = new StaticShape(){datablock = ND_SelectionCubeBorderDts;};
-		%this.border_y[%i] = new StaticShape(){datablock = ND_SelectionCubeBorderDts;};
-		%this.border_z[%i] = new StaticShape(){datablock = ND_SelectionCubeBorderDts;};
+		%this.border_x[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
+		%this.border_y[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
+		%this.border_z[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
 	}
 
-	%this.innerColor = "0 0 0 0.85";
-	%this.outerColor = "1 0.84 0 0.4";
+	%this.shapeName.setShapeName(%shapeName);
+
+	%this.innerColor  = "0 0 0 0.85";
+	%this.outerColor  = "1 0.84 0 0.4";
 	%this.borderColor = "1 0.84 0 1";
 
-	%this.innerColorSelected = "1 0 0 0.85";
-	%this.outerColorSelected = "1 0 0 0.4";
+	%this.innerColorSelected  = "1 0 0 0.85";
+	%this.outerColorSelected  = "1 0 0 0.4";
 	%this.borderColorSelected = "1 0 0 1";
 
-	%this.recolor();
-
-	%this.shapeName.setShapeName(%shapeName);
+	%this.applyColors();
 
 	return %this;
 }
@@ -57,7 +57,7 @@ function ND_SelectionBox::onRemove(%this)
 }
 
 //Apply color changes to the selection box
-function ND_SelectionBox::recolor(%this)
+function ND_SelectionBox::applyColors(%this)
 {
 	%this.innerCube.setNodeColor("ALL", %this.innerColor);
 	%this.outerCube.setNodeColor("ALL", %this.outerColor);
@@ -189,23 +189,21 @@ function ND_SelectionBox::resize(%this, %point1, %point2)
 	%this.innerCube.setScale(%len_x - 0.02 SPC %len_y - 0.02 SPC %len_z - 0.02);
 	%this.outerCube.setScale(%len_x + 0.02 SPC %len_y + 0.02 SPC %len_z + 0.02);
 
+	%maxLen = getMax(getMax(%len_x, %len_y), %len_z);
 
-	%maxLen = %len_y > %len_x ? %len_y : %len_x;
-	%maxLen = %len_z > %maxLen ? %len_z : %maxLen;
-
-	if(%maxLen > 1024.1)
+	if(%maxLen > 1024)
 		%width = 7;
-	else if(%maxLen > 512.1)
+	else if(%maxLen > 512)
 		%width = 6;
-	else if(%maxLen > 256.1)
+	else if(%maxLen > 256)
 		%width = 5;
-	else if(%maxLen > 128.1)
+	else if(%maxLen > 128)
 		%width = 4;
-	else if(%maxLen > 64.1)
+	else if(%maxLen > 64)
 		%width = 3;
-	else if(%maxLen > 32.1)
+	else if(%maxLen > 32)
 		%width = 2;
-	else if(%maxLen > 4.1)
+	else if(%maxLen > 4)
 		%width = 1;
 	else
 		%width = 0.5;
@@ -219,27 +217,12 @@ function ND_SelectionBox::resize(%this, %point1, %point2)
 }
 
 //Select a side of the box
-function ND_SelectionBox::selectSide(%this, %x, %y, %z)
+function ND_SelectionBox::selectSide(%this, %side)
 {
-	if(%x > 0)
-		%side = 1;
-	else if(%y > 0)
-		%side = 2;
-	else if(%z > 0)
-		%side = 3;
-	else if(%x < 0)
-		%side = 4;
-	else if(%y < 0)
-		%side = 5;
-	else if(%z < 0)
-		%side = 6;
-	else
-		%side = 0;
-
 	if(%this.selectedSide != %side)
 	{
 		%this.selectedSide = %side;
-		%this.recolor();
+		%this.applyColors();
 
 		serverPlay3d(BrickRotateSound, %this.getSelectedSideCenter());
 	}
@@ -253,7 +236,7 @@ function ND_SelectionBox::deselectSide(%this)
 		serverPlay3d(BrickRotateSound, %this.getSelectedSideCenter());
 
 		%this.selectedSide = 0;
-		%this.recolor();
+		%this.applyColors();
 	}
 }
 
@@ -306,7 +289,6 @@ function ND_SelectionBox::stepSide(%this, %distance, %limit)
 		if(vectorLen(%newOffset) < vectorLen(%offset))
 			%limitReached = true;
 	}
-
 
 	if(%this.point1 !$= %oldP1 || %this.point2 !$= %oldP2)
 	{

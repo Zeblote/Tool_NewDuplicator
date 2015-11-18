@@ -17,13 +17,13 @@ function ND_HighlightBox()
 
 	for(%i = 0; %i < 4; %i++)
 	{
-		%this.border_x[%i] = new StaticShape(){datablock = ND_SelectionCubeBorderDts;};
-		%this.border_y[%i] = new StaticShape(){datablock = ND_SelectionCubeBorderDts;};
-		%this.border_z[%i] = new StaticShape(){datablock = ND_SelectionCubeBorderDts;};
+		%this.border_x[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
+		%this.border_y[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
+		%this.border_z[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
 	}
 
-	%this.borderColor = "1 0.84 0 1";
-	%this.recolor();
+	%this.color = "1 0.84 0 1";
+	%this.applyColors();
 
 	return %this;
 }
@@ -40,13 +40,13 @@ function ND_HighlightBox::onRemove(%this)
 }
 
 //Apply color changes to the highlight box
-function ND_HighlightBox::recolor(%this)
+function ND_HighlightBox::applyColors(%this)
 {
 	for(%i = 0; %i < 4; %i++)
 	{
-		%this.border_x[%i].setNodeColor("border", %this.borderColor);
-		%this.border_y[%i].setNodeColor("border", %this.borderColor);
-		%this.border_z[%i].setNodeColor("border", %this.borderColor);
+		%this.border_x[%i].setNodeColor("ALL", %this.color);
+		%this.border_y[%i].setNodeColor("ALL", %this.color);
+		%this.border_z[%i].setNodeColor("ALL", %this.color);
 	}
 }
 
@@ -103,22 +103,21 @@ function ND_HighlightBox::resize(%this, %point1, %point2)
 	%this.border_z2.setTransform(%x2 SPC %y2 SPC %center_z SPC %rot_z);
 	%this.border_z3.setTransform(%x1 SPC %y2 SPC %center_z SPC %rot_z);
 
-	%maxLen = %len_y > %len_x ? %len_y : %len_x;
-	%maxLen = %len_z > %maxLen ? %len_z : %maxLen;
+	%maxLen = getMax(getMax(%len_x, %len_y), %len_z);
 
-	if(%maxLen > 1024.1)
+	if(%maxLen > 1024)
 		%width = 7;
-	else if(%maxLen > 512.1)
+	else if(%maxLen > 512)
 		%width = 6;
-	else if(%maxLen > 256.1)
+	else if(%maxLen > 256)
 		%width = 5;
-	else if(%maxLen > 128.1)
+	else if(%maxLen > 128)
 		%width = 4;
-	else if(%maxLen > 64.1)
+	else if(%maxLen > 64)
 		%width = 3;
-	else if(%maxLen > 32.1)
+	else if(%maxLen > 32)
 		%width = 2;
-	else if(%maxLen > 4.1)
+	else if(%maxLen > 4)
 		%width = 1;
 	else
 		%width = 0.5;

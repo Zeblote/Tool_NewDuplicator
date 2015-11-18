@@ -18,14 +18,11 @@ function ND_PrefManager()
 	return %this;
 }
 
-//Detect pref service and register prefs
+//Detect pref service and register preferences
 function ND_PrefManager::registerPrefs(%this)
 {
-	//RTB is always executed first. If this is set, register prefs to RTB
 	if($RTB::Hooks::ServerControl)
 		%this.registerRTBPrefs();
-
-	//No known pref service detected. Set defaults
 	else
 		%this.setDefaultValues();
 }
@@ -42,6 +39,7 @@ function ND_PrefManager::registerRTBPrefs(%this)
 	RTB_registerPref("Max Cube Size (Admin)",       "New Duplicator | General",     "$ND::MaxCubeSizeAdmin",        "int 1 50000",      "Tool_NewDuplicator", 1024,    false, false, "");
 	RTB_registerPref("Max Cube Size (Player)",      "New Duplicator | General",     "$ND::MaxCubeSizePlayer",       "int 1 50000",      "Tool_NewDuplicator", 32,      false, false, "");
 	RTB_registerPref("Enable Menu Sounds",          "New Duplicator | General",     "$ND::PlayMenuSounds",          "bool",             "Tool_NewDuplicator", true,    false, false, "");
+	RTB_registerPref("Advertise New Duplicator",    "New Duplicator | General",     "$ND::Advertise",               "bool",             "Tool_NewDuplicator", true,    false, false, "");
 
 	//Colors
 	RTB_registerPref("Highlight Color Id",          "New Duplicator | Colors",      "$ND::BrickHighlightColor",     "int 0 63",         "Tool_NewDuplicator", 3,       false, false, "");
@@ -63,7 +61,7 @@ function ND_PrefManager::registerRTBPrefs(%this)
 	//Ghosting
 	RTB_registerPref("Scatter Ghost Bricks",        "New Duplicator | Ghosting",    "$ND::ScatterGhostBricks",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
 
-	RTB_registerPref("Max Ghost Bricks",            "New Duplicator | Ghosting",    "$ND::MaxGhostBricks",          "int 1 50000",      "Tool_NewDuplicator", 1000,    false, false, "");
+	RTB_registerPref("Max Ghost Bricks",            "New Duplicator | Ghosting",    "$ND::MaxGhostBricks",          "int 1 50000",      "Tool_NewDuplicator", 1500,    false, false, "");
 	RTB_registerPref("Instant Ghost Bricks",        "New Duplicator | Ghosting",    "$ND::InstantGhostBricks",      "int 1 50000",      "Tool_NewDuplicator", 150,     false, false, "");
 
 	RTB_registerPref("Instant Ghost Delay (ms)",    "New Duplicator | Ghosting",    "$ND::GhostBricksInitialDelay", "int 1 50000",      "Tool_NewDuplicator", 400,     false, false, "");
@@ -90,6 +88,7 @@ function ND_PrefManager::setDefaultValues(%this)
 	$ND::MaxCubeSizeAdmin        = 1024;
 	$ND::MaxCubeSizePlayer       = 32;
 	$ND::PlayMenuSounds          = true;
+	$ND::Advertise               = true;
 
 	//Colors
 	$ND::BrickHighlightColor     = 3;
@@ -111,7 +110,7 @@ function ND_PrefManager::setDefaultValues(%this)
 	//Ghosting
 	$ND::ScatterGhostBricks      = true;
 
-	$ND::MaxGhostBricks          = 1000;
+	$ND::MaxGhostBricks          = 1500;
 	$ND::InstantGhostBricks      = 150;
 
 	$ND::GhostBricksInitialDelay = 400;
@@ -137,6 +136,7 @@ function ND_PrefManager::dumpPrefs(%this, %client)
 	messageClient(%client, '', "\c6      Max Cube Size (Admin): \c3" @ $ND::MaxCubeSizeAdmin);
 	messageClient(%client, '', "\c6      Max Cube Size (Player): \c3" @ $ND::MaxCubeSizePlayer);
 	messageClient(%client, '', "\c6      Enable Menu Sounds: \c3" @ ($ND::PlayMenuSounds ? "Y" : "N"));
+	messageClient(%client, '', "\c6      Advertise New Duplicator: \c3" @ ($ND::Advertise ? "Y" : "N"));
 
 	messageClient(%client, '', "\c7Colors");
 	messageClient(%client, '', "\c6      Highlight Color: \c3" @ $ND::BrickHighlightColor);

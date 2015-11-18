@@ -1,26 +1,22 @@
 // * ######################################################################
 // *
 // *    New Duplicator - Classes - Server
-// *    NDDM_PlaceCopyProgress
+// *    NDDM_PlantCopyProgress
 // *
 // *    -------------------------------------------------------------------
-// *    Place copy progress dupli mode
+// *    Handles inputs for plant mode (in progress)
 // *
 // * ######################################################################
 
 //Create object to receive callbacks
-if(isObject(NDDM_PlaceCopyProgress))
-	NDDM_PlaceCopyProgress.delete();
-
 ND_ServerGroup.add(
-	new ScriptObject(NDDM_PlaceCopyProgress)
+	new ScriptObject(NDDM_PlantCopyProgress)
 	{
-		class = "ND_DupliMode";
-		num = $NDDM::PlaceCopyProgress;
+		class = "NewDuplicatorMode";
+		index = $NDDM::PlantCopyProgress;
 
-		allowedModes = $NDDM::PlaceCopy;
-
-		allowSwinging = false;
+		allowSelecting = false;
+		allowUnMount   = true;
 	}
 );
 
@@ -29,20 +25,11 @@ ND_ServerGroup.add(
 //Changing modes
 ///////////////////////////////////////////////////////////////////////////
 
-//Switch away from this mode
-function NDDM_PlaceCopyProgress::onChangeMode(%this, %client, %nextMode)
+//Kill this mode
+function NDDM_PlantCopyProgress::onKillMode(%this, %client)
 {
-	switch(%nextMode)
-	{
-		case $NDDM::Disabled:
-
-			//Destroy the selection
-			%client.ndSelection.delete();
-
-			//Remove highlight box
-			if(isObject(%client.ndHighlightBox))
-				%client.ndHighlightBox.delete();
-	}
+	//Destroy the selection
+	%client.ndSelection.delete();
 }
 
 
@@ -51,15 +38,12 @@ function NDDM_PlaceCopyProgress::onChangeMode(%this, %client, %nextMode)
 ///////////////////////////////////////////////////////////////////////////
 
 //Cancel Brick
-function NDDM_PlaceCopyProgress::onCancelBrick(%this, %client)
+function NDDM_PlantCopyProgress::onCancelBrick(%this, %client)
 {
-	//Cancel selecting
-	%client.ndSelection.cancelPlanting();
-
 	commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Planting canceled!", 4);
 
-	//Switch back to stack selection
-	%client.ndSetMode(NDDM_PlaceCopy);
+	%client.ndSelection.cancelPlanting();
+	%client.ndSetMode(NDDM_PlantCopy);
 }
 
 
@@ -68,12 +52,12 @@ function NDDM_PlaceCopyProgress::onCancelBrick(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Create bottomprint for client
-function NDDM_PlaceCopyProgress::getBottomPrint(%this, %client)
+function NDDM_PlantCopyProgress::getBottomPrint(%this, %client)
 {
 	%qIndex = %client.ndSelection.plantQueueIndex;
 	%qCount = %client.ndSelection.plantQueueCount;
 
-	%count = $NS[%client.ndSelection, "Count"];
+	%count = %client.ndSelection.brickCount;
 	%planted = %client.ndSelection.plantSuccessCount;
 
 	if(%qIndex == %qCount)

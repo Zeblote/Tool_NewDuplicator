@@ -4,79 +4,100 @@
 // *    Duplicator
 // *
 // *    -------------------------------------------------------------------
-// *    Functions for the duplicator
+// *    Handles general functions that don't fit in a specific class
 // *
 // * ######################################################################
+
+//Connecting, disconnecting, death
+///////////////////////////////////////////////////////////////////////////
 
 package NewDuplicator_Server
 {
 	//Set initial variables on join
 	function GameConnection::onClientEnterGame(%this)
 	{
-		%this.ndMode = NDDM_Disabled;
-		%this.ndModeNum = $NDDM::Disabled;
+		%this.ndPivot     = true;
+		%this.ndLimited   = true;
 		%this.ndDirection = true;
-		%this.ndLimited = true;
-		%this.ndPivot = true;
+
+		%this.ndMode           = NDDM_Disabled;
+		%this.ndModeIndex      = $NDDM::Disabled;
+		%this.ndLastSelectMode = NDDM_StackSelect;
 
 		parent::onClientEnterGame(%this);
 	}
 
-	//Reset dupli mode when a client dies
-	function GameConnection::onDeath(%this, %sourceObject, %sourceClient, %damageType, %damLoc)
-	{
-		if(%this.ndModeNum)
-			%this.ndSetMode(NDDM_Disabled);
-
-		parent::onDeath(%this, %sourceObject, %sourceClient, %damageType, %damLoc);
-	}
-
-	//Reset dupli mode before a client leaves (changing to disabled will clean up all data)
+	//Kill duplicator mode when a client leaves
 	function GameConnection::onClientLeaveGame(%this)
 	{
-		if(%this.ndModeNum)
-			%this.ndSetMode(NDDM_Disabled);
+		if(%this.ndModeIndex)
+			%this.ndKillMode(%this);
 
 		parent::onClientLeaveGame(%this);
 	}
+
+	//Kill duplicator mode when a player dies
+	function GameConnection::onDeath(%this, %a, %b, %c, %d)
+	{
+		if(%this.ndModeIndex)
+			%this.ndKillMode(%this);
+
+		%this.ndEquipped = false;
+
+		parent::onDeath(%this, %a, %b, %c, %d);
+	}
 };
+
+
+
+//Duplicator modes and bottomprints
+///////////////////////////////////////////////////////////////////////////
 
 //Change duplication mode
 function GameConnection::ndSetMode(%this, %newMode)
 {
 	%oldMode = %this.ndMode;
 
-	//echo("Change dupli mode for " @ %this.getPlayerName() @ " from " @ %oldMode.getName() @ " to " @ %newMode.getName());
-
-	//Can't change to same mode
-	if(%oldMode.getId() == %newMode.getId())
-	{
-		error("Already set to dupli mode " @ %newMode.getName() @ "!");
+	if(%oldMode.index == %newMode.index)
 		return;
-	}
 
-	//Only change to possible following modes
-	if((%oldMode.allowedModes & %newMode.num) == 0 && %newMode.num != $NDDM::Disabled)
-	{
-		error("Changing dupli mode from " @ %oldMode.getName() @ " to " @ %newMode.getName() @ " is not allowed!");
+	%this.ndMode      = %newMode;
+	%this.ndModeIndex = %newMode.index;
+
+	%oldMode.onChangeMode(%this, %newMode.index);
+	%newMode.onStartMode(%this, %oldMode.index);
+}
+
+//Kill duplication mode
+function GameConnection::ndKillMode(%this)
+{
+	if(!%this.ndModeIndex)
 		return;
-	}
 
-	//First end the current mode
-	%oldMode.onChangeMode(%this, %newMode.num);
+	%this.ndMode.onKillMode(%this);
 
-	%this.ndMode = %newMode;
-	%this.ndModeNum = %newMode.num;
+	%this.ndMode = NDDM_Disabled;
+	%this.ndModeIndex = $NDDM::Disabled;
 
-	//Then start the new mode
-	%newMode.onStartMode(%this, %oldMode.num);
+	%this.ndUpdateBottomPrint();
+}
+
+//Update the bottomprint
+function GameConnection::ndUpdateBottomPrint(%this)
+{
+	if(%this.ndModeIndex)
+		commandToClient(%this, 'bottomPrint', %this.ndMode.getBottomPrint(%this), 0, true);
+	else
+		commandToClient(%this, 'clearBottomPrint');
 }
 
 //Format bottomprint message with left and right justified text
-function ndFormatMessage(%title, %l0, %r0, %l1, %r1, %l2, %r2, %l3, %r3, %l4, %r4, %l5, %r5)
+function ndFormatMessage(%title, %l0, %r0, %l1, %r1, %l2, %r2)
 {
-	%lastAlign = false;
 	%message = "<font:Arial:22>";
+
+	//Last used alignment, false = left | true = right
+	%align = false;
 
 	if(strPos("\c0\c1\c2\c3\c4\c5\c6\c7\c8\c9", getSubStr(%title, 0, 1)) < 0)
 		%message = %message @ "\c6";
@@ -87,53 +108,58 @@ function ndFormatMessage(%title, %l0, %r0, %l1, %r1, %l2, %r2, %l3, %r3, %l4, %r
 	{
 		if(strLen(%l[%i]))
 		{
-			if(%lastAlign)
+			if(%align)
 				%message = %message @ "<just:left>";
 
 			if(strPos("\c0\c1\c2\c3\c4\c5\c6\c7\c8\c9", getSubStr(%l[%i], 0, 1)) < 0)
 				%message = %message @ "\c6";
 
 			%message = %message @ %l[%i];
-			%lastAlign = false;
+			%align = false;
 		}
 
 		if(strLen(%r[%i]))
 		{
-			if(!%lastAlign)
+			if(!%align)
 				%message = %message @ "<just:right>";
 
 			if(strPos("\c0\c1\c2\c3\c4\c5\c6\c7\c8\c9", getSubStr(%r[%i], 0, 1)) < 0)
 				%message = %message @ "\c6";
 
 			%message = %message @ %r[%i] @ " ";
-			%lastAlign = true;
+			%align = true;
 		}
 
 		%message = %message @ "\n";
 	}
 
-	%message = %message @ " ";
-	return %message;
+	return %message @ " ";
 }
 
-//Update the bottomprint
-function GameConnection::ndUpdateBottomPrint(%this)
-{
-	commandToClient(%this, 'bottomPrint', %this.ndMode.getBottomPrint(%this), 0, true);
-}
 
-//Commands and keybinds
+
+//Duplicator command
 ///////////////////////////////////////////////////////////////////////////
 
-//Equip a duplicator
-function GameConnection::ndHandleCommand(%this, %a)
+//Short commands to equip a duplicator
+function serverCmdDuplicator(%this, %cmd){%this.ndHandleCommand(%cmd);}
+function serverCmdDuplicato (%this, %cmd){%this.ndHandleCommand(%cmd);}
+function serverCmdDuplicat  (%this, %cmd){%this.ndHandleCommand(%cmd);}
+function serverCmdDuplica   (%this, %cmd){%this.ndHandleCommand(%cmd);}
+function serverCmdDuplic    (%this, %cmd){%this.ndHandleCommand(%cmd);}
+function serverCmdDupli     (%this, %cmd){%this.ndHandleCommand(%cmd);}
+function serverCmdDupl      (%this, %cmd){%this.ndHandleCommand(%cmd);}
+function serverCmdDup       (%this, %cmd){%this.ndHandleCommand(%cmd);}
+function serverCmdDu        (%this, %cmd){%this.ndHandleCommand(%cmd);}
+function serverCmdD         (%this, %cmd){%this.ndHandleCommand(%cmd);}
+
+//Equip a duplicator or show information
+function GameConnection::ndHandleCommand(%this, %cmd)
 {
-	switch$(%a)
+	switch$(%cmd)
 	{
 		case "version" or "v":
-
 			messageClient(%this, '', "\c6Blockland version: \c3r" @ getBuildNumber());
-
 			messageClient(%this, '', "\c6New Duplicator version: \c3" @ $ND::Version);
 
 			if(%this.ndClient)
@@ -142,12 +168,10 @@ function GameConnection::ndHandleCommand(%this, %a)
 				messageClient(%this, '', "\c6You don't have the New Duplicator installed");
 
 		case "prefs" or "p":
-
 			ND_PrefManager.dumpPrefs(%this);
 
 		default:
-
-			if(!isObject(%this.player))
+			if(!isObject(%player = %this.player))
 			{
 				messageClient(%this, '', "\c6You must be alive to use the duplicator!");
 				return;
@@ -159,34 +183,36 @@ function GameConnection::ndHandleCommand(%this, %a)
 				return;
 			}
 
-			//Give player a duplicator
-			%this.player.updateArm(ND_DupliImage);
-			%this.player.mountImage(ND_DupliImage, 0);
-
-			//Hide brick selector if possible
+			//Hide brick selector and tool gui
+			%this.ndLastEquipTime = $Sim::Time;
 			commandToClient(%this, 'setScrollMode', 3);
+
+			//Give player a duplicator
+			%player.updateArm(NewDuplicatorImage);
+			%player.mountImage(NewDuplicatorImage, 0);
 	}
 }
 
-//Commands to equip a duplicator
-function serverCmdDuplicator(%this, %a){%this.ndHandleCommand(%a);}
-function serverCmdDuplicato (%this, %a){%this.ndHandleCommand(%a);}
-function serverCmdDuplicat  (%this, %a){%this.ndHandleCommand(%a);}
-function serverCmdDuplica   (%this, %a){%this.ndHandleCommand(%a);}
-function serverCmdDuplic    (%this, %a){%this.ndHandleCommand(%a);}
-function serverCmdDupli     (%this, %a){%this.ndHandleCommand(%a);}
-function serverCmdDupl      (%this, %a){%this.ndHandleCommand(%a);}
-function serverCmdDup       (%this, %a){%this.ndHandleCommand(%a);}
-function serverCmdDu        (%this, %a){%this.ndHandleCommand(%a);}
-function serverCmdD         (%this, %a){%this.ndHandleCommand(%a);}
-
-//Existing keybinds used to control the duplicator
 package NewDuplicator_Server
 {
-	//Light key (default: L)
+	//Prevent accidently unequipping the duplicator
+	function serverCmdUnUseTool(%client)
+	{
+		if(%client.ndLastEquipTime + 1.5 > $Sim::Time)
+			return;
+
+		parent::serverCmdUnUseTool(%client);
+	}
+
+
+
+//Existing keybinds used to control the duplicator
+///////////////////////////////////////////////////////////////////////////
+
+	//Light key (default: R)
 	function serverCmdLight(%client)
 	{
-		if(%client.ndModeNum)
+		if(%client.ndModeIndex)
 			%client.ndMode.onLight(%client);
 		else
 			parent::serverCmdLight(%client);
@@ -195,7 +221,7 @@ package NewDuplicator_Server
 	//Next seat (default: .)
 	function serverCmdNextSeat(%client)
 	{
-		if(%client.ndModeNum)
+		if(%client.ndModeIndex)
 			%client.ndMode.onNextSeat(%client);
 		else
 			parent::serverCmdNextSeat(%client);
@@ -204,7 +230,7 @@ package NewDuplicator_Server
 	//Previous seat (default: ,)
 	function serverCmdPrevSeat(%client)
 	{
-		if(%client.ndModeNum)
+		if(%client.ndModeIndex)
 			%client.ndMode.onPrevSeat(%client);
 		else
 			parent::serverCmdPrevSeat(%client);
@@ -213,7 +239,7 @@ package NewDuplicator_Server
 	//Shifting the ghost brick (default: numpad 2468/13/5+)
 	function serverCmdShiftBrick(%client, %x, %y, %z)
 	{
-		if(%client.ndModeNum)
+		if(%client.ndModeIndex)
 			%client.ndMode.onShiftBrick(%client, %x, %y, %z);
 		else
 			parent::serverCmdShiftBrick(%client, %x, %y, %z);
@@ -222,7 +248,7 @@ package NewDuplicator_Server
 	//Super-shifting the ghost brick (default: alt numpad 2468/5+)
 	function serverCmdSuperShiftBrick(%client, %x, %y, %z)
 	{
-		if(%client.ndModeNum)
+		if(%client.ndModeIndex)
 			%client.ndMode.onSuperShiftBrick(%client, %x, %y, %z);
 		else
 			parent::serverCmdSuperShiftBrick(%client, %x, %y, %z);
@@ -231,7 +257,7 @@ package NewDuplicator_Server
 	//Rotating the ghost brick (default: numpad 79)
 	function serverCmdRotateBrick(%client, %direction)
 	{
-		if(%client.ndModeNum)
+		if(%client.ndModeIndex)
 			%client.ndMode.onRotateBrick(%client, %direction);
 		else
 			parent::serverCmdRotateBrick(%client, %direction);
@@ -240,7 +266,7 @@ package NewDuplicator_Server
 	//Planting the ghost brick (default: numpad enter)
 	function serverCmdPlantBrick(%client)
 	{
-		if(%client.ndModeNum)
+		if(%client.ndModeIndex)
 			%client.ndMode.onPlantBrick(%client);
 		else
 			parent::serverCmdPlantBrick(%client);
@@ -249,13 +275,13 @@ package NewDuplicator_Server
 	//Removing the ghost brick (default: numpad 0)
 	function serverCmdCancelBrick(%client)
 	{
-		if(%client.ndModeNum)
+		if(%client.ndModeIndex)
 			%client.ndMode.onCancelBrick(%client);
 		else
 			parent::serverCmdCancelBrick(%client);
 	}
 
-	//Undo bricks
+	//Undo bricks (default: ctrl z)
 	function serverCmdUndoBrick(%client)
 	{
 		if(%client.ndUndoInProgress)
@@ -287,7 +313,10 @@ package NewDuplicator_Server
 	}
 };
 
-//This should go somewhere else later
+
+
+//Undo bricks
+///////////////////////////////////////////////////////////////////////////
 
 //Tick undo bricks
 function GameConnection::ndUndoTick(%this, %group, %count)
@@ -311,7 +340,7 @@ function GameConnection::ndUndoTick(%this, %group, %count)
 	}
 
 	//If undo is taking long, tell the client how far we get
-	if(%this.ndLastMessageTime + 0.2 < $Sim::Time)
+	if(%this.ndLastMessageTime + 0.1 < $Sim::Time)
 	{
 		commandToClient(%this, 'centerPrint', "<font:Verdana:20>\c6Undo in progress...\n<font:Verdana:17>\c3" @ %end @ "\c6 remaining.", 1);
 		%this.ndLastMessageTime = $Sim::Time;
@@ -325,6 +354,11 @@ function GameConnection::ndUndoTick(%this, %group, %count)
 	else
 		%this.schedule($ND::PlantBricksTickDelay, ndUndoTick, %group, %end);
 }
+
+
+
+//General support functions
+///////////////////////////////////////////////////////////////////////////
 
 //Rotate vector around +Z in 90 degree steps
 function ndRotateVector(%vector, %steps)

@@ -1,28 +1,22 @@
 // * ######################################################################
 // *
 // *    New Duplicator - Classes - Server
-// *    NDDM_PlaceCopy
+// *    NDDM_PlantCopy
 // *
 // *    -------------------------------------------------------------------
-// *    Place copy dupli mode
+// *    Handles inputs for plant mode
 // *
 // * ######################################################################
 
 //Create object to receive callbacks
-if(isObject(NDDM_PlaceCopy))
-	NDDM_PlaceCopy.delete();
-
 ND_ServerGroup.add(
-	new ScriptObject(NDDM_PlaceCopy)
+	new ScriptObject(NDDM_PlantCopy)
 	{
-		class = "ND_DupliMode";
-		num = $NDDM::PlaceCopy;
+		class = "NewDuplicatorMode";
+		index = $NDDM::PlantCopy;
 
-		allowedModes = $NDDM::StackSelect
-			| $NDDM::CubeSelect
-			| $NDDM::PlaceCopyProgress;
-
-		allowSwinging = true;
+		allowSelecting = true;
+		allowUnMount   = true;
 	}
 );
 
@@ -32,53 +26,26 @@ ND_ServerGroup.add(
 ///////////////////////////////////////////////////////////////////////////
 
 //Switch to this mode
-function NDDM_PlaceCopy::onStartMode(%this, %client, %lastMode)
+function NDDM_PlantCopy::onStartMode(%this, %client, %lastMode)
 {
-	if(%lastMode != $NDDM::PlaceCopyProgress)
-	{
-		%client.ndSelection.spawnGhostBricks($NS[%client.ndSelection, "RootPos"], 0);
-
-		//Create blue highlight box around ghost selection
-		if(!isObject(%client.ndHighlightBox))
-			%client.ndHighlightBox = ND_HighlightBox();
-
-		%client.ndHighlightBox.resize(%client.ndSelection.getGhostWorldBox());
-		%client.ndHighlightBox.borderColor = "0.2 0.2 1 1";
-		%client.ndHighlightBox.recolor();
-	}
+	if(%lastMode != $NDDM::PlantCopyProgress)
+		%client.ndSelection.spawnGhostBricks(%client.ndSelection.rootPosition, 0);
 
 	%client.ndUpdateBottomPrint();
 }
 
 //Switch away from this mode
-function NDDM_PlaceCopy::onChangeMode(%this, %client, %nextMode)
+function NDDM_PlantCopy::onChangeMode(%this, %client, %nextMode)
 {	
-	switch(%nextMode)
-	{
-		case $NDDM::Disabled:
+	if(%nextMode != $NDDM::PlantCopyProgress)
+		%client.ndSelection.deleteData();
+}
 
-			//Delete highlight box
-			%client.ndHighlightBox.delete();
-
-			//Delete the selection
-			%client.ndSelection.delete();
-
-		case $NDDM::StackSelect:
-
-			//Delete highlight box
-			%client.ndHighlightBox.delete();
-
-			//Remove ghost bricks
-			%client.ndSelection.clearGhostBricks();
-
-		case $NDDM::CubeSelect:
-
-			//Delete highlight box
-			%client.ndHighlightBox.delete();
-
-			//Remove ghost bricks
-			%client.ndSelection.clearGhostBricks();
-	}
+//Kill this mode
+function NDDM_PlantCopy::onKillMode(%this, %client)
+{
+	//Destroy the selection
+	%client.ndSelection.delete();
 }
 
 
@@ -87,7 +54,7 @@ function NDDM_PlaceCopy::onChangeMode(%this, %client, %nextMode)
 ///////////////////////////////////////////////////////////////////////////
 
 //Selecting an object with the duplicator
-function NDDM_PlaceCopy::onSelectObject(%this, %client, %obj, %pos, %normal)
+function NDDM_PlantCopy::onSelectObject(%this, %client, %obj, %pos, %normal)
 {
 	//Get half size of world box for offset
 	if(%client.ndPivot)
@@ -130,7 +97,6 @@ function NDDM_PlaceCopy::onSelectObject(%this, %client, %obj, %pos, %normal)
 		%pos = vectorSub(%pos, ndRotateVector(%client.ndSelection.rootToCenter, %client.ndSelection.ghostAngleID));
 
 	%client.ndSelection.shiftGhostBricks(%pos);
-	%client.ndHighlightBox.resize(%client.ndSelection.getGhostWorldBox());
 }
 
 
@@ -139,44 +105,38 @@ function NDDM_PlaceCopy::onSelectObject(%this, %client, %obj, %pos, %normal)
 ///////////////////////////////////////////////////////////////////////////
 
 //Prev Seat
-function NDDM_PlaceCopy::onPrevSeat(%this, %client)
+function NDDM_PlantCopy::onPrevSeat(%this, %client)
 {
 	%client.ndPivot = !%client.ndPivot;
 	%client.ndUpdateBottomPrint();
 
 	if($ND::PlayMenuSounds)
-	{
-		if(%client.ndPivot)
-			%client.play2d(lightOnSound);
-		else
-			%client.play2d(lightOffSound);
-	}
+		%client.play2d(%client.ndPivot ? lightOnSound : lightOffSound);
 }
 
 //Shift Brick
-function NDDM_PlaceCopy::onShiftBrick(%this, %client, %x, %y, %z)
+function NDDM_PlantCopy::onShiftBrick(%this, %client, %x, %y, %z)
 {
 	switch(getAngleIDFromPlayer(%client.player))
 	{
-		case 0: %newX = %x; %newY = %y;
-		case 1: %newX = -%y; %newY = %x;
+		case 0: %newX =  %x; %newY =  %y;
+		case 1: %newX = -%y; %newY =  %x;
 		case 2: %newX = -%x; %newY = -%y;
-		case 3: %newX = %y; %newY = -%x;
+		case 3: %newX =  %y; %newY = -%x;
 	}
 
 	%client.ndSelection.shiftGhostBricks(%newX / 2 SPC %newY / 2 SPC %z / 5);
-	%client.ndHighlightBox.resize(%client.ndSelection.getGhostWorldBox());
 }
 
 //Super Shift Brick
-function NDDM_PlaceCopy::onSuperShiftBrick(%this, %client, %x, %y, %z)
+function NDDM_PlantCopy::onSuperShiftBrick(%this, %client, %x, %y, %z)
 {
 	switch(getAngleIDFromPlayer(%client.player))
 	{
-		case 0: %newX = %x; %newY = %y;
-		case 1: %newX = -%y; %newY = %x;
+		case 0: %newX =  %x; %newY =  %y;
+		case 1: %newX = -%y; %newY =  %x;
 		case 2: %newX = -%x; %newY = -%y;
-		case 3: %newX = %y; %newY = -%x;
+		case 3: %newX =  %y; %newY = -%x;
 	}
 
 	if(%client.ndPivot)
@@ -189,11 +149,10 @@ function NDDM_PlaceCopy::onSuperShiftBrick(%this, %client, %x, %y, %z)
 	%z    *= (getWord(%box, 5) - getWord(%box, 2));
 
 	%client.ndSelection.shiftGhostBricks(%newX SPC %newY SPC %z);
-	%client.ndHighlightBox.resize(%client.ndSelection.getGhostWorldBox());
 }
 
 //Rotate Brick
-function NDDM_PlaceCopy::onRotateBrick(%this, %client, %direction)
+function NDDM_PlantCopy::onRotateBrick(%this, %client, %direction)
 {
 	if(%direction > 0)
 		%client.player.playThread("3", "rotCW");
@@ -201,23 +160,25 @@ function NDDM_PlaceCopy::onRotateBrick(%this, %client, %direction)
 		%client.player.playThread("3", "rotCCW");
 
 	%client.ndSelection.rotateGhostBricks(%direction, %client.ndPivot);
-	%client.ndHighlightBox.resize(%client.ndSelection.getGhostWorldBox());
 }
 
 //Plant Brick
-function NDDM_PlaceCopy::onPlantBrick(%this, %client)
+function NDDM_PlantCopy::onPlantBrick(%this, %client)
 {
 	%pos = %client.ndSelection.ghostPosition;
 	%ang = %client.ndSelection.ghostAngleID;
 
-	%client.ndSetMode(NDDM_PlaceCopyProgress);
+	%client.ndSetMode(NDDM_PlantCopyProgress);
 	%client.ndSelection.startPlant(%pos, %ang);
 }
 
 //Cancel Brick
-function NDDM_PlaceCopy::onCancelBrick(%this, %client)
+function NDDM_PlantCopy::onCancelBrick(%this, %client)
 {
-	%client.ndSetMode(%client.ndLastSelectMode);
+	if(%client.ndEquipped)
+		%client.ndSetMode(%client.ndLastSelectMode);
+	else
+		%client.ndKillMode();
 }
 
 
@@ -226,9 +187,9 @@ function NDDM_PlaceCopy::onCancelBrick(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Create bottomprint for client
-function NDDM_PlaceCopy::getBottomPrint(%this, %client)
+function NDDM_PlantCopy::getBottomPrint(%this, %client)
 {
-	%count = $NS[%client.ndSelection, "Count"];
+	%count = %client.ndSelection.brickCount;
 
 	%size = vectorSub(%client.ndSelection.maxSize, %client.ndSelection.minSize);
 
@@ -237,17 +198,17 @@ function NDDM_PlaceCopy::getBottomPrint(%this, %client)
 	%z = mFloor(getWord(%size, 2) * 5);
 
 	if(%count == 1)
-		%title = "Place Mode (\c31\c6 Brick)";
+		%title = "Plant Mode (\c31\c6 Brick)";
 	else if(%count <= $ND::MaxGhostBricks)
-		%title = "Place Mode (\c3" @ %count @ "\c6 Bricks)";
+		%title = "Plant Mode (\c3" @ %count @ "\c6 Bricks)";
 	else
-		%title = "Place Mode (\c3" @ %count @ "\c6 Bricks, \c3" @ mFloor($ND::MaxGhostBricks * 100 / %count) @ "%\c6 Ghosted)";
+		%title = "Plant Mode (\c3" @ %count @ "\c6 Bricks, \c3" @ mFloor($ND::MaxGhostBricks * 100 / %count) @ "%\c6 Ghosted)";
 
 	%l0 = "Pivot: \c3" @ (%client.ndPivot ? "Whole Selection" : "Start Brick") @ "\c6 [Prev Seat]";
 	%l1 = "Size: \c3" @ %x @ "\c6 x \c3" @ %y @ "\c6 x \c3" @ %z @ "\c6 Plates";
 
 	%r0 = "Use normal ghost brick controls";
-	%r1 = "[Cancel Brick] to exit place mode";
+	%r1 = "[Cancel Brick] to exit plant mode";
 
 	return ndFormatMessage(%title, %l0, %r0, %l1, %r1);
 }

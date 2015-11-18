@@ -1,39 +1,39 @@
 // * ######################################################################
 // *
 // *    New Duplicator - Client
-// *    Repeat rotating bricks
+// *    Controls
 // *
 // *    -------------------------------------------------------------------
-// *    Automatically repeat rotating bricks, just like moving bricks
+// *    Repeats rotating bricks if key is held down for some time
 // *
 // * ######################################################################
 
 package NewDuplicator_Client
 {
-	//Catch rotating bricks right
-	function RotateBrickCW(%val)
+	//Start/Stop rotating brick right
+	function RotateBrickCW(%pressed)
 	{
-		if(%val)
+		if(%pressed)
 			$RepeatRotateCW = schedule($BrickFirstRepeatTime, 0, "RepeatBrickCW");
 		else
 			cancel($RepeatRotateCW);
 
-		parent::RotateBrickCW(%val);
+		parent::RotateBrickCW(%pressed);
 	}
 
-	//Catch rotating bricks left
-	function RotateBrickCCW(%val)
+	//Start/Stop rotating brick left
+	function RotateBrickCCW(%pressed)
 	{
-		if(%val)
+		if(%pressed)
 			$RepeatRotateCCW = schedule($BrickFirstRepeatTime, 0, "RepeatBrickCCW");
 		else
 			cancel($RepeatRotateCCW);
 
-		parent::RotateBrickCCW(%val);
+		parent::RotateBrickCCW(%pressed);
 	}
 };
 
-//Repeat rotating right
+//Repeat rotating brick right
 function RepeatBrickCW()
 {
 	commandToServer('rotateBrick', 1);
@@ -45,7 +45,7 @@ function RepeatBrickCW()
 	$RepeatRotateCW = schedule($BrickRepeatTime, 0, "RepeatBrickCW");
 }
 
-//Repeat rotating left
+//Repeat rotating brick left
 function RepeatBrickCCW()
 {
 	commandToServer('rotateBrick', -1);

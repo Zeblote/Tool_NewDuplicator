@@ -4,23 +4,19 @@
 // *    NDDM_CubeSelectProgress
 // *
 // *    -------------------------------------------------------------------
-// *    Cube select progress dupli mode
+// *    Handles inputs for stack selection mode (in progress)
 // *
 // * ######################################################################
 
 //Create object to receive callbacks
-if(isObject(NDDM_CubeSelectProgress))
-	NDDM_CubeSelectProgress.delete();
-
 ND_ServerGroup.add(
 	new ScriptObject(NDDM_CubeSelectProgress)
 	{
-		class = "ND_DupliMode";
-		num = $NDDM::CubeSelectProgress;
+		class = "NewDuplicatorMode";
+		index = $NDDM::CubeSelectProgress;
 
-		allowedModes = $NDDM::CubeSelect;
-
-		allowSwinging = false;
+		allowSelecting = false;
+		allowUnMount   = false;
 	}
 );
 
@@ -29,23 +25,14 @@ ND_ServerGroup.add(
 //Changing modes
 ///////////////////////////////////////////////////////////////////////////
 
-//Switch away from this mode
-function NDDM_CubeSelectProgress::onChangeMode(%this, %client, %nextMode)
+//Kill this mode
+function NDDM_CubeSelectProgress::onKillMode(%this, %client)
 {
-	switch(%nextMode)
-	{
-		case $NDDM::Disabled:
+	//Destroy the selection
+	%client.ndSelection.delete();
 
-			//Destroy the selection
-			%client.ndSelection.delete();
-
-			//Start de-highlighting the bricks
-			%client.ndHighlightSet.deHighlight();
-
-			//Remove selection box
-			if(isObject(%client.ndSelectionBox))
-				%client.ndSelectionBox.delete();
-	}
+	//Remove selection box
+	%client.ndSelectionBox.delete();
 }
 
 
@@ -56,12 +43,9 @@ function NDDM_CubeSelectProgress::onChangeMode(%this, %client, %nextMode)
 //Cancel Brick
 function NDDM_CubeSelectProgress::onCancelBrick(%this, %client)
 {
-	//Cancel selecting
-	%client.ndSelection.cancelCubeSelection();
-
 	commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection canceled!", 4);
-
-	//Switch back to stack selection
+	
+	%client.ndSelection.cancelCubeSelection();
 	%client.ndSetMode(NDDM_CubeSelect);
 }
 
@@ -73,10 +57,10 @@ function NDDM_CubeSelectProgress::onCancelBrick(%this, %client)
 //Create bottomprint for client
 function NDDM_CubeSelectProgress::getBottomPrint(%this, %client)
 {
-	%pCount = $NS[%client.ndSelection, "Count"];
-	%qCount = $NS[%client.ndSelection, "QueueCount"];
+	%qCount = %client.ndSelection.queueCount;
+	%bCount = %client.ndSelection.brickCount;
 
-	if(%pCount <= 0)
+	if(%bCount <= 0)
 	{
 		%curr = %client.ndSelection.currChunk + 1;
 		%num = %client.ndSelection.numChunks;
@@ -84,7 +68,7 @@ function NDDM_CubeSelectProgress::getBottomPrint(%this, %client)
 		%title = "Searching... (Chunk \c3" @ %curr @ "\c6 of \c3" @ %num @ "\c6, \c3" @ %qCount @ "\c6 Bricks)";
 	}
 	else
-		%title = "Processing... (\c3" @ %pCount @ "\c6 / \c3" @ %qCount @ "\c6 Bricks)";
+		%title = "Processing... (\c3" @ %bCount @ "\c6 / \c3" @ %qCount @ "\c6 Bricks)";
 
 	%l0 = "[Cancel Brick]: Cancel selection";
 

@@ -4,7 +4,7 @@
 // *    ND_Selection
 // *
 // *    -------------------------------------------------------------------
-// *    Select, store and plant bricks
+// *    Selects, ghosts and plants bricks
 // *
 // * ######################################################################
 
@@ -25,21 +25,28 @@ function ND_Selection(%client)
 }
 
 //Delete all the selection variables, allowing re-use of object
-function ND_Selection::clearData(%this)
+function ND_Selection::deleteData(%this)
 {
-	//If count isn't at least 1, assume variables were never set
-	if($NS[%this, "QueueCount"] < 1 && $NS[%this, "Count"] < 1)
+	//If count isn't at least 1, assume there is no data
+	if(%this.queueCount < 1 && %this.brickCount < 1)
 		return;
+
+	%this.rootPosition = "0 0 0";
+	%this.queueCount = 0;
+	%this.brickCount = 0;
 
 	//Variables follow the pattern $NS[object]_[type]_[...], allowing a single iteration to remove all
 	deleteVariables("$NS" @ %this @ "_*");
+
+	%this.deHighlight();
+	%this.deleteHighlightBox();
+	%this.deleteGhostBricks();
 }
 
 //Remove data when selection is deleted
 function ND_Selection::onRemove(%this)
 {	
-	%this.clearData();
-	%this.clearGhostBricks();
+	%this.deleteData();
 
 	if(isEventPending(%this.plantSchedule))
 		%this.cancelPlanting();
@@ -51,29 +58,33 @@ function ND_Selection::onRemove(%this)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //Begin stack selection
-function ND_Selection::startStackSelection(%this, %brick, %direction, %limited, %highlightSet)
-{	
-	//Set root position
-	$NS[%this, "RootPos"] = %brick.getPosition();
+function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
+{
+	//Create a highlight set
+	if(isObject(%this.highlightSet))
+		%this.highlightSet.deHighlight();
+
+	%highlightSet = ND_HighlightSet();
+
+	//Root position is position of the first selected brick
+	%this.rootPosition = %brick.getPosition();
 
 	//Process first brick
+	%queueCount = 1;
+	%brickCount = 1;
+
 	$NS[%this, "BR", 0] = %brick;
 	$NS[%this, "ID", %brick] = 0;
 
 	%this.recordBrickData(0);
 	%highlightSet.addBrick(%brick);
 
-	$NS[%this, "QueueCount"] = 1;
-	$NS[%this, "Count"] = 1;
-
-	%this.highlightSet = %highlightSet;
-
+	//Add bricks connected to the first brick to queue
 	if(%direction == 1)
 	{
 		//Set lower height limit
 		%heightLimit = $NS[%this, "MinZ"] - 0.01;
 
-		//Add all up bricks to queue
 		%upCount = %brick.getNumUpBricks();
 
 		for(%i = 0; %i < %upCount; %i++)
@@ -84,7 +95,13 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited, 
 			%nId = $NS[%this, "ID", %nextBrick];
 
 			if(%nId $= "")
-				%nId = %this.queueBrick(%nextBrick);
+			{
+				$NS[%this, "BR", %queueCount] = %nextBrick;
+				$NS[%this, "ID", %nextBrick] = %queueCount;
+				%nId = %queueCount;
+
+				%queueCount++;
+			}
 
 			$NS[%this, "UpId", 0, %i] = %nId;
 		}
@@ -98,7 +115,6 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited, 
 		//Set upper height limit
 		%heightLimit = $NS[%this, "MaxZ"] + 0.01;
 
-		//Add all down bricks to queue
 		%downCount = %brick.getNumDownBricks();
 
 		for(%i = 0; %i < %downCount; %i++)
@@ -109,7 +125,13 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited, 
 			%nId = $NS[%this, "ID", %nextBrick];
 
 			if(%nId $= "")
-				%nId = %this.queueBrick(%nextBrick);
+			{
+				$NS[%this, "BR", %queueCount] = %nextBrick;
+				$NS[%this, "ID", %nextBrick] = %queueCount;
+				%nId = %queueCount;
+				
+				%queueCount++;
+			}
 
 			$NS[%this, "DownId", 0, %i] = %nId;
 		}
@@ -119,27 +141,41 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited, 
 		$NS[%this, "DownCnt", 0] = %downCount;
 	}
 
+	%this.highlightSet = %highlightSet;
+	%this.queueCount = %queueCount;
+	%this.brickCount = %brickCount;
+
 	messageClient(%this.client, 'MsgUploadStart', "");
 
 	//First selection tick
-	return %this.tickStackSelection(%direction, %limited, %heightLimit, %highlightSet);
+	if(%queueCount > %brickCount)
+		%this.tickStackSelection(%direction, %limited, %heightLimit);
+	else
+		%this.finishStackSelection();
 }
 
 //Tick stack selection
-function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLimit, %highlightSet)
+function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLimit)
 {
-	//Continue processing where we left off last tick
 	cancel(%this.stackSelectSchedule);
-	%i = $NS[%this, "Count"];
+
+	%highlightSet = %this.highlightSet;
+	%queueCount = %this.queueCount;
+
+	//Continue processing where we left off last tick
+	%start = %this.brickCount;
+	%end = %start + $ND::StackSelectPerTick;
 	
-	//Process exactly 200 bricks
-	for(%p = 0; %p < $ND::StackSelectPerTick; %p++)
+	for(%i = %start; %i < %end; %i++)
 	{
 		//If no more bricks are queued, we're done!
-		if(%i >= $NS[%this, "QueueCount"])
+		if(%i >= %queueCount)
 		{
+			%this.queueCount = %queueCount;
+			%this.brickCount = %i;
+
 			%this.finishStackSelection();
-			return true;
+			return;
 		}
 
 		//Record data for next brick in queue
@@ -148,19 +184,19 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 		if(!%brick)
 		{
 			messageClient(%this.client, 'MsgError', "\c0Error: Queued brick does not exist anymore. Do not modify the build during selection!");
-			%this.cancelStackSelection();
 
+			%this.cancelStackSelection();
 			%this.client.ndSetMode(NDDM_StackSelect);
+			return;
 		}
 
-		//Highlight brick
 		ND_HighlightSet::addBrick(%highlightSet, %brick);
 
 		//Queue all up bricks
-		%upCount = %brick.getNumUpBricks();
+		%upCnt = %brick.getNumUpBricks();
 		%realUpCnt = 0;
 
-		for(%j = 0; %j < %upCount; %j++)
+		for(%j = 0; %j < %upCnt; %j++)
 		{
 			%nextBrick = %brick.getUpBrick(%j);
 
@@ -168,30 +204,28 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 			if(%limited && %direction == 0 && getWord(%nextBrick.getWorldBox(), 5) > %heightLimit)
 				continue;
 
-			//If the brick is not in the selection yet, add it to the queue to give it an id
-			%nextIndex = $NS[%this, "ID", %nextBrick];
+			//If the brick is not in the selection yet, add it to the queue to give it an i
+			%nId = $NS[%this, "ID", %nextBrick];
 
-			if(%nextIndex $= "")
+			if(%nId $= "")
 			{
-				//Copy of ND_Selection::queueBrick
-				%nextIndex = $NS[%this, "QueueCount"];
-				$NS[%this, "QueueCount"]++;
-
-				$NS[%this, "BR", %nextIndex] = %nextBrick;
-				$NS[%this, "ID", %nextBrick] = %nextIndex;
+				$NS[%this, "BR", %queueCount] = %nextBrick;
+				$NS[%this, "ID", %nextBrick] = %queueCount;
+				%nId = %queueCount;				
+				%queueCount++;
 			}
 
-			$NS[%this, "UpId", %i, %realUpCnt] = %nextIndex;
+			$NS[%this, "UpId", %i, %realUpCnt] = %nId;
 			%realUpCnt++;
 		}
 
 		$NS[%this, "UpCnt", %i] = %realUpCnt;
 
 		//Queue all down bricks
-		%downCount = %brick.getNumDownBricks();
+		%downCnt = %brick.getNumDownBricks();
 		%realDownCnt = 0;
 
-		for(%j = 0; %j < %downCount; %j++)
+		for(%j = 0; %j < %downCnt; %j++)
 		{
 			%nextBrick = %brick.getDownBrick(%j);
 
@@ -200,62 +234,48 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 				continue;
 
 			//If the brick is not in the selection yet, add it to the queue to give it an id
-			%nextIndex = $NS[%this, "ID", %nextBrick];
+			%nId = $NS[%this, "ID", %nextBrick];
 
-			if(%nextIndex $= "")
+			if(%nId $= "")
 			{
-				//Copy of ND_Selection::queueBrick
-				%nextIndex = $NS[%this, "QueueCount"];
-				$NS[%this, "QueueCount"]++;
-
-				$NS[%this, "BR", %nextIndex] = %nextBrick;
-				$NS[%this, "ID", %nextBrick] = %nextIndex;
+				$NS[%this, "BR", %queueCount] = %nextBrick;
+				$NS[%this, "ID", %nextBrick] = %queueCount;
+				%nId = %queueCount;				
+				%queueCount++;
 			}
 
-			$NS[%this, "DownId", %i, %realDownCnt] = %nextIndex;
+			$NS[%this, "DownId", %i, %realDownCnt] = %nId;
 			%realDownCnt++;
 		}
 
 		$NS[%this, "DownCnt", %i] = %realDownCnt;
-
-		//Save how far we got
-		$NS[%this, "Count"]++;
-
-		%i++;
 	}
 
+	%this.queueCount = %queueCount;
+	%this.brickCount = %i;
+
 	//Tell the client how much we selected this tick
-	if(%this.client.ndLastMessageTime + 0.2 < $Sim::Time)
+	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
 	{
 		%this.client.ndUpdateBottomPrint();
 		%this.client.ndLastMessageTime = $Sim::Time;
 	}
 
 	//Schedule next tick
-	%this.stackSelectSchedule = %this.schedule($ND::StackSelectTickDelay, tickStackSelection, %direction, %limited, %heightLimit, %highlightSet);
-
-	return false;
+	%this.stackSelectSchedule = %this.schedule($ND::StackSelectTickDelay, tickStackSelection, %direction, %limited, %heightLimit);
 }
 
 //Finish stack selection
 function ND_Selection::finishStackSelection(%this)
 {
 	%this.updateSize();
+	%this.updateHighlightBox();
 
 	//De-highlight the bricks after a few seconds
 	%this.highlightSet.deHighlightDelayed($ND::HighlightTime);
 
-	//Create box to show total size of selection
-	if(!isObject(%this.client.ndHighlightBox))
-		%this.client.ndHighlightBox = ND_HighlightBox();
-
-	%min = vectorAdd(%this.minSize, $NS[%this, "RootPos"]);
-	%max = vectorAdd(%this.maxSize, $NS[%this, "RootPos"]);
-
-	%this.client.ndHighlightBox.resize(%min, %max);
-
 	messageClient(%this.client, 'MsgUploadEnd', "");
-	commandToClient(%this.client, 'centerPrint', "<font:Verdana:20>\c6Selected \c3" @ $NS[%this, "Count"] @ "\c6 Bricks!", 4);
+	commandToClient(%this.client, 'centerPrint', "<font:Verdana:20>\c6Selected \c3" @ %this.brickCount @ "\c6 Bricks!", 4);
 
 	%this.client.ndSetMode(NDDM_StackSelect);
 }
@@ -264,15 +284,7 @@ function ND_Selection::finishStackSelection(%this)
 function ND_Selection::cancelStackSelection(%this)
 {
 	cancel(%this.stackSelectSchedule);
-
-	//Start de-highlighting the bricks
-	%this.highlightSet.deHighlight();
-
-	//Remove highlight box
-	if(isObject(%this.client.ndHighlightBox))
-		%this.client.ndHighlightBox.delete();
-
-	%this.clearData();
+	%this.deleteData();
 }
 
 
@@ -281,10 +293,13 @@ function ND_Selection::cancelStackSelection(%this)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //Begin cube selection
-function ND_Selection::startCubeSelection(%this, %box, %limited, %highlightSet)
+function ND_Selection::startCubeSelection(%this, %box, %limited)
 {
-	%this.limited = %limited;
-	%this.highlightSet = %highlightSet;
+	//Create a highlight set
+	if(isObject(%this.highlightSet))
+		%this.highlightSet.deHighlight();
+
+	%highlightSet = ND_HighlightSet();
 
 	//Save the chunk sizes
 	%this.chunkX1 = getWord(%box, 0);
@@ -301,13 +316,14 @@ function ND_Selection::startCubeSelection(%this, %box, %limited, %highlightSet)
 	%this.numChunksZ = mCeil((%this.chunkZ2 - %this.chunkZ1) / %this.chunkSize);
 	%this.numChunks = %this.numChunksX * %this.numChunksY * %this.numChunksZ;
 
-	$NS[%this, "Count"] = 0;
-	$NS[%this, "QueueCount"] = 0;
-
-	%this.currChunk = 0;
 	%this.currChunkX = 0;
 	%this.currChunkY = 0;
 	%this.currChunkZ = 0;
+	%this.currChunk = 0;
+
+	%this.highlightSet = %highlightSet;
+	%this.queueCount = 0;
+	%this.brickCount = 0;
 
 	//Process first tick
 	messageClient(%this.client, 'MsgUploadStart', "");
@@ -361,7 +377,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited)
 	//Queue all new bricks found in this chunk
 	initContainerBoxSearch(%pos, %size, $TypeMasks::FxBrickAlwaysObjectType);
 
-	%i = $NS[%this, "QueueCount"];
+	%i = %this.queueCount;
 	%_id = %this @ "_ID"; //Maximum optimization for loop
 	%_br = %this @ "_BR";
 
@@ -399,10 +415,10 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited)
 		}
 	}
 
-	$NS[%this, "QueueCount"] = %i;
+	%this.queueCount = %i;
 	
 	//Tell the client which chunk we just processed
-	if(%this.client.ndLastMessageTime + 0.2 < $Sim::Time)
+	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
 	{
 		%this.client.ndUpdateBottomPrint();
 		%this.client.ndLastMessageTime = $Sim::Time;
@@ -410,32 +426,29 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited)
 
 	//Set next chunk index or finish
 	%this.currChunk++;
-	%this.currChunkZ++;
 
-	if(%this.currChunkZ >= %this.numChunksZ)
+	if(%this.currChunkZ++ >= %this.numChunksZ)
 	{
 		%this.currChunkZ = 0;
-		%this.currChunkY++;
 
-		if(%this.currChunkY >= %this.numChunksY)
+		if(%this.currChunkY++ >= %this.numChunksY)
 		{
 			%this.currChunkY = 0;
-			%this.currChunkX++;
 
-			if(%this.currChunkX >= %this.numChunksX)
+			if(%this.currChunkX++ >= %this.numChunksX)
 			{
 				//All chunks have been searched, now process connections
-				if($NS[%this, QueueCount] > 0)
+				if(%this.queueCount > 0)
 				{
-					$NS[%this, "RootPos"] = $NS[%this, "BR", 0].getPosition();
+					%this.rootPosition = $NS[%this, "BR", 0].getPosition();
 					%this.cubeSelectSchedule = %this.schedule($ND::CubeSelectTickDelay, tickCubeSelectionProcess);
 				}
 				else
 				{
 					messageClient(%this.client, 'MsgError', "");
 					commandToClient(%this.client, 'centerPrint', "<font:Verdana:20>\c6No bricks were found inside the selection!", 4);
-					%this.cancelCubeSelection();
 
+					%this.cancelCubeSelection();
 					%this.client.ndSetMode(NDDM_CubeSelect);
 				}
 
@@ -455,11 +468,11 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 	%highlightSet = %this.highlightSet;
 
 	//Get bounds for this tick
-	%start = $NS[%this, "Count"];
+	%start = %this.brickCount;
 	%end = %start + $ND::CubeSelectPerTick;
 
-	if(%end > $NS[%this, "QueueCount"])
-		%end = $NS[%this, "QueueCount"];
+	if(%end > %this.queueCount)
+		%end = %this.queueCount;
 
 	//Save connections for bricks in the list
 	for(%i = %start; %i < %end; %i++)
@@ -470,12 +483,12 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 		if(!%brick)
 		{
 			messageClient(%this.client, 'MsgError', "\c0Error: Queued brick does not exist anymore. Do not modify the build during selection!");
-			%this.cancelCubeSelection();
 
+			%this.cancelCubeSelection();
 			%this.client.ndSetMode(NDDM_CubeSelect);
+			return;
 		}
 
-		//Highlight brick
 		ND_HighlightSet::addBrick(%highlightSet, %brick);
 
 		//Save all up bricks
@@ -487,9 +500,9 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 			%conn = %brick.getUpBrick(%j);
 
 			//If the brick is in the selection, save the connection
-			if((%cIndex = $NS[%this, "ID", %conn]) !$= "")
+			if((%nId = $NS[%this, "ID", %conn]) !$= "")
 			{
-				$NS[%this, "UpId", %i, %realUpCnt] = %cIndex;
+				$NS[%this, "UpId", %i, %realUpCnt] = %nId;
 				%realUpCnt++;
 			}
 		}
@@ -505,9 +518,9 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 			%conn = %brick.getDownBrick(%j);
 
 			//If the brick is in the selection, save the connection
-			if((%cIndex = $NS[%this, "ID", %conn]) !$= "")
+			if((%nId = $NS[%this, "ID", %conn]) !$= "")
 			{
-				$NS[%this, "DownId", %i, %realDownCnt] = %cIndex;
+				$NS[%this, "DownId", %i, %realDownCnt] = %nId;
 				%realDownCnt++;
 			}
 		}
@@ -516,20 +529,18 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 	}
 
 	//Save how far we got
-	$NS[%this, "Count"] = %i;
+	%this.brickCount = %i;
 
 	//Tell the client how much we selected this tick
-	if(%this.client.ndLastMessageTime + 0.2 < $Sim::Time)
+	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
 	{
 		%this.client.ndUpdateBottomPrint();
 		%this.client.ndLastMessageTime = $Sim::Time;
 	}
 
-	if(%i >= $NS[%this, "QueueCount"])
-		//We're done!
+	if(%i >= %this.queueCount)
 		%this.finishCubeSelection();
 	else
-		//Schedule next tick
 		%this.cubeSelectSchedule = %this.schedule($ND::CubeSelectTickDelay, tickCubeSelectionProcess);
 }
 
@@ -537,21 +548,13 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 function ND_Selection::finishCubeSelection(%this)
 {
 	%this.updateSize();
+	%this.updateHighlightBox();
 
 	//De-highlight the bricks after a few seconds
 	%this.highlightSet.deHighlightDelayed($ND::HighlightTime);
 
-	//Create box to show total size of selection
-	if(!isObject(%this.client.ndHighlightBox))
-		%this.client.ndHighlightBox = ND_HighlightBox();
-
-	%min = vectorAdd(%this.minSize, $NS[%this, "RootPos"]);
-	%max = vectorAdd(%this.maxSize, $NS[%this, "RootPos"]);
-
-	%this.client.ndHighlightBox.resize(%min, %max);
-
 	messageClient(%this.client, 'MsgUploadEnd', "");
-	commandToClient(%this.client, 'centerPrint', "<font:Verdana:20>\c6Selected \c3" @ $NS[%this, "Count"] @ "\c6 Bricks!\n<font:Verdana:17>\c6Press [Plant Brick] again to copy.", 5);
+	commandToClient(%this.client, 'centerPrint', "<font:Verdana:20>\c6Selected \c3" @ %this.brickCount @ "\c6 Bricks!\n<font:Verdana:17>\c6Press [Plant Brick] again to copy.", 5);
 
 	%this.client.ndSelectionChanged = false;
 	%this.client.ndSetMode(NDDM_CubeSelect);
@@ -561,31 +564,13 @@ function ND_Selection::finishCubeSelection(%this)
 function ND_Selection::cancelCubeSelection(%this)
 {
 	cancel(%this.cubeSelectSchedule);
-
-	//Start de-highlighting the bricks
-	%this.highlightSet.deHighlight();
-
-	%this.clearData();
+	%this.deleteData();
 }
 
 
 
 //Recording Brick Data
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//Record a brick
-function ND_Selection::queueBrick(%this, %brick)
-{
-	%i = $NS[%this, "QueueCount"];
-	$NS[%this, "QueueCount"]++;
-
-	$NS[%this, "BR", %i] = %brick;
-
-	//Reverse ID lookup (brick id -> selection index)
-	$NS[%this, "ID", %brick] = %i;
-
-	return %i;
-}
 
 //Record info about a queued brick
 function ND_Selection::recordBrickData(%this, %i)
@@ -602,10 +587,10 @@ function ND_Selection::recordBrickData(%this, %i)
 	$NS[%this, "Data", %i] = %datablock;
 
 	//Offset from base brick
-	$NS[%this, "Pos", %i] = vectorSub(%brick.getPosition(), $NS[%this, "RootPos"]);
+	$NS[%this, "Pos", %i] = vectorSub(%brick.getPosition(), %this.rootPosition);
 
 	//Rotation
-	$NS[%this, "Rot", %i] = %brick.getAngleID();
+	$NS[%this, "Rot", %i] = %brick.angleID;
 
 	//Colors
 	if(%brick.ndHighlightSet)
@@ -626,38 +611,38 @@ function ND_Selection::recordBrickData(%this, %i)
 	///////////////////////////////////////////////////////////
 	//Optional variables only required for few bricks
 
-	if(%brick.shapeFxID)
-		$NS[%this, "ShapeFx", %i] = %brick.shapeFxID;
+	if(%tmp = %brick.shapeFxID)
+		$NS[%this, "ShapeFx", %i] = %tmp;
 
 	//Wrench settings
-	if(%brick.getName() !$= "")
-		$NS[%this, "Name", %i] = getSubStr(%brick.getName(), 1, 999);
+	if((%tmp = %brick.getName()) !$= "")
+		$NS[%this, "Name", %i] = getSubStr(%tmp, 1, 999);
 
-	if(%brick.light)
-		$NS[%this, "Light", %i] = %brick.light.getDatablock();
+	if(%tmp = %brick.light)
+		$NS[%this, "Light", %i] = %tmp.getDatablock();
 
-	if(%brick.emitter)
+	if(%tmp = %brick.emitter)
 	{
-		$NS[%this, "Emitter", %i] = %brick.emitter.getEmitterDatablock();
+		$NS[%this, "Emitter", %i] = %tmp.getEmitterDatablock();
 		$NS[%this, "EmitDir", %i] = %brick.emitterDirection;
 	}
 
-	if(%brick.item)
+	if(%tmp = %brick.item)
 	{
-		$NS[%this, "Item", %i] = %brick.item.getDatablock();
+		$NS[%this, "Item", %i] = %tmp.getDatablock();
 		$NS[%this, "ItemPos", %i] = %brick.itemPosition;
 		$NS[%this, "ItemDir", %i] = %brick.itemDirection;
 		$NS[%this, "ItemTime", %i] = %brick.itemRespawnTime;
 	}
 
-	if(%brick.vehicleDataBlock)
+	if(%tmp = %brick.vehicleDataBlock)
 	{
-		$NS[%this, "Vehicle", %i] = %brick.vehicleDataBlock;
+		$NS[%this, "Vehicle", %i] = %tmp;
 		$NS[%this, "VehColor", %i] = %brick.reColorVehicle;
 	}
 
-	if(%brick.AudioEmitter)
-		$NS[%this, "Music", %i] = %brick.AudioEmitter.profile.getID();
+	if(%tmp = %brick.AudioEmitter)
+		$NS[%this, "Music", %i] = %tmp.profile.getID();
 
 	if(!%brick.isRaycasting())
 		$NS[%this, "NoRay", %i] = true;
@@ -746,17 +731,52 @@ function ND_Selection::recordBrickData(%this, %i)
 	return %brick;
 }
 
+
+
+//Highlighting bricks
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 //Set the size variables after selecting bricks
 function ND_Selection::updateSize(%this)
 {
-	%this.minSize = vectorSub($NS[%this, "MinX"] SPC $NS[%this, "MinY"] SPC $NS[%this, "MinZ"], $NS[%this, "RootPos"]);
-	%this.maxSize = vectorSub($NS[%this, "MaxX"] SPC $NS[%this, "MaxY"] SPC $NS[%this, "MaxZ"], $NS[%this, "RootPos"]);
+	%this.minSize = vectorSub($NS[%this, "MinX"] SPC $NS[%this, "MinY"] SPC $NS[%this, "MinZ"], %this.rootPosition);
+	%this.maxSize = vectorSub($NS[%this, "MaxX"] SPC $NS[%this, "MaxY"] SPC $NS[%this, "MaxZ"], %this.rootPosition);
 
 	%this.brickSizeX = mFloor(($NS[%this, "MaxX"] - $NS[%this, "MinX"]) * 2);
 	%this.brickSizeY = mFloor(($NS[%this, "MaxY"] - $NS[%this, "MinY"]) * 2);
 	%this.brickSizeZ = mFloor(($NS[%this, "MaxZ"] - $NS[%this, "MinZ"]) * 5);
 
 	%this.rootToCenter = vectorAdd(%this.minSize, vectorScale(vectorSub(%this.maxSize, %this.minSize), 0.5));
+}
+
+//Create or update the highlight box
+function ND_Selection::updateHighlightBox(%this)
+{
+	if(!isObject(%this.highlightBox))
+		%this.highlightBox = ND_HighlightBox();
+
+	if(!isObject(%this.ghostGroup))
+	{
+		%min = vectorAdd(%this.rootPosition, %this.minSize);
+		%max = vectorAdd(%this.rootPosition, %this.maxSize);
+		%this.highlightBox.resize(%min, %max);
+	}
+	else
+		%this.highlightBox.resize(%this.getGhostWorldBox());
+}
+
+//Remove the highlight box
+function ND_Selection::deleteHighlightBox(%this)
+{
+	if(isObject(%this.highlightBox))
+		%this.highlightBox.delete();
+}
+
+//Start clearing the highlight set
+function ND_Selection::deHighlight(%this)
+{
+	if(isObject(%this.highlightSet))
+		%this.highlightSet.deHighlight();
 }
 
 
@@ -767,15 +787,8 @@ function ND_Selection::updateSize(%this)
 //Spawn ghost bricks at a specific location
 function ND_Selection::spawnGhostBricks(%this, %position, %angleID)
 {	
-	if(isObject(%this.ghostGroup))
-		return;
-
-	//Keep this inside allowed range
-	%angleID = %angleID % 4;
-	%this.ghostAngleID = %angleID;
-
-	//Create simGroup to hold the ghost bricks
-	%this.ghostGroup = new ScriptGroup(ND_GhostGroup);
+	//Create group to hold the ghost bricks
+	%this.ghostGroup = ND_GhostGroup();
 
 	//Scoping is broken for ghost bricks, make temp list of spawned clients to use later
 	%numClients = 0;
@@ -792,7 +805,7 @@ function ND_Selection::spawnGhostBricks(%this, %position, %angleID)
 	}
 
 	//Figure out correct increment to spawn no more than the max number of ghost bricks
-	%max = $NS[%this, "Count"];
+	%max = %this.brickCount;
 	%increment = 1;
 
 	if(%max > $ND::MaxGhostBricks)
@@ -808,7 +821,7 @@ function ND_Selection::spawnGhostBricks(%this, %position, %angleID)
 	//Spawn ghost bricks
 	for(%f = 0; %f < %max; %f += %increment)
 	{
-		%i = %f | 0;
+		%i = mFloor(%f);
 
 		//Offset position
 		%bPos = vectorAdd(ndRotateVector($NS[%this, "Pos", %i], %angleID), %position);
@@ -851,15 +864,18 @@ function ND_Selection::spawnGhostBricks(%this, %position, %angleID)
 
 	//Update variables
 	%this.ghostPosition = %position;
+	%this.ghostAngleID = %angleID;
+
+	//Change highlightbox to blue
+	%this.highlightBox.color = "0.2 0.2 1 1";
+	%this.highlightBox.applyColors();
+	%this.updateHighlightBox();
 }
 
 //Move ghost bricks to an offset position
 function ND_Selection::shiftGhostBricks(%this, %offset)
 {
-	if(!isObject(%this.ghostGroup))
-		return;
-
-	//Fix to grid
+	//Fit to grid
 	%x = mFloatLength(getWord(%offset, 0) * 2, 0) / 2;
 	%y = mFloatLength(getWord(%offset, 1) * 2, 0) / 2;
 	%z = mFloatLength(getWord(%offset, 2) * 5, 0) / 5;
@@ -891,14 +907,15 @@ function ND_Selection::shiftGhostBricks(%this, %offset)
 
 	//Update variables
 	%this.ghostPosition = %this.ghostGroup.getObject(0).getPosition();
+
+	%this.highlightBox.color = "0.2 0.2 1 1";
+	%this.highlightBox.applyColors();
+	%this.updateHighlightBox();
 }
 
 //Rotate ghost bricks left/right
 function ND_Selection::rotateGhostBricks(%this, %direction, %useSelectionCenter)
 {
-	if(!isObject(%this.ghostGroup))
-		return;
-
 	cancel(%this.ghostMoveSchedule);
 	%max = %this.ghostGroup.getCount();
 
@@ -940,6 +957,8 @@ function ND_Selection::rotateGhostBricks(%this, %direction, %useSelectionCenter)
 			%shiftCorrect = "0.25 0.25 0";
 	}
 
+	%this.ghostAngleID = (%this.ghostAngleID + %direction) % 4;
+
 	//Get vector from pivot to root brick
 	%pOffset = vectorSub(%rootBrick.getPosition(), %pivot);
 
@@ -948,8 +967,6 @@ function ND_Selection::rotateGhostBricks(%this, %direction, %useSelectionCenter)
 
 	//Add shift correction
 	%pOffset = vectorAdd(%pOffset, %shiftCorrect);
-
-	%this.ghostAngleID = (%this.ghostAngleID + %direction) % 4;
 
 	//Get angleID for root brick
 	%bAngle = ($NS[%this, "Rot", 0] + %this.ghostAngleID) % 4;
@@ -996,14 +1013,15 @@ function ND_Selection::rotateGhostBricks(%this, %direction, %useSelectionCenter)
 
 	//Update variables
 	%this.ghostPosition = %rootPos;
+
+	%this.highlightBox.color = "0.2 0.2 1 1";
+	%this.highlightBox.applyColors();
+	%this.updateHighlightBox();
 }
 
 //Update some of the ghost bricks to the latest position/rotation
 function ND_Selection::updateGhostBricks(%this, %start)
 {
-	if(!isObject(%this.ghostGroup))
-		return;
-
 	cancel(%this.ghostMoveSchedule);
 	%max = %this.ghostGroup.getCount();
 
@@ -1044,7 +1062,7 @@ function ND_Selection::updateGhostBricks(%this, %start)
 }
 
 //Delete ghost bricks
-function ND_Selection::clearGhostBricks(%this)
+function ND_Selection::deleteGhostBricks(%this)
 {	
 	if(!isObject(%this.ghostGroup))
 		return;
@@ -1096,9 +1114,6 @@ function ND_Selection::getGhostWorldBox(%this)
 //Start planting bricks!
 function ND_Selection::startPlant(%this, %position, %angleID)
 {
-	if(!isObject(%this.ghostGroup))
-		return false;
-
 	%this.plantSearchIndex = 0;
 	%this.plantQueueIndex = 0;
 	%this.plantQueueCount = 0;
@@ -1121,8 +1136,13 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 	%start = %this.plantSearchIndex;
 	%end = %start + %remainingPlants;
 
-	if(%end > $NS[%this, "Count"])
-		%end = $NS[%this, "Count"];
+	if(%end > %this.brickCount)
+		%end = %this.brickCount;
+
+	%group = %this.client.brickGroup;
+	%bl_id = %this.client.bl_id;
+
+	%qCount = %this.plantQueueCount;
 
 	for(%i = %start; %i < %end; %i++)
 	{
@@ -1131,7 +1151,7 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 			continue;
 
 		//Attempt to place brick
-		%brick = ND_Selection::plantBrick(%this, %i, %position, %angleID, %this.client.brickGroup, %this.client.bl_id);
+		%brick = ND_Selection::plantBrick(%this, %i, %position, %angleID, %group, %bl_id);
 
 		if(%brick > 0)
 		{
@@ -1140,7 +1160,6 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 			%this.undoGroup.add(%brick);
 
 			$NP[%this, %i] = true;
-			%pt = %this.plantQueueCount;
 
 			%upCnt = $NS[%this, "UpCnt", %i];
 			for(%j = 0; %j < %upCnt; %j++)
@@ -1149,9 +1168,9 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 
 				if(!$NP[%this, %id])
 				{
-					$NS[%this, "PlantQueue", %pt] = %id;
+					$NS[%this, "PQueue", %qCount] = %id;
 					$NP[%this, %id] = true;
-					%pt++;
+					%qCount++;
 				}
 			}
 
@@ -1162,44 +1181,44 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 
 				if(!$NP[%this, %id])
 				{
-					$NS[%this, "PlantQueue", %pt] = %id;
+					$NS[%this, "PQueue", %qCount] = %id;
 					$NP[%this, %id] = true;
-					%pt++;
+					%qCount++;
 				}
-			}
-			
-			%this.plantQueueCount = %pt;
+			}			
 
 			//If we added bricks to plant queue, switch to second loop
 			if(%upCnt || %downCnt)
 			{
 				%this.plantSearchIndex = %i + 1;
+				%this.plantQueueCount = %qCount;
 				%this.tickPlantTree(%end - %i, %position, %angleID);
 				return;
 			}
 		}
 		else if(%brick == -1)
 		{
-			%this.plantBlockedFailCount++;
 			$NP[%this, %i] = true;
+			%this.plantBlockedFailCount++;
 		}
 		else if(%brick == -2)
 		{
-			%this.plantTrustFailCount++;
 			$NP[%this, %i] = true;
+			%this.plantTrustFailCount++;
 		}
 	}
 
 	%this.plantSearchIndex = %i;
+	%this.plantQueueCount = %qCount;
 
 	//Tell the client how far we got
-	if(%this.client.ndLastMessageTime + 0.2 < $Sim::Time)
+	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
 	{
 		%this.client.ndUpdateBottomPrint();
 		%this.client.ndLastMessageTime = $Sim::Time;
 	}
 
-	if(%end < $NS[%this, "Count"] && %this.plantSuccessCount < $NS[%this, "Count"])
+	if(%end < %this.brickCount && %this.plantSuccessCount < %this.brickCount)
 		%this.plantSchedule = %this.schedule($ND::PlantBricksTickDelay, tickPlantSearch, $ND::PlantBricksPerTick, %position, %angleID);
 	else
 		%this.finishPlant();
@@ -1211,20 +1230,26 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 	%start = %this.plantQueueIndex;
 	%end = %start + %remainingPlants;
 
+	%group = %this.client.brickGroup;
+	%bl_id = %this.client.bl_id;
+
+	%qCount = %this.plantQueueCount;
+
 	for(%i = %start; %i < %end; %i++)
 	{
 		//The queue is empty! Switch back to plant search.
-		if(%i >= %this.plantQueueCount)
+		if(%i >= %qCount)
 		{
+			%this.plantQueueCount = %qCount;
 			%this.plantQueueIndex = %i;
 			%this.tickPlantSearch(%end - %i, %position, %angleID);
 			return;
 		}
 
 		//Attempt to plant queued brick
-		%bId = $NS[%this, "PlantQueue", %i];
+		%bId = $NS[%this, "PQueue", %i];
 
-		%brick = ND_Selection::plantBrick(%this, %bId, %position, %angleID, %this.client.brickGroup, %this.client.bl_id);
+		%brick = ND_Selection::plantBrick(%this, %bId, %position, %angleID, %group, %bl_id);
 
 		if(%brick > 0)
 		{
@@ -1233,7 +1258,6 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 			%this.undoGroup.add(%brick);
 
 			$NP[%this, %bId] = true;
-			%pt = %this.plantQueueCount;
 
 			%upCnt = $NS[%this, "UpCnt", %bId];
 			for(%j = 0; %j < %upCnt; %j++)
@@ -1242,9 +1266,9 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 
 				if(!$NP[%this, %id])
 				{
-					$NS[%this, "PlantQueue", %pt] = %id;
+					$NS[%this, "PQueue", %qCount] = %id;
 					$NP[%this, %id] = true;
-					%pt++;
+					%qCount++;
 				}
 			}
 
@@ -1255,13 +1279,11 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 
 				if(!$NP[%this, %id])
 				{
-					$NS[%this, "PlantQueue", %pt] = %id;
+					$NS[%this, "PQueue", %qCount] = %id;
 					$NP[%this, %id] = true;
-					%pt++;
+					%qCount++;
 				}
 			}
-
-			%this.plantQueueCount = %pt;
 		}
 		else if(%brick == -1)
 		{
@@ -1276,13 +1298,15 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 	}
 
 	//Tell the client how far we got
-	if(%this.client.ndLastMessageTime + 0.2 < $Sim::Time)
+	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
 	{
 		%this.client.ndUpdateBottomPrint();
 		%this.client.ndLastMessageTime = $Sim::Time;
 	}
 
+	%this.plantQueueCount = %qCount;
 	%this.plantQueueIndex = %i;
+	
 	%this.plantSchedule = %this.schedule($ND::PlantBricksTickDelay, tickPlantTree, $ND::PlantBricksPerTick, %position, %angleID);
 }
 
@@ -1433,6 +1457,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	if(%numEvents = $NS[%this, "EvNum", %i])
 	{
 		%brick.numEvents = %numEvents;
+		%brick.implicitCancelEvents = 0;
 
 		for(%j = 0; %j < %numEvents; %j++)
 		{
@@ -1476,7 +1501,7 @@ function ND_Selection::finishPlant(%this)
 {
 	messageClient(%this.client, 'MsgProcessComplete', "");
 
-	%count = $NS[%this, "Count"];
+	%count = %this.brickCount;
 	%planted = %this.plantSuccessCount;
 	%blocked = %this.plantBlockedFailCount;
 	%trusted = %this.plantTrustFailCount;
@@ -1484,35 +1509,35 @@ function ND_Selection::finishPlant(%this)
 
 	%message = "<font:Verdana:20>\c6Planted \c3" @ %this.plantSuccessCount @ "\c6 / \c3" @ %count @ "\c6 Bricks!";
 
-	if(%blocked)
-		%message = %message @ "\n<font:Verdana:17>\c3" @ %blocked @ "\c6 overlapped other bricks or shapes.";
-
 	if(%trusted)
-		%message = %message @ "\n<font:Verdana:17>\c3" @ %trusted @ "\c6 did not have sufficient trust. :(";
+		%message = %message @ "\n<font:Verdana:17>\c3" @ %trusted @ "\c6 missing trust.";
+
+	if(%blocked)
+		%message = %message @ "\n<font:Verdana:17>\c3" @ %blocked @ "\c6 blocked.";
 
 	if(%floating)
-		%message = %message @ "\n<font:Verdana:17>\c3" @ %floating @ "\c6 could not be planted in mid air.";
+		%message = %message @ "\n<font:Verdana:17>\c3" @ %floating @ "\c6 floating.";
 
 
 	commandToClient(%this.client, 'centerPrint', %message, 4);
 
-	deleteVariables("$NP" @ %this @ "*");
+	deleteVariables("$NP" @ %this @ "_*");
 
-	if(%this.undoGroup.getCount())
+	if(%planted)
 		%this.client.undoStack.push(%this.undoGroup TAB "DUPLICATE");
 	else
 		%this.undoGroup.delete();
 
-	%this.client.ndSetMode(NDDM_PlaceCopy);
+	%this.client.ndSetMode(NDDM_PlantCopy);
 }
 
 //Cancel planting bricks
 function ND_Selection::cancelPlanting(%this)
 {
 	cancel(%this.plantSchedule);
-	deleteVariables("$NP" @ %this @ "*");
+	deleteVariables("$NP" @ %this @ "_*");
 
-	if(%this.undoGroup.getCount())
+	if(%this.plantSuccessCount)
 		%this.client.undoStack.push(%this.undoGroup TAB "DUPLICATE");
 	else
 		%this.undoGroup.delete();

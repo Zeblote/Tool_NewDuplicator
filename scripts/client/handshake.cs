@@ -4,9 +4,13 @@
 // *    Handshake
 // *
 // *    -------------------------------------------------------------------
-// *    Perform a handshake with the server-sided mod on joining a servers
+// *    Responds to handshake request sent from server side
 // *
 // * ######################################################################
+
+//Assume server doesn't have the new duplicator
+$ND::ServerVersion = "0.0.0";
+$ND::ServerHasND = false;
 
 //Receive handshake from server
 function clientCmdNdHandshake(%this, %serverVersion)
@@ -19,11 +23,12 @@ function clientCmdNdHandshake(%this, %serverVersion)
 
 package NewDuplicator_Client
 {
+	//Reset server version on leaving server
 	function disconnectedCleanup()
 	{
-		parent::disconnectedCleanup();
-
 		$ND::ServerVersion = "0.0.0";
 		$ND::ServerHasND = false;
+		
+		parent::disconnectedCleanup();
 	}
 };
