@@ -371,3 +371,20 @@ function ndRotateVector(%vector, %steps)
 		case 3: return -getWord(%vector, 1) SPC  getWord(%vector, 0) SPC getWord(%vector, 2);
 	}
 }
+
+//Cancel active dups (admin command)
+function serverCmdClearDups(%client)
+{
+	if(!%client.isAdmin)
+		return;
+
+	messageAll('MsgClearBricks', "\c3" @ %client.getPlayerName() @ "\c6 cleared all dups.");
+
+	for(%i = 0; %i < ClientGroup.getCount(); %i++)
+	{
+		%cl = ClientGroup.getObject(%i);
+
+		if(%cl.ndModeIndex)
+			%cl.ndKillMode();
+	}
+}
