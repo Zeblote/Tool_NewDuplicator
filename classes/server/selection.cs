@@ -158,7 +158,8 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 	%this.queueCount = %queueCount;
 	%this.brickCount = %brickCount;
 
-	messageClient(%this.client, 'MsgUploadStart', "");
+	if($ND::PlayMenuSounds)
+		messageClient(%this.client, 'MsgUploadStart', "");
 
 	//First selection tick
 	if(%queueCount > %brickCount)
@@ -304,7 +305,8 @@ function ND_Selection::finishStackSelection(%this)
 	//De-highlight the bricks after a few seconds
 	%this.highlightSet.deHighlightDelayed($ND::HighlightTime);
 
-	messageClient(%this.client, 'MsgUploadEnd', "");
+	if($ND::PlayMenuSounds)
+		messageClient(%this.client, 'MsgUploadEnd', "");
 
 	%msg = "<font:Verdana:20>\c6Selected \c3" @ %this.brickCount @ "\c6 Bricks!";
 
@@ -369,7 +371,9 @@ function ND_Selection::startCubeSelection(%this, %box, %limited)
 		%brickLimit = $ND::MaxBricksPlayer;
 
 	//Process first tick
-	messageClient(%this.client, 'MsgUploadStart', "");
+	if($ND::PlayMenuSounds)
+		messageClient(%this.client, 'MsgUploadStart', "");
+
 	%this.tickCubeSelectionChunk(%limited, %brickLimit);
 }
 
@@ -612,7 +616,8 @@ function ND_Selection::finishCubeSelection(%this)
 	//De-highlight the bricks after a few seconds
 	%this.highlightSet.deHighlightDelayed($ND::HighlightTime);
 
-	messageClient(%this.client, 'MsgUploadEnd', "");
+	if($ND::PlayMenuSounds)
+		messageClient(%this.client, 'MsgUploadEnd', "");
 
 	%msg = "<font:Verdana:20>\c6Selected \c3" @ %this.brickCount @ "\c6 Bricks!";
 
@@ -1185,7 +1190,8 @@ function ND_Selection::startPlant(%this, %position, %angleID)
 	%this.undoGroup = new SimSet();
 	ND_ServerGroup.add(%this.undoGroup);
 
-	messageClient(%this.client, 'MsgUploadStart', "");
+	if($ND::PlayMenuSounds)
+		messageClient(%this.client, 'MsgUploadStart', "");
 
 	%this.tickPlantSearch($ND::PlantBricksPerTick, %position, %angleID);
 }
@@ -1599,7 +1605,8 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 //Finished planting all the bricks!
 function ND_Selection::finishPlant(%this)
 {
-	messageClient(%this.client, 'MsgProcessComplete', "");
+	if($ND::PlayMenuSounds)
+		messageClient(%this.client, 'MsgProcessComplete', "");
 
 	%count = %this.brickCount;
 	%planted = %this.plantSuccessCount;
