@@ -1399,6 +1399,13 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	else
 		%brick.stackBL_ID = %bl_id;
 
+	//Hole bots... I guess it works
+	if(%datablock.isBotHole)
+	{
+		%brick.isBotHole = true;
+		%brick.onHoleSpawnPlanted();
+	}
+
 	//Apply wrench settings
 	if($NS[%this, "NoRender", %i])
 		%brick.setRendering(false);
@@ -1478,13 +1485,6 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 			%brick.eventOutputParameter[%j, 3] = $NS[%this, "EvPar3", %i, %j];
 			%brick.eventOutputParameter[%j, 4] = $NS[%this, "EvPar4", %i, %j];
 		}
-	}
-
-	//Hole bots... I guess it works
-	if(%datablock.isBotHole)
-	{
-		%brick.isBotHole = true;
-		%brick.onHoleSpawnPlanted();
 	}
 
 	return %brick;
