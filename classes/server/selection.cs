@@ -748,10 +748,10 @@ function ND_Selection::recordBrickData(%this, %i)
 			$NS[%this, "EvTarget", %i, %j] = %brick.eventTarget[%j];
 			$NS[%this, "EvTargetIdx", %i, %j] = %target;
 
-			$NS[%this, "EvPar1", %i, %j] = %brick.eventOutputParameter[%j, 1];
-			$NS[%this, "EvPar2", %i, %j] = %brick.eventOutputParameter[%j, 2];
-			$NS[%this, "EvPar3", %i, %j] = %brick.eventOutputParameter[%j, 3];
-			$NS[%this, "EvPar4", %i, %j] = %brick.eventOutputParameter[%j, 4];
+			$NS[%this, "EvPar", %i, %j, 0] = %brick.eventOutputParameter[%j, 1];
+			$NS[%this, "EvPar", %i, %j, 1] = %brick.eventOutputParameter[%j, 2];
+			$NS[%this, "EvPar", %i, %j, 2] = %brick.eventOutputParameter[%j, 3];
+			$NS[%this, "EvPar", %i, %j, 3] = %brick.eventOutputParameter[%j, 4];
 		}
 	}
 
@@ -1532,24 +1532,64 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 			%brick.eventDelay[%j] = $NS[%this, "EvDelay", %i, %j];
 			%brick.eventAppendClient[%j] = $NS[%this, "EvClient", %i, %j];
 
+			%inputIdx = $NS[%this, "EvInputIdx", %i, %j];
+
 			%brick.eventInput[%j] = $NS[%this, "EvInput", %i, %j];
-			%brick.eventInputIdx[%j] = $NS[%this, "EvInputIdx", %i, %j];
+			%brick.eventInputIdx[%j] = %inputIdx;
 
-			%brick.eventOutput[%j] = $NS[%this, "EvOutput", %i, %j];
-			%brick.eventOutputIdx[%j] = $NS[%this, "EvOutputIdx", %i, %j];
+			%output = $NS[%this, "EvOutput", %i, %j];
+			%outputIdx = $NS[%this, "EvOutputIdx", %i, %j];
 
-			%target = $NS[%this, "EvTargetIdx", %i, %j];
+			//Rotate fireRelay events
+			switch$(%output)
+			{
+				case "fireRelayNorth": %dir = 0;
+				case "fireRelayEast":  %dir = 1;
+				case "fireRelaySouth": %dir = 2;
+				case "fireRelayWest":  %dir = 3;
+				default: %dir = -1;
+			}
 
-			if(%target == -1)
+			if(%dir >= 0)
+			{
+				%rotated = (%dir + %angleID) % 4;
+				%outputIdx += %rotated - %dir;
+
+				switch(%rotated)
+				{
+					case 0: %output = "fireRelayNorth";
+					case 1: %output = "fireRelayEast";
+					case 2: %output = "fireRelaySouth";
+					case 3: %output = "fireRelayWest";
+				}
+			}
+
+			%brick.eventOutput[%j] = %output;
+			%brick.eventOutputIdx[%j] = %outputIdx;
+
+			%target = $NS[%this, "EvTarget", %i, %j];
+			%targetIdx = $NS[%this, "EvTargetIdx", %i, %j];
+
+			if(%targetIdx == -1)
 				%brick.eventNT[%j] = $NS[%this, "EvNT", %i, %j];
 			
-			%brick.eventTarget[%j] = $NS[%this, "EvTarget", %i, %j];
-			%brick.eventTargetIdx[%j] = %target;
+			%brick.eventTarget[%j] = %target;
+			%brick.eventTargetIdx[%j] = %targetIdx;
 
-			%brick.eventOutputParameter[%j, 1] = $NS[%this, "EvPar1", %i, %j];
-			%brick.eventOutputParameter[%j, 2] = $NS[%this, "EvPar2", %i, %j];
-			%brick.eventOutputParameter[%j, 3] = $NS[%this, "EvPar3", %i, %j];
-			%brick.eventOutputParameter[%j, 4] = $NS[%this, "EvPar4", %i, %j];
+			//Why does this need to be so complicated?
+			%targetClass = getWord($InputEvent_TargetListfxDtsBrick_[%inputIdx], %targetIdx * 2 + 1);
+			%paramList = $OutputEvent_ParameterList[%targetClass, %outputIdx];
+			%paramCount = getFieldCount(%paramList);
+
+			for(%k = 0; %k < %paramCount; %k++)
+			{
+				%param = $NS[%this, "EvPar", %i, %j, %k];
+
+				if(getWord(getField(%paramList, %k), 0) $= "vector")
+					%param = ndRotateVector(%param, %angleID);
+
+				%brick.eventOutputParameter[%j, %k + 1] = %param;
+			}
 		}
 	}
 
