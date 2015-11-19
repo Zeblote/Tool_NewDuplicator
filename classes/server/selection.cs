@@ -325,13 +325,20 @@ function ND_Selection::startCubeSelection(%this, %box, %limited)
 	%this.queueCount = 0;
 	%this.brickCount = 0;
 
+	%this.brickLimitReached = false;
+
+	if(%this.client.isAdmin)
+		%brickLimit = $ND::MaxBricksAdmin;
+	else
+		%brickLimit = $ND::MaxBricksPlayer;
+
 	//Process first tick
 	messageClient(%this.client, 'MsgUploadStart', "");
-	%this.tickCubeSelectionChunk(%limited);
+	%this.tickCubeSelectionChunk(%limited, %brickLimit);
 }
 
 //Queue all bricks in a chunk
-function ND_Selection::tickCubeSelectionChunk(%this, %limited)
+function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 {
 	cancel(%this.cubeSelectSchedule);
 
@@ -412,6 +419,12 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited)
 			$NS[%_id, %obj] = %i;
 			$NS[%_br, %i] = %obj;
 			%i++;
+
+			if(%i >= %brickLimit)
+			{
+				%limitReached = true;
+				break;
+			}
 		}
 	}
 
@@ -422,6 +435,16 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited)
 	{
 		%this.client.ndUpdateBottomPrint();
 		%this.client.ndLastMessageTime = $Sim::Time;
+	}
+
+	//If the brick limit was reached, start processing
+	if(%limitReached)
+	{
+		%this.brickLimitReached = true;
+		%this.rootPosition = $NS[%this, "BR", 0].getPosition();
+		%this.cubeSelectSchedule = %this.schedule($ND::CubeSelectTickDelay, tickCubeSelectionProcess);
+
+		return;
 	}
 
 	//Set next chunk index or finish
@@ -458,7 +481,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited)
 	}
 
 	//Schedule next chunk
-	%this.cubeSelectSchedule = %this.schedule($ND::CubeSelectTickDelay, tickCubeSelectionChunk, %limited);
+	%this.cubeSelectSchedule = %this.schedule($ND::CubeSelectTickDelay, tickCubeSelectionChunk, %limited, %brickLimit);
 }
 
 //Save connections between bricks and highlight them
@@ -554,7 +577,14 @@ function ND_Selection::finishCubeSelection(%this)
 	%this.highlightSet.deHighlightDelayed($ND::HighlightTime);
 
 	messageClient(%this.client, 'MsgUploadEnd', "");
-	commandToClient(%this.client, 'centerPrint', "<font:Verdana:20>\c6Selected \c3" @ %this.brickCount @ "\c6 Bricks!\n<font:Verdana:17>\c6Press [Plant Brick] again to copy.", 5);
+
+	%msg = "<font:Verdana:20>\c6Selected \c3" @ %this.brickCount @ "\c6 Bricks!";
+
+	if(%this.brickLimitReached)
+		%msg = %msg @ " (Limit Reached)";
+
+	%msg = %msg @ "\n<font:Verdana:17>\c6Press [Plant Brick] again to copy.";
+	commandToClient(%this.client, 'centerPrint', %msg, 5);
 
 	%this.client.ndSelectionChanged = false;
 	%this.client.ndSetMode(NDDM_CubeSelect);
