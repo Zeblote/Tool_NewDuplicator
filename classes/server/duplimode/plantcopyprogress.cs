@@ -54,13 +54,10 @@ function NDDM_PlantCopyProgress::onCancelBrick(%this, %client)
 //Create bottomprint for client
 function NDDM_PlantCopyProgress::getBottomPrint(%this, %client)
 {
-	%qIndex = %client.ndSelection.plantQueueIndex;
-	%qCount = %client.ndSelection.plantQueueCount;
-
 	%count = %client.ndSelection.brickCount;
 	%planted = %client.ndSelection.plantSuccessCount;
 
-	if(%qIndex == %qCount)
+	if(%client.ndSelection.plantStackIndex < 1)
 	{
 		//Searching for a brick
 		%pIndex = %client.ndSelection.plantSearchIndex;

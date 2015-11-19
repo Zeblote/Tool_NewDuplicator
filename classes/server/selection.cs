@@ -1180,8 +1180,7 @@ function ND_Selection::getGhostWorldBox(%this)
 function ND_Selection::startPlant(%this, %position, %angleID)
 {
 	%this.plantSearchIndex = 0;
-	%this.plantQueueIndex = 0;
-	%this.plantQueueCount = 0;
+	%this.plantStackIndex = 0;
 
 	%this.plantSuccessCount = 0;
 	%this.plantTrustFailCount = 0;
@@ -1208,7 +1207,7 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 	%group = %this.client.brickGroup;
 	%bl_id = %this.client.bl_id;
 
-	%qCount = %this.plantQueueCount;
+	%pIndex = %this.plantStackIndex;
 
 	for(%i = %start; %i < %end; %i++)
 	{
@@ -1221,7 +1220,7 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 
 		if(%brick > 0)
 		{
-			//Success! Add connected bricks to plant queue
+			//Success! Add connected bricks to plant stack
 			%this.plantSuccessCount++;
 			%this.undoGroup.add(%brick);
 
@@ -1234,9 +1233,9 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 
 				if(!$NP[%this, %id])
 				{
-					$NS[%this, "PQueue", %qCount] = %id;
+					$NS[%this, "PStack", %pIndex] = %id;
 					$NP[%this, %id] = true;
-					%qCount++;
+					%pIndex++;
 				}
 			}
 
@@ -1247,17 +1246,17 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 
 				if(!$NP[%this, %id])
 				{
-					$NS[%this, "PQueue", %qCount] = %id;
+					$NS[%this, "PStack", %pIndex] = %id;
 					$NP[%this, %id] = true;
-					%qCount++;
+					%pIndex++;
 				}
 			}			
 
-			//If we added bricks to plant queue, switch to second loop
+			//If we added bricks to plant stack, switch to second loop
 			if(%upCnt || %downCnt)
 			{
 				%this.plantSearchIndex = %i + 1;
-				%this.plantQueueCount = %qCount;
+				%this.plantStackIndex = %pIndex;
 				%this.tickPlantTree(%end - %i, %position, %angleID);
 				return;
 			}
@@ -1275,7 +1274,7 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 	}
 
 	%this.plantSearchIndex = %i;
-	%this.plantQueueCount = %qCount;
+	%this.plantStackIndex = %pIndex;
 
 	//Tell the client how far we got
 	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
@@ -1290,30 +1289,27 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 		%this.finishPlant();
 }
 
-//Plant search has prepared a queue, plant all bricks in this queue and add their connected bricks aswell
+//Plant search has prepared a stack, plant all bricks in it and add their connected bricks aswell
 function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleID)
 {
-	%start = %this.plantQueueIndex;
-	%end = %start + %remainingPlants;
+	%pIndex = %this.plantStackIndex;
 
 	%group = %this.client.brickGroup;
 	%bl_id = %this.client.bl_id;
 
-	%qCount = %this.plantQueueCount;
-
-	for(%i = %start; %i < %end; %i++)
+	for(%i = 0; %i < %remainingPlants; %i++)
 	{
-		//The queue is empty! Switch back to plant search.
-		if(%i >= %qCount)
+		//The stack is empty! Switch back to plant search.
+		if(%pIndex == 0)
 		{
-			%this.plantQueueCount = %qCount;
-			%this.plantQueueIndex = %i;
-			%this.tickPlantSearch(%end - %i, %position, %angleID);
+			%this.plantStackIndex = %pIndex;
+			%this.tickPlantSearch(%remainingPlants - %i, %position, %angleID);
 			return;
 		}
 
-		//Attempt to plant queued brick
-		%bId = $NS[%this, "PQueue", %i];
+		//Attempt to plant brick on stack
+		%bId = $NS[%this, "PStack", %pIndex - 1];
+		%pIndex--;
 
 		%brick = ND_Selection::plantBrick(%this, %bId, %position, %angleID, %group, %bl_id);
 
@@ -1332,9 +1328,9 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 
 				if(!$NP[%this, %id])
 				{
-					$NS[%this, "PQueue", %qCount] = %id;
+					$NS[%this, "PStack", %pIndex] = %id;
 					$NP[%this, %id] = true;
-					%qCount++;
+					%pIndex++;
 				}
 			}
 
@@ -1345,9 +1341,9 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 
 				if(!$NP[%this, %id])
 				{
-					$NS[%this, "PQueue", %qCount] = %id;
+					$NS[%this, "PStack", %pIndex] = %id;
 					$NP[%this, %id] = true;
-					%qCount++;
+					%pIndex++;
 				}
 			}
 		}
@@ -1370,8 +1366,7 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 		%this.client.ndLastMessageTime = $Sim::Time;
 	}
 
-	%this.plantQueueCount = %qCount;
-	%this.plantQueueIndex = %i;
+	%this.plantStackIndex = %pIndex;
 
 	%this.plantSchedule = %this.schedule($ND::PlantBricksTickDelay, tickPlantTree, $ND::PlantBricksPerTick, %position, %angleID);
 }
