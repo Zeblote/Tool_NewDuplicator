@@ -907,9 +907,6 @@ function ND_Selection::shiftGhostBricks(%this, %offset)
 
 	//Update variables
 	%this.ghostPosition = %this.ghostGroup.getObject(0).getPosition();
-
-	%this.highlightBox.color = "0.2 0.2 1 1";
-	%this.highlightBox.applyColors();
 	%this.updateHighlightBox();
 }
 
@@ -1013,9 +1010,6 @@ function ND_Selection::rotateGhostBricks(%this, %direction, %useSelectionCenter)
 
 	//Update variables
 	%this.ghostPosition = %rootPos;
-
-	%this.highlightBox.color = "0.2 0.2 1 1";
-	%this.highlightBox.applyColors();
 	%this.updateHighlightBox();
 }
 
@@ -1306,7 +1300,7 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 
 	%this.plantQueueCount = %qCount;
 	%this.plantQueueIndex = %i;
-	
+
 	%this.plantSchedule = %this.schedule($ND::PlantBricksTickDelay, tickPlantTree, $ND::PlantBricksPerTick, %position, %angleID);
 }
 
