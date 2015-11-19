@@ -35,7 +35,7 @@ function ND_PrefManager::registerRTBPrefs(%this)
 	//General
 	RTB_registerPref("Admin Only",                  "New Duplicator | General",     "$ND::AdminOnly",               "bool",             "Tool_NewDuplicator", false,   false, false, "");
 	RTB_registerPref("Max Bricks (Admin)",          "New Duplicator | General",     "$ND::MaxBricksAdmin",          "int 1000 1000000", "Tool_NewDuplicator", 1000000, false, false, "");
-	RTB_registerPref("Max Bricks (Player)",         "New Duplicator | General",     "$ND::MaxBricksPlayer",         "int 1000 1000000", "Tool_NewDuplicator", 10000,   false, false, "");
+	RTB_registerPref("Max Bricks (Player)",         "New Duplicator | General",     "$ND::MaxBricksPlayer",         "int 1000 1000000", "Tool_NewDuplicator", 50000,   false, false, "");
 	RTB_registerPref("Max Cube Size (Admin)",       "New Duplicator | General",     "$ND::MaxCubeSizeAdmin",        "int 1 50000",      "Tool_NewDuplicator", 1024,    false, false, "");
 	RTB_registerPref("Max Cube Size (Player)",      "New Duplicator | General",     "$ND::MaxCubeSizePlayer",       "int 1 50000",      "Tool_NewDuplicator", 32,      false, false, "");
 	RTB_registerPref("Enable Menu Sounds",          "New Duplicator | General",     "$ND::PlayMenuSounds",          "bool",             "Tool_NewDuplicator", true,    false, false, "");
@@ -84,7 +84,7 @@ function ND_PrefManager::setDefaultValues(%this)
 	//General
 	$ND::AdminOnly               = false;
 	$ND::MaxBricksAdmin          = 1000000;
-	$ND::MaxBricksPlayer         = 10000;
+	$ND::MaxBricksPlayer         = 50000;
 	$ND::MaxCubeSizeAdmin        = 1024;
 	$ND::MaxCubeSizePlayer       = 32;
 	$ND::PlayMenuSounds          = true;

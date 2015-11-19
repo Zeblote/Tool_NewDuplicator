@@ -66,6 +66,13 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 
 	%highlightSet = ND_HighlightSet();
 
+	%this.brickLimitReached = false;
+
+	if(%this.client.isAdmin)
+		%brickLimit = $ND::MaxBricksAdmin;
+	else
+		%brickLimit = $ND::MaxBricksPlayer;
+
 	//Root position is position of the first selected brick
 	%this.rootPosition = %brick.getPosition();
 
@@ -96,6 +103,9 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 
 			if(%nId $= "")
 			{
+				if(%queueCount >= %brickLimit)
+					continue;
+
 				$NS[%this, "BR", %queueCount] = %nextBrick;
 				$NS[%this, "ID", %nextBrick] = %queueCount;
 				%nId = %queueCount;
@@ -126,6 +136,9 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 
 			if(%nId $= "")
 			{
+				if(%queueCount >= %brickLimit)
+					continue;
+
 				$NS[%this, "BR", %queueCount] = %nextBrick;
 				$NS[%this, "ID", %nextBrick] = %queueCount;
 				%nId = %queueCount;
@@ -149,13 +162,13 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 
 	//First selection tick
 	if(%queueCount > %brickCount)
-		%this.tickStackSelection(%direction, %limited, %heightLimit);
+		%this.tickStackSelection(%direction, %limited, %heightLimit, %brickLimit);
 	else
 		%this.finishStackSelection();
 }
 
 //Tick stack selection
-function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLimit)
+function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLimit, %brickLimit)
 {
 	cancel(%this.stackSelectSchedule);
 
@@ -173,6 +186,9 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 		{
 			%this.queueCount = %queueCount;
 			%this.brickCount = %i;
+
+			if(%i >= %brickLimit)
+				%this.brickLimitReached = true;
 
 			%this.finishStackSelection();
 			return;
@@ -209,6 +225,9 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 
 			if(%nId $= "")
 			{
+				if(%queueCount >= %brickLimit)
+					continue;
+
 				$NS[%this, "BR", %queueCount] = %nextBrick;
 				$NS[%this, "ID", %nextBrick] = %queueCount;
 				%nId = %queueCount;				
@@ -238,6 +257,9 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 
 			if(%nId $= "")
 			{
+				if(%queueCount >= %brickLimit)
+					continue;
+
 				$NS[%this, "BR", %queueCount] = %nextBrick;
 				$NS[%this, "ID", %nextBrick] = %queueCount;
 				%nId = %queueCount;				
@@ -254,6 +276,13 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 	%this.queueCount = %queueCount;
 	%this.brickCount = %i;
 
+	if(%i >= %brickLimit)
+	{
+		%this.brickLimitReached = true;
+		%this.finishStackSelection();
+		return;
+	}
+
 	//Tell the client how much we selected this tick
 	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
 	{
@@ -262,7 +291,8 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 	}
 
 	//Schedule next tick
-	%this.stackSelectSchedule = %this.schedule($ND::StackSelectTickDelay, tickStackSelection, %direction, %limited, %heightLimit);
+	%this.stackSelectSchedule = %this.schedule($ND::StackSelectTickDelay,
+		tickStackSelection, %direction, %limited, %heightLimit, %brickLimit);
 }
 
 //Finish stack selection
@@ -275,7 +305,13 @@ function ND_Selection::finishStackSelection(%this)
 	%this.highlightSet.deHighlightDelayed($ND::HighlightTime);
 
 	messageClient(%this.client, 'MsgUploadEnd', "");
-	commandToClient(%this.client, 'centerPrint', "<font:Verdana:20>\c6Selected \c3" @ %this.brickCount @ "\c6 Bricks!", 4);
+
+	%msg = "<font:Verdana:20>\c6Selected \c3" @ %this.brickCount @ "\c6 Bricks!";
+
+	if(%this.brickLimitReached)
+		%msg = %msg @ " (Limit Reached)";
+
+	commandToClient(%this.client, 'centerPrint', %msg, 5);
 
 	%this.client.ndSetMode(NDDM_StackSelect);
 }
