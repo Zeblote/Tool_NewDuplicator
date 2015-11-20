@@ -1473,9 +1473,6 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	}
 
 	//Add to brickgroup
-	%brickGroup.add(%brick);
-	%brick.setTrusted(true);
-
 	if(%downCnt)
 		%brick.stackBL_ID = %brick.getDownBrick(0).stackBL_ID;
 	else if(%upCnt)
@@ -1483,7 +1480,12 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	else
 		%brick.stackBL_ID = %bl_id;
 
-	//Hole bots... I guess it works
+	%brickGroup.add(%brick);
+	%brick.setTrusted(true);
+	%datablock.onTrustCheckFinished(%brick);
+
+	//Hole bots... why don't you use the correct function?
+	//Add-ons are supposed to package _ON_TrustCheckFinished...
 	if(%datablock.isBotHole)
 	{
 		%brick.isBotHole = true;
