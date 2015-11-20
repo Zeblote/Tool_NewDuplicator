@@ -167,7 +167,73 @@ datablock ShapeBaseImageData(NewDuplicatorImage : wandImage)
 	projectile      = NewDuplicatorProjectile;
 };
 
-//Resizable selection box
+//Special blue duplicator for plant mode
+///////////////////////////////////////////////////////////////////////////
+
+//Particles for explosion
+datablock ParticleData(NewDuplicatorBlueExplosionParticle : NewDuplicatorExplosionParticle)
+{
+	colors[0] = "0 0.25 1 0.9";
+	colors[1] = "0 0.25 1 0.7";
+	colors[2] = "0 0.25 1 0.5";
+};
+
+//Emitter for explosion
+datablock ParticleEmitterData(NewDuplicatorBlueExplosionEmitter : NewDuplicatorExplosionEmitter)
+{
+	particles = NewDuplicatorBlueExplosionParticle;
+};
+
+//Explosion 
+datablock ExplosionData(NewDuplicatorBlueExplosion : NewDuplicatorExplosion)
+{
+	emitter[0] = NewDuplicatorBlueExplosionEmitter;
+};
+
+//Projectile to make explosion
+datablock ProjectileData(NewDuplicatorBlueProjectile : NewDuplicatorProjectile)
+{
+	explosion = NewDuplicatorBlueExplosion;
+};
+
+//Idle particles
+datablock ParticleData(NewDuplicatorBlueParticleA : NewDuplicatorParticleA)
+{
+	colors[0] = "0 0.25 1 0.9";
+	colors[1] = "0 0.25 1 0.7";
+	colors[2] = "0 0.25 1 0.5";
+};
+
+//Idle emitter
+datablock ParticleEmitterData(NewDuplicatorBlueEmitterA : NewDuplicatorEmitterA)
+{
+	particles = NewDuplicatorBlueParticleA;
+};
+
+//Active particles
+datablock ParticleData(NewDuplicatorBlueParticleB : NewDuplicatorParticleB)
+{
+	colors[0] = "0 0.25 1 0.9";
+	colors[1] = "0 0.25 1 0.7";
+	colors[2] = "0 0.25 1 0.5";
+};
+
+//Active emitter
+datablock ParticleEmitterData(NewDuplicatorBlueEmitterB : NewDuplicatorEmitterB)
+{
+	particles = NewDuplicatorBlueParticleB;
+};
+
+//Duplicator image
+datablock ShapeBaseImageData(NewDuplicatorBlueImage : NewDuplicatorImage)
+{
+	colorShiftColor = "0 0.25 1 1";
+	stateEmitter[1] = NewDuplicatorBlueEmitterA;
+	stateEmitter[3] = NewDuplicatorBlueEmitterB;
+	projectile      = NewDuplicatorBlueProjectile;
+};
+
+//Resizable selection and highlight box
 ///////////////////////////////////////////////////////////////////////////
 
 //Transparent cube to visualize bricks intersecting selection box

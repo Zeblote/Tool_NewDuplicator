@@ -30,6 +30,7 @@ function NDM_PlantCopyProgress::onKillMode(%this, %client)
 {
 	//Destroy the selection
 	%client.ndSelection.delete();
+	%client.ndSetBlueImage(false);
 }
 
 

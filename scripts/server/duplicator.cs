@@ -188,8 +188,13 @@ function GameConnection::ndHandleCommand(%this, %cmd)
 			commandToClient(%this, 'setScrollMode', 3);
 
 			//Give player a duplicator
-			%player.updateArm(NewDuplicatorImage);
-			%player.mountImage(NewDuplicatorImage, 0);
+			if(%this.ndBlueImage)
+				%image = NewDuplicatorBlueImage.getId();
+			else
+				%image = NewDuplicatorImage.getId();
+
+			%player.updateArm(%image);
+			%player.mountImage(%image, 0);
 	}
 }
 
