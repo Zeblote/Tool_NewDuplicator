@@ -37,10 +37,10 @@ function ND_HighlightSet::addBrick(%this, %brick)
 		%brick.ndColorFx = %brick.colorFxID;
 
 		//If the brick already has the highlight color, apply color fx instead
-		if(%brick.ndColor == $ND::BrickHighlightColor)
-			%brick.setColorFx($ND::BrickHighlightColorFx);
+		if(%brick.ndColor == $Pref::Server::ND::BrickHighlightColor)
+			%brick.setColorFx($Pref::Server::ND::BrickHighlightColorFx);
 		else
-			%brick.setColor($ND::BrickHighlightColor);
+			%brick.setColor($Pref::Server::ND::BrickHighlightColor);
 	}
 
 	%brick.ndHighlightSet = %this;
@@ -67,8 +67,8 @@ function ND_HighlightSet::removeHighlightTick(%this, %start)
 {
 	%end = $NH[%this, "Cnt"];
 
-	if(%end - %start > $ND::DeHighlightPerTick)
-		%end = %start + $ND::DeHighlightPerTick;
+	if(%end - %start > $Pref::Server::ND::DeHighlightPerTick)
+		%end = %start + $Pref::Server::ND::DeHighlightPerTick;
 	else
 		%lastTick = true;
 
@@ -80,7 +80,7 @@ function ND_HighlightSet::removeHighlightTick(%this, %start)
 		if(%brick.ndHighlightSet == %this)
 		{
 			//If the brick already had the highlight color, color fx must be removed
-			if(%brick.ndColor == $ND::BrickHighlightColor)
+			if(%brick.ndColor == $Pref::Server::ND::BrickHighlightColor)
 				%brick.setColorFx(%brick.ndColorFx);
 			else
 				%brick.setColor(%brick.ndColor);
@@ -92,7 +92,7 @@ function ND_HighlightSet::removeHighlightTick(%this, %start)
 	if(!%lastTick)
 	{
 		cancel(%this.deHighlightSchedule);
-		%this.deHighlightSchedule = %this.schedule($ND::DeHighlightTickDelay, removeHighlightTick, %end);
+		%this.deHighlightSchedule = %this.schedule($Pref::Server::ND::DeHighlightTickDelay, removeHighlightTick, %end);
 	}
 	else
 		%this.delete();

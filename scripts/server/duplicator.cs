@@ -177,7 +177,7 @@ function GameConnection::ndHandleCommand(%this, %cmd)
 				return;
 			}
 
-			if($ND::AdminOnly && !%this.isAdmin)
+			if($Pref::Server::ND::AdminOnly && !%this.isAdmin)
 			{
 				messageClient(%this, '', "\c6You must be admin to use the duplicator!");
 				return;
@@ -342,7 +342,7 @@ function GameConnection::ndUndoTick(%this, %group, %count)
 	else
 		%start = %count;
 
-	%end = %start - $ND::PlantBricksPerTick;
+	%end = %start - $Pref::Server::ND::PlantBricksPerTick;
 
 	if(%end <= 0)
 		%end = 0;
@@ -368,7 +368,7 @@ function GameConnection::ndUndoTick(%this, %group, %count)
 		%this.ndUndoInProgress = false;
 	}
 	else
-		%this.schedule($ND::PlantBricksTickDelay, ndUndoTick, %group, %end);
+		%this.schedule($Pref::Server::ND::PlantBricksTickDelay, ndUndoTick, %group, %end);
 }
 
 

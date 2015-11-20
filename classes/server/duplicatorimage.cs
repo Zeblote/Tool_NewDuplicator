@@ -136,7 +136,7 @@ function GameConnection::ndEquipped(%this)
 		return;
 	}
 
-	if($ND::AdminOnly && !%this.isAdmin)
+	if($Pref::Server::ND::AdminOnly && !%this.isAdmin)
 	{
 		commandToClient(%this, 'centerPrint', "<font:Verdana:20>\c6Oops! The duplicator is admin only.", 5);
 		return;

@@ -115,7 +115,7 @@ function NDM_CubeSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 //Light key
 function NDM_CubeSelect::onLight(%this, %client)
 {
-	if($ND::PlayMenuSounds)
+	if($Pref::Server::ND::PlayMenuSounds)
 		%client.play2d(lightOffSound);
 
 	%client.ndSetMode(NDM_StackSelect);
@@ -136,7 +136,7 @@ function NDM_CubeSelect::onPrevSeat(%this, %client)
 	%client.ndLimited = !%client.ndLimited;
 	%client.ndUpdateBottomPrint();
 
-	if($ND::PlayMenuSounds)
+	if($Pref::Server::ND::PlayMenuSounds)
 		%client.play2d(%client.ndLimited ? lightOnSound : lightOffSound);
 }
 
@@ -197,9 +197,9 @@ function NDM_CubeSelect::onRotateBrick(%this, %client, %direction)
 	}
 
 	if(%client.isAdmin)
-		%limit = $ND::MaxCubeSizeAdmin;
+		%limit = $Pref::Server::ND::MaxCubeSizeAdmin;
 	else
-		%limit = $ND::MaxCubeSizePlayer;
+		%limit = $Pref::Server::ND::MaxCubeSizePlayer;
 
 	//Extend or retract the side
 	if(%client.ndSelectionBox.stepSide(%direction, %limit))

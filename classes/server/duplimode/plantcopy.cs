@@ -115,7 +115,7 @@ function NDM_PlantCopy::onPrevSeat(%this, %client)
 	%client.ndPivot = !%client.ndPivot;
 	%client.ndUpdateBottomPrint();
 
-	if($ND::PlayMenuSounds)
+	if($Pref::Server::ND::PlayMenuSounds)
 		%client.play2d(%client.ndPivot ? lightOnSound : lightOffSound);
 }
 
@@ -204,10 +204,10 @@ function NDM_PlantCopy::getBottomPrint(%this, %client)
 
 	if(%count == 1)
 		%title = "Plant Mode (\c31\c6 Brick)";
-	else if(%count <= $ND::MaxGhostBricks)
+	else if(%count <= $Pref::Server::ND::MaxGhostBricks)
 		%title = "Plant Mode (\c3" @ %count @ "\c6 Bricks)";
 	else
-		%title = "Plant Mode (\c3" @ %count @ "\c6 Bricks, \c3" @ mFloor($ND::MaxGhostBricks * 100 / %count) @ "%\c6 Ghosted)";
+		%title = "Plant Mode (\c3" @ %count @ "\c6 Bricks, \c3" @ mFloor($Pref::Server::ND::MaxGhostBricks * 100 / %count) @ "%\c6 Ghosted)";
 
 	%l0 = "Pivot: \c3" @ (%client.ndPivot ? "Whole Selection" : "Start Brick") @ "\c6 [Prev Seat]";
 	%l1 = "Size: \c3" @ %x @ "\c6 x \c3" @ %y @ "\c6 x \c3" @ %z @ "\c6 Plates";

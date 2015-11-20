@@ -21,7 +21,7 @@ function ND_GhostGroup()
 //Delete some of the bricks in this group
 function ND_GhostGroup::deletionTick(%this)
 {
-	%max = $ND::GhostBricksPerTick;
+	%max = $Pref::Server::ND::GhostBricksPerTick;
 
 	//Deleting many ghost bicks causes increasing lag with more bricks in total
 	if(getBrickCount() > 450000)
@@ -40,5 +40,5 @@ function ND_GhostGroup::deletionTick(%this)
 	for(%i = 0; %i < %max; %i++)
 		%this.getObject(0).delete();
 
-	%this.schedule($ND::GhostBricksTickDelay, deletionTick);
+	%this.schedule($Pref::Server::ND::GhostBricksTickDelay, deletionTick);
 }

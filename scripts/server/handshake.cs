@@ -31,7 +31,7 @@ function GameConnection::ndHandshakeTimeout(%this)
 	echo("ND: Client " @ %this.getPlayerName() @ " doesn't have the New Duplicator.");
 
 	//Show client where to get the new duplicator
-	if($ND::Advertise)
+	if($Pref::Server::ND::Advertise)
 	{
 		%m =      "\c6Hey, it looks like you don't have the \c3New Duplicator\c6 yet! Check it out: ";
 		%m = %m @ "[<a:forum.blockland.us/index.php?topic=500000.0>Forum Topic</a>\c6]";

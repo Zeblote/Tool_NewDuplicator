@@ -97,7 +97,7 @@ function NDM_StackSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 //Light key
 function NDM_StackSelect::onLight(%this, %client)
 {
-	if($ND::PlayMenuSounds)
+	if($Pref::Server::ND::PlayMenuSounds)
 		%client.play2d(lightOnSound);
 
 	%client.ndSetMode(NDM_CubeSelect);
@@ -109,7 +109,7 @@ function NDM_StackSelect::onNextSeat(%this, %client)
 	%client.ndDirection = !%client.ndDirection;
 	%client.ndUpdateBottomPrint();
 
-	if($ND::PlayMenuSounds)
+	if($Pref::Server::ND::PlayMenuSounds)
 		%client.play2d(%client.ndDirection ? lightOnSound : lightOffSound);
 }
 
@@ -119,7 +119,7 @@ function NDM_StackSelect::onPrevSeat(%this, %client)
 	%client.ndLimited = !%client.ndLimited;
 	%client.ndUpdateBottomPrint();
 
-	if($ND::PlayMenuSounds)
+	if($Pref::Server::ND::PlayMenuSounds)
 		%client.play2d(%client.ndLimited ? lightOnSound : lightOffSound);
 }
 
