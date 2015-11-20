@@ -311,6 +311,17 @@ package NewDuplicator_Server
 		%client.undoStack.push(%state);
 		parent::serverCmdUndoBrick(%client);
 	}
+
+	//Prevent creating ghost bricks in modes that allow un-mount
+	function BrickDeployProjectile::onCollision(%this, %obj, %col, %fade, %pos, %normal)
+	{
+		%client = %obj.client;
+
+		if(isObject(%client) && %client.ndModeIndex)
+			%client.ndMode.onSelectObject(%client, %col, %pos, %normal);
+		else
+			parent::onCollision(%this, %obj, %col, %fade, %pos, %normal);
+	}
 };
 
 
