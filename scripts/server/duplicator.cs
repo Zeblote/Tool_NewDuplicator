@@ -394,7 +394,7 @@ function serverCmdClearDups(%client)
 	if(!%client.isAdmin)
 		return;
 
-	messageAll('MsgClearBricks', "\c3" @ %client.getPlayerName() @ "\c6 cleared all dups.");
+	messageAll('MsgClearBricks', "\c3" @ %client.getPlayerName() @ "\c0 cleared all dups.");
 
 	for(%i = 0; %i < ClientGroup.getCount(); %i++)
 	{

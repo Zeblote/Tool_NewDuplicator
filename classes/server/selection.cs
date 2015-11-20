@@ -1190,7 +1190,7 @@ function ND_Selection::startPlant(%this, %position, %angleID)
 	%this.undoGroup = new SimSet();
 	ND_ServerGroup.add(%this.undoGroup);
 
-	if($ND::PlayMenuSounds)
+	if($ND::PlayMenuSounds && %this.brickCount > $ND::PlantBricksPerTick * 10)
 		messageClient(%this.client, 'MsgUploadStart', "");
 
 	%this.tickPlantSearch($ND::PlantBricksPerTick, %position, %angleID);
@@ -1261,6 +1261,8 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 				%this.tickPlantTree(%end - %i, %position, %angleID);
 				return;
 			}
+
+			%lastPos = %brick.position;
 		}
 		else if(%brick == -1)
 		{
@@ -1276,6 +1278,9 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 
 	%this.plantSearchIndex = %i;
 	%this.plantQueueCount = %qCount;
+
+	if(strLen(%lastPos))
+		serverPlay3D(BrickPlantSound, %lastPos);
 
 	//Tell the client how far we got
 	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
@@ -1306,6 +1311,9 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 		//The queue is empty! Switch back to plant search.
 		if(%i >= %qCount)
 		{
+			if(strLen(%lastPos))
+				serverPlay3D(BrickPlantSound, %lastPos);
+
 			%this.plantQueueCount = %qCount;
 			%this.plantQueueIndex = %i;
 			%this.tickPlantSearch(%end - %i, %position, %angleID);
@@ -1350,6 +1358,8 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 					%qCount++;
 				}
 			}
+
+			%lastPos = %brick.position;
 		}
 		else if(%brick == -1)
 		{
@@ -1362,6 +1372,9 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 			$NP[%this, %bId] = true;
 		}
 	}
+
+	if(strLen(%lastPos))
+		serverPlay3D(BrickPlantSound, %lastPos);
 
 	//Tell the client how far we got
 	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
@@ -1398,7 +1411,6 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	%brick = new FxDTSBrick()
 	{
 		datablock = %datablock;
-		isPlanted = true;
 
 		position = %bPos;
 		rotation = %bRot;
@@ -1605,9 +1617,6 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 //Finished planting all the bricks!
 function ND_Selection::finishPlant(%this)
 {
-	if($ND::PlayMenuSounds)
-		messageClient(%this.client, 'MsgProcessComplete', "");
-
 	%count = %this.brickCount;
 	%planted = %this.plantSuccessCount;
 	%blocked = %this.plantBlockedFailCount;
@@ -1625,8 +1634,10 @@ function ND_Selection::finishPlant(%this)
 	if(%floating)
 		%message = %message @ "\n<font:Verdana:17>\c3" @ %floating @ "\c6 floating.";
 
-
 	commandToClient(%this.client, 'centerPrint', %message, 4);
+
+	if($ND::PlayMenuSounds && %planted && %this.brickCount > $ND::PlantBricksPerTick * 10)
+		messageClient(%this.client, 'MsgProcessComplete', "");
 
 	deleteVariables("$NP" @ %this @ "_*");
 

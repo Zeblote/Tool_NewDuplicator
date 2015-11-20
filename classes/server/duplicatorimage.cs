@@ -143,8 +143,8 @@ function GameConnection::ndEquipped(%this)
 	}
 
 	//Remove temp brick so it doesn't overlap the selection box
-	if(isObject(%player.tempBrick))
-		%player.tempBrick.delete();
+	if(isObject(%this.player.tempBrick))
+		%this.player.tempBrick.delete();
 
 	//Should resume last used select mode
 	if(!%this.ndModeIndex)
