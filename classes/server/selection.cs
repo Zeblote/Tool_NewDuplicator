@@ -203,7 +203,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 			messageClient(%this.client, 'MsgError', "\c0Error: Queued brick does not exist anymore. Do not modify the build during selection!");
 
 			%this.cancelStackSelection();
-			%this.client.ndSetMode(NDDM_StackSelect);
+			%this.client.ndSetMode(NDM_StackSelect);
 			return;
 		}
 
@@ -315,7 +315,7 @@ function ND_Selection::finishStackSelection(%this)
 
 	commandToClient(%this.client, 'centerPrint', %msg, 5);
 
-	%this.client.ndSetMode(NDDM_StackSelect);
+	%this.client.ndSetMode(NDM_StackSelect);
 }
 
 //Cancel stack selection
@@ -512,7 +512,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 					commandToClient(%this.client, 'centerPrint', "<font:Verdana:20>\c6No bricks were found inside the selection!", 4);
 
 					%this.cancelCubeSelection();
-					%this.client.ndSetMode(NDDM_CubeSelect);
+					%this.client.ndSetMode(NDM_CubeSelect);
 				}
 
 				return;
@@ -548,7 +548,7 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 			messageClient(%this.client, 'MsgError', "\c0Error: Queued brick does not exist anymore. Do not modify the build during selection!");
 
 			%this.cancelCubeSelection();
-			%this.client.ndSetMode(NDDM_CubeSelect);
+			%this.client.ndSetMode(NDM_CubeSelect);
 			return;
 		}
 
@@ -628,7 +628,7 @@ function ND_Selection::finishCubeSelection(%this)
 	commandToClient(%this.client, 'centerPrint', %msg, 5);
 
 	%this.client.ndSelectionChanged = false;
-	%this.client.ndSetMode(NDDM_CubeSelect);
+	%this.client.ndSetMode(NDM_CubeSelect);
 }
 
 //Cancel cube selection
@@ -1635,7 +1635,7 @@ function ND_Selection::finishPlant(%this)
 	else
 		%this.undoGroup.delete();
 
-	%this.client.ndSetMode(NDDM_PlantCopy);
+	%this.client.ndSetMode(NDM_PlantCopy);
 }
 
 //Cancel planting bricks

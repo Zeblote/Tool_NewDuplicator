@@ -1,7 +1,7 @@
 // * ######################################################################
 // *
 // *    New Duplicator - Classes - Server
-// *    NDDM_PlantCopyProgress
+// *    NDM_PlantCopyProgress
 // *
 // *    -------------------------------------------------------------------
 // *    Handles inputs for plant mode (in progress)
@@ -10,10 +10,10 @@
 
 //Create object to receive callbacks
 ND_ServerGroup.add(
-	new ScriptObject(NDDM_PlantCopyProgress)
+	new ScriptObject(NDM_PlantCopyProgress)
 	{
 		class = "NewDuplicatorMode";
-		index = $NDDM::PlantCopyProgress;
+		index = $NDM::PlantCopyProgress;
 
 		allowSelecting = false;
 		allowUnMount   = true;
@@ -26,7 +26,7 @@ ND_ServerGroup.add(
 ///////////////////////////////////////////////////////////////////////////
 
 //Kill this mode
-function NDDM_PlantCopyProgress::onKillMode(%this, %client)
+function NDM_PlantCopyProgress::onKillMode(%this, %client)
 {
 	//Destroy the selection
 	%client.ndSelection.delete();
@@ -38,12 +38,12 @@ function NDDM_PlantCopyProgress::onKillMode(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Cancel Brick
-function NDDM_PlantCopyProgress::onCancelBrick(%this, %client)
+function NDM_PlantCopyProgress::onCancelBrick(%this, %client)
 {
 	commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Planting canceled!", 4);
 
 	%client.ndSelection.cancelPlanting();
-	%client.ndSetMode(NDDM_PlantCopy);
+	%client.ndSetMode(NDM_PlantCopy);
 }
 
 
@@ -52,7 +52,7 @@ function NDDM_PlantCopyProgress::onCancelBrick(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Create bottomprint for client
-function NDDM_PlantCopyProgress::getBottomPrint(%this, %client)
+function NDM_PlantCopyProgress::getBottomPrint(%this, %client)
 {
 	%qIndex = %client.ndSelection.plantQueueIndex;
 	%qCount = %client.ndSelection.plantQueueCount;

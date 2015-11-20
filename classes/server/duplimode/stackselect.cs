@@ -1,7 +1,7 @@
 // * ######################################################################
 // *
 // *    New Duplicator - Classes - Server
-// *    NDDM_StackSelect
+// *    NDM_StackSelect
 // *
 // *    -------------------------------------------------------------------
 // *    Handles inputs for stack selection mode
@@ -10,10 +10,10 @@
 
 //Create object to receive callbacks
 ND_ServerGroup.add(
-	new ScriptObject(NDDM_StackSelect)
+	new ScriptObject(NDM_StackSelect)
 	{
 		class = "NewDuplicatorMode";
-		index = $NDDM::StackSelect;
+		index = $NDM::StackSelect;
 
 		allowSelecting = true;
 		allowUnMount   = false;
@@ -26,16 +26,16 @@ ND_ServerGroup.add(
 ///////////////////////////////////////////////////////////////////////////
 
 //Switch to this mode
-function NDDM_StackSelect::onStartMode(%this, %client, %lastMode)
+function NDM_StackSelect::onStartMode(%this, %client, %lastMode)
 {
 	%client.ndLastSelectMode = %this;
 	%client.ndUpdateBottomPrint();
 }
 
 //Switch away from this mode
-function NDDM_StackSelect::onChangeMode(%this, %client, %nextMode)
+function NDM_StackSelect::onChangeMode(%this, %client, %nextMode)
 {
-	if(%nextMode == $NDDM::CubeSelect)
+	if(%nextMode == $NDM::CubeSelect)
 	{
 		if(%client.ndSelection.brickCount)
 		{
@@ -52,7 +52,7 @@ function NDDM_StackSelect::onChangeMode(%this, %client, %nextMode)
 		if(isObject(%client.ndSelection))
 			%client.ndSelection.deleteData();
 	}
-	else if(%nextMode == $NDDM::PlantCopy)
+	else if(%nextMode == $NDM::PlantCopy)
 	{
 		//Start de-highlighting the bricks
 		%client.ndSelection.deHighlight();
@@ -60,7 +60,7 @@ function NDDM_StackSelect::onChangeMode(%this, %client, %nextMode)
 }
 
 //Kill this mode
-function NDDM_StackSelect::onKillMode(%this, %client)
+function NDM_StackSelect::onKillMode(%this, %client)
 {
 	//Destroy selection
 	if(isObject(%client.ndSelection))
@@ -73,7 +73,7 @@ function NDDM_StackSelect::onKillMode(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Selecting an object with the duplicator
-function NDDM_StackSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
+function NDM_StackSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 {
 	if((%obj.getType() & $TypeMasks::FxBrickAlwaysObjectType) == 0)
 		return;
@@ -85,7 +85,7 @@ function NDDM_StackSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 		%client.ndSelection = ND_Selection(%client);
 
 	//Start selection
-	%client.ndSetMode(NDDM_StackSelectProgress);
+	%client.ndSetMode(NDM_StackSelectProgress);
 	%client.ndSelection.startStackSelection(%obj, %client.ndDirection, %client.ndLimited);
 }
 
@@ -95,16 +95,16 @@ function NDDM_StackSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 ///////////////////////////////////////////////////////////////////////////
 
 //Light key
-function NDDM_StackSelect::onLight(%this, %client)
+function NDM_StackSelect::onLight(%this, %client)
 {
 	if($ND::PlayMenuSounds)
 		%client.play2d(lightOnSound);
 
-	%client.ndSetMode(NDDM_CubeSelect);
+	%client.ndSetMode(NDM_CubeSelect);
 }
 
 //Next Seat
-function NDDM_StackSelect::onNextSeat(%this, %client)
+function NDM_StackSelect::onNextSeat(%this, %client)
 {
 	%client.ndDirection = !%client.ndDirection;
 	%client.ndUpdateBottomPrint();
@@ -114,7 +114,7 @@ function NDDM_StackSelect::onNextSeat(%this, %client)
 }
 
 //Prev Seat
-function NDDM_StackSelect::onPrevSeat(%this, %client)
+function NDM_StackSelect::onPrevSeat(%this, %client)
 {
 	%client.ndLimited = !%client.ndLimited;
 	%client.ndUpdateBottomPrint();
@@ -124,12 +124,12 @@ function NDDM_StackSelect::onPrevSeat(%this, %client)
 }
 
 //Plant Brick
-function NDDM_StackSelect::onPlantBrick(%this, %client)
+function NDM_StackSelect::onPlantBrick(%this, %client)
 {
 	if(!isObject(%client.ndSelection) || !%client.ndSelection.brickCount)
 		return;
 
-	%client.ndSetMode(NDDM_PlantCopy);
+	%client.ndSetMode(NDM_PlantCopy);
 }
 
 
@@ -138,7 +138,7 @@ function NDDM_StackSelect::onPlantBrick(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Create bottomprint for client
-function NDDM_StackSelect::getBottomPrint(%this, %client)
+function NDM_StackSelect::getBottomPrint(%this, %client)
 {
 	if(!isObject(%client.ndSelection) || !%client.ndSelection.brickCount)
 	{

@@ -1,7 +1,7 @@
 // * ######################################################################
 // *
 // *    New Duplicator - Classes - Server
-// *    NDDM_PlantCopy
+// *    NDM_PlantCopy
 // *
 // *    -------------------------------------------------------------------
 // *    Handles inputs for plant mode
@@ -10,10 +10,10 @@
 
 //Create object to receive callbacks
 ND_ServerGroup.add(
-	new ScriptObject(NDDM_PlantCopy)
+	new ScriptObject(NDM_PlantCopy)
 	{
 		class = "NewDuplicatorMode";
-		index = $NDDM::PlantCopy;
+		index = $NDM::PlantCopy;
 
 		allowSelecting = true;
 		allowUnMount   = true;
@@ -26,23 +26,23 @@ ND_ServerGroup.add(
 ///////////////////////////////////////////////////////////////////////////
 
 //Switch to this mode
-function NDDM_PlantCopy::onStartMode(%this, %client, %lastMode)
+function NDM_PlantCopy::onStartMode(%this, %client, %lastMode)
 {
-	if(%lastMode != $NDDM::PlantCopyProgress)
+	if(%lastMode != $NDM::PlantCopyProgress)
 		%client.ndSelection.spawnGhostBricks(%client.ndSelection.rootPosition, 0);
 
 	%client.ndUpdateBottomPrint();
 }
 
 //Switch away from this mode
-function NDDM_PlantCopy::onChangeMode(%this, %client, %nextMode)
+function NDM_PlantCopy::onChangeMode(%this, %client, %nextMode)
 {	
-	if(%nextMode != $NDDM::PlantCopyProgress)
+	if(%nextMode != $NDM::PlantCopyProgress)
 		%client.ndSelection.deleteData();
 }
 
 //Kill this mode
-function NDDM_PlantCopy::onKillMode(%this, %client)
+function NDM_PlantCopy::onKillMode(%this, %client)
 {
 	//Destroy the selection
 	%client.ndSelection.delete();
@@ -54,7 +54,7 @@ function NDDM_PlantCopy::onKillMode(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Selecting an object with the duplicator
-function NDDM_PlantCopy::onSelectObject(%this, %client, %obj, %pos, %normal)
+function NDM_PlantCopy::onSelectObject(%this, %client, %obj, %pos, %normal)
 {
 	//Get half size of world box for offset
 	if(%client.ndPivot)
@@ -105,7 +105,7 @@ function NDDM_PlantCopy::onSelectObject(%this, %client, %obj, %pos, %normal)
 ///////////////////////////////////////////////////////////////////////////
 
 //Prev Seat
-function NDDM_PlantCopy::onPrevSeat(%this, %client)
+function NDM_PlantCopy::onPrevSeat(%this, %client)
 {
 	%client.ndPivot = !%client.ndPivot;
 	%client.ndUpdateBottomPrint();
@@ -115,7 +115,7 @@ function NDDM_PlantCopy::onPrevSeat(%this, %client)
 }
 
 //Shift Brick
-function NDDM_PlantCopy::onShiftBrick(%this, %client, %x, %y, %z)
+function NDM_PlantCopy::onShiftBrick(%this, %client, %x, %y, %z)
 {
 	switch(getAngleIDFromPlayer(%client.player))
 	{
@@ -129,7 +129,7 @@ function NDDM_PlantCopy::onShiftBrick(%this, %client, %x, %y, %z)
 }
 
 //Super Shift Brick
-function NDDM_PlantCopy::onSuperShiftBrick(%this, %client, %x, %y, %z)
+function NDM_PlantCopy::onSuperShiftBrick(%this, %client, %x, %y, %z)
 {
 	switch(getAngleIDFromPlayer(%client.player))
 	{
@@ -152,7 +152,7 @@ function NDDM_PlantCopy::onSuperShiftBrick(%this, %client, %x, %y, %z)
 }
 
 //Rotate Brick
-function NDDM_PlantCopy::onRotateBrick(%this, %client, %direction)
+function NDM_PlantCopy::onRotateBrick(%this, %client, %direction)
 {
 	if(%direction > 0)
 		%client.player.playThread("3", "rotCW");
@@ -163,17 +163,17 @@ function NDDM_PlantCopy::onRotateBrick(%this, %client, %direction)
 }
 
 //Plant Brick
-function NDDM_PlantCopy::onPlantBrick(%this, %client)
+function NDM_PlantCopy::onPlantBrick(%this, %client)
 {
 	%pos = %client.ndSelection.ghostPosition;
 	%ang = %client.ndSelection.ghostAngleID;
 
-	%client.ndSetMode(NDDM_PlantCopyProgress);
+	%client.ndSetMode(NDM_PlantCopyProgress);
 	%client.ndSelection.startPlant(%pos, %ang);
 }
 
 //Cancel Brick
-function NDDM_PlantCopy::onCancelBrick(%this, %client)
+function NDM_PlantCopy::onCancelBrick(%this, %client)
 {
 	if(%client.ndEquipped)
 		%client.ndSetMode(%client.ndLastSelectMode);
@@ -187,7 +187,7 @@ function NDDM_PlantCopy::onCancelBrick(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Create bottomprint for client
-function NDDM_PlantCopy::getBottomPrint(%this, %client)
+function NDM_PlantCopy::getBottomPrint(%this, %client)
 {
 	%count = %client.ndSelection.brickCount;
 

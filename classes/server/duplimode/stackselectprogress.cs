@@ -1,7 +1,7 @@
 // * ######################################################################
 // *
 // *    New Duplicator - Classes - Server
-// *    NDDM_StackSelectProgress
+// *    NDM_StackSelectProgress
 // *
 // *    -------------------------------------------------------------------
 // *    Handles inputs for stack selection mode (in progress)
@@ -10,10 +10,10 @@
 
 //Create object to receive callbacks
 ND_ServerGroup.add(
-	new ScriptObject(NDDM_StackSelectProgress)
+	new ScriptObject(NDM_StackSelectProgress)
 	{
 		class = "NewDuplicatorMode";
-		index = $NDDM::StackSelectProgress;
+		index = $NDM::StackSelectProgress;
 
 		allowSelecting = false;
 		allowUnMount   = false;
@@ -26,7 +26,7 @@ ND_ServerGroup.add(
 ///////////////////////////////////////////////////////////////////////////
 
 //Kill this mode
-function NDDM_StackSelectProgress::onKillMode(%this, %client)
+function NDM_StackSelectProgress::onKillMode(%this, %client)
 {
 	//Destroy the selection
 	%client.ndSelection.delete();
@@ -38,12 +38,12 @@ function NDDM_StackSelectProgress::onKillMode(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Cancel Brick
-function NDDM_StackSelectProgress::onCancelBrick(%this, %client)
+function NDM_StackSelectProgress::onCancelBrick(%this, %client)
 {
 	commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection canceled!", 4);
 	
 	%client.ndSelection.cancelStackSelection();
-	%client.ndSetMode(NDDM_StackSelect);
+	%client.ndSetMode(NDM_StackSelect);
 }
 
 
@@ -52,7 +52,7 @@ function NDDM_StackSelectProgress::onCancelBrick(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Create bottomprint for client
-function NDDM_StackSelectProgress::getBottomPrint(%this, %client)
+function NDM_StackSelectProgress::getBottomPrint(%this, %client)
 {
 	%count = %client.ndSelection.brickCount;
 	%qCount = %client.ndSelection.queueCount - %count;

@@ -20,9 +20,9 @@ package NewDuplicator_Server
 		%this.ndLimited   = true;
 		%this.ndDirection = true;
 
-		%this.ndMode           = NDDM_Disabled;
-		%this.ndModeIndex      = $NDDM::Disabled;
-		%this.ndLastSelectMode = NDDM_StackSelect;
+		%this.ndMode           = NDM_Disabled;
+		%this.ndModeIndex      = $NDM::Disabled;
+		%this.ndLastSelectMode = NDM_StackSelect;
 
 		parent::onClientEnterGame(%this);
 	}
@@ -76,8 +76,8 @@ function GameConnection::ndKillMode(%this)
 
 	%this.ndMode.onKillMode(%this);
 
-	%this.ndMode = NDDM_Disabled;
-	%this.ndModeIndex = $NDDM::Disabled;
+	%this.ndMode = NDM_Disabled;
+	%this.ndModeIndex = $NDM::Disabled;
 
 	%this.ndUpdateBottomPrint();
 }

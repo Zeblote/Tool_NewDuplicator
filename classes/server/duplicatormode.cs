@@ -9,20 +9,20 @@
 // * ######################################################################
 
 //Possible dupli modes
-$NDDM::Disabled            = 0;
-$NDDM::CubeSelect          = 1;
-$NDDM::CubeSelectProgress  = 2;
-$NDDM::StackSelect         = 3;
-$NDDM::StackSelectProgress = 4;
-$NDDM::PlantCopy           = 5;
-$NDDM::PlantCopyProgress   = 6;
+$NDM::Disabled            = 0;
+$NDM::CubeSelect          = 1;
+$NDM::CubeSelectProgress  = 2;
+$NDM::StackSelect         = 3;
+$NDM::StackSelectProgress = 4;
+$NDM::PlantCopy           = 5;
+$NDM::PlantCopyProgress   = 6;
 
 //Disabled duplicator mode (does nothing)
 ND_ServerGroup.add(
-	new ScriptObject(NDDM_Disabled)
+	new ScriptObject(NDM_Disabled)
 	{
 		class = "NewDuplicatorMode";
-		index = $NDDM::Disabled;
+		index = $NDM::Disabled;
 
 		allowSelecting = false;
 		allowUnMount   = false;

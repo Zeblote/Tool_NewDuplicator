@@ -1,7 +1,7 @@
 // * ######################################################################
 // *
 // *    New Duplicator - Classes - Server
-// *    NDDM_CubeSelect
+// *    NDM_CubeSelect
 // *
 // *    -------------------------------------------------------------------
 // *    Handles inputs for cubic selection mode
@@ -10,10 +10,10 @@
 
 //Create object to receive callbacks
 ND_ServerGroup.add(
-	new ScriptObject(NDDM_CubeSelect)
+	new ScriptObject(NDM_CubeSelect)
 	{
 		class = "NewDuplicatorMode";
-		index = $NDDM::CubeSelect;
+		index = $NDM::CubeSelect;
 
 		allowSelecting = true;
 		allowUnMount   = false;
@@ -26,19 +26,19 @@ ND_ServerGroup.add(
 ///////////////////////////////////////////////////////////////////////////
 
 //Switch to this mode
-function NDDM_CubeSelect::onStartMode(%this, %client, %lastMode)
+function NDM_CubeSelect::onStartMode(%this, %client, %lastMode)
 {
 	%client.ndLastSelectMode = %this;
 	%client.ndUpdateBottomPrint();
 
-	if(%lastMode != $NDDM::CubeSelectProgress)
+	if(%lastMode != $NDM::CubeSelectProgress)
 		%client.ndSelectionChanged = true;
 }
 
 //Switch away from this mode
-function NDDM_CubeSelect::onChangeMode(%this, %client, %nextMode)
+function NDM_CubeSelect::onChangeMode(%this, %client, %nextMode)
 {
-	if(%nextMode == $NDDM::StackSelect)
+	if(%nextMode == $NDM::StackSelect)
 	{
 		//Clear selection
 		if(isObject(%client.ndSelection))
@@ -48,7 +48,7 @@ function NDDM_CubeSelect::onChangeMode(%this, %client, %nextMode)
 		if(isObject(%client.ndSelectionBox))
 			%client.ndSelectionBox.delete();
 	}
-	else if(%nextMode == $NDDM::PlantCopy)
+	else if(%nextMode == $NDM::PlantCopy)
 	{
 		//Start de-highlighting the bricks
 		%client.ndSelection.deHighlight();
@@ -60,7 +60,7 @@ function NDDM_CubeSelect::onChangeMode(%this, %client, %nextMode)
 }
 
 //Kill this mode
-function NDDM_CubeSelect::onKillMode(%this, %client)
+function NDM_CubeSelect::onKillMode(%this, %client)
 {
 	//Destroy selection
 	if(isObject(%client.ndSelection))
@@ -77,7 +77,7 @@ function NDDM_CubeSelect::onKillMode(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Selecting an object with the duplicator
-function NDDM_CubeSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
+function NDM_CubeSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 {
 	if(%obj.getType() & $TypeMasks::FxBrickAlwaysObjectType)
 	{
@@ -113,16 +113,16 @@ function NDDM_CubeSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 ///////////////////////////////////////////////////////////////////////////
 
 //Light key
-function NDDM_CubeSelect::onLight(%this, %client)
+function NDM_CubeSelect::onLight(%this, %client)
 {
 	if($ND::PlayMenuSounds)
 		%client.play2d(lightOffSound);
 
-	%client.ndSetMode(NDDM_StackSelect);
+	%client.ndSetMode(NDM_StackSelect);
 }
 
 //Prev Seat
-function NDDM_CubeSelect::onPrevSeat(%this, %client)
+function NDM_CubeSelect::onPrevSeat(%this, %client)
 {
 	if(!%client.ndSelectionChanged)
 	{
@@ -141,7 +141,7 @@ function NDDM_CubeSelect::onPrevSeat(%this, %client)
 }
 
 //Shift Brick
-function NDDM_CubeSelect::onShiftBrick(%this, %client, %x, %y, %z)
+function NDM_CubeSelect::onShiftBrick(%this, %client, %x, %y, %z)
 {
 	if(!isObject(%client.ndSelectionBox))
 		return;
@@ -175,13 +175,13 @@ function NDDM_CubeSelect::onShiftBrick(%this, %client, %x, %y, %z)
 }
 
 //Super Shift Brick
-function NDDM_CubeSelect::onSuperShiftBrick(%this, %client, %x, %y, %z)
+function NDM_CubeSelect::onSuperShiftBrick(%this, %client, %x, %y, %z)
 {
 	%this.onShiftBrick(%client, %x, %y, %z);
 }
 
 //Rotate Brick
-function NDDM_CubeSelect::onRotateBrick(%this, %client, %direction)
+function NDM_CubeSelect::onRotateBrick(%this, %client, %direction)
 {
 	if(!isObject(%client.ndSelectionBox) || !%client.ndSelectionBox.selectedSide)
 		return;
@@ -207,7 +207,7 @@ function NDDM_CubeSelect::onRotateBrick(%this, %client, %direction)
 }
 
 //Plant Brick
-function NDDM_CubeSelect::onPlantBrick(%this, %client)
+function NDM_CubeSelect::onPlantBrick(%this, %client)
 {
 	if(!isObject(%client.ndSelectionBox))
 		return;
@@ -224,15 +224,15 @@ function NDDM_CubeSelect::onPlantBrick(%this, %client)
 		%client.ndSelectionBox.deselectSide();
 		%box = %client.ndSelectionBox.getSize();
 
-		%client.ndSetMode(NDDM_CubeSelectProgress);
+		%client.ndSetMode(NDM_CubeSelectProgress);
 		%client.ndSelection.startCubeSelection(%box, %client.ndLimited);
 	}
 	else
-		%client.ndSetMode(NDDM_PlantCopy);
+		%client.ndSetMode(NDM_PlantCopy);
 }
 
 //Cancel Brick
-function NDDM_CubeSelect::onCancelBrick(%this, %client)
+function NDM_CubeSelect::onCancelBrick(%this, %client)
 {
 	if(!isObject(%client.ndSelectionBox))
 		return;
@@ -247,7 +247,7 @@ function NDDM_CubeSelect::onCancelBrick(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Create bottomprint for client
-function NDDM_CubeSelect::getBottomPrint(%this, %client)
+function NDM_CubeSelect::getBottomPrint(%this, %client)
 {		
 	if(isObject(%client.ndSelection) && %client.ndSelection.brickCount)
 	{
