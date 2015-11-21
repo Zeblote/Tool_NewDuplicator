@@ -65,10 +65,14 @@ function NDM_CubeSelectProgress::getBottomPrint(%this, %client)
 		%curr = %client.ndSelection.currChunk + 1;
 		%num = %client.ndSelection.numChunks;
 
-		%title = "Searching... (Chunk \c3" @ %curr @ "\c6 of \c3" @ %num @ "\c6, \c3" @ %qCount @ "\c6 Bricks)";
+		%percent = mFloor(%curr * 100 / %num);
+		%title = "Searching... (\c3" @ %percent @ "%\c6, \c3" @ %qCount @ "\c6 Bricks)";
 	}
 	else
-		%title = "Processing... (\c3" @ %bCount @ "\c6 / \c3" @ %qCount @ "\c6 Bricks)";
+	{
+		%percent = mFloor(%bCount * 100 / %qCount);
+		%title = "Processing... (\c3" @ %percent @ "%\c6)";
+	}
 
 	%l0 = "[Cancel Brick]: Cancel selection";
 
