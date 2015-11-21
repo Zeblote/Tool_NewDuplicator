@@ -1258,7 +1258,7 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 			{
 				%this.plantSearchIndex = %i + 1;
 				%this.plantQueueCount = %qCount;
-				%this.tickPlantTree(%end - %i, %position, %angleID);
+				%this.tickPlantTree(%remainingPlants - (%i + 1), %position, %angleID);
 				return;
 			}
 
