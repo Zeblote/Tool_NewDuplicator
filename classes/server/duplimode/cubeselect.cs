@@ -102,7 +102,7 @@ function NDM_CubeSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 			%client.ndSelectionBox = ND_SelectionBox(%shapeName);
 		}
 
-		%client.ndSelectionBox.resize(%obj.getWorldBox());
+		%client.ndSelectionBox.setSize(%obj.getWorldBox());
 		%client.ndUpdateBottomPrint();
 	}
 }
@@ -146,46 +146,6 @@ function NDM_CubeSelect::onShiftBrick(%this, %client, %x, %y, %z)
 	if(!isObject(%client.ndSelectionBox))
 		return;
 
-	//Select the side in the direction the brick was shifted
-	switch(getAngleIDFromPlayer(%client.player))
-	{
-		case 0: %newX =  %x; %newY =  %y;
-		case 1: %newX = -%y; %newY =  %x;
-		case 2: %newX = -%x; %newY = -%y;
-		case 3: %newX =  %y; %newY = -%x;
-	}
-
-	if(%newX > 0)
-		%side = 1;
-	else if(%newY > 0)
-		%side = 2;
-	else if(%z > 0)
-		%side = 3;
-	else if(%newX < 0)
-		%side = 4;
-	else if(%newY < 0)
-		%side = 5;
-	else if(%z < 0)
-		%side = 6;
-	else
-		%side = 0;
-
-	%client.ndSelectionBox.selectSide(%side);
-	%client.ndUpdateBottomPrint();
-}
-
-//Super Shift Brick
-function NDM_CubeSelect::onSuperShiftBrick(%this, %client, %x, %y, %z)
-{
-	%this.onShiftBrick(%client, %x, %y, %z);
-}
-
-//Rotate Brick
-function NDM_CubeSelect::onRotateBrick(%this, %client, %direction)
-{
-	if(!isObject(%client.ndSelectionBox) || !%client.ndSelectionBox.selectedSide)
-		return;
-
 	if(!%client.ndSelectionChanged)
 	{
 		messageClient(%client, 'MsgError', "");
@@ -196,14 +156,41 @@ function NDM_CubeSelect::onRotateBrick(%this, %client, %direction)
 		%client.ndUpdateBottomPrint();
 	}
 
+	//Move the corner
+	switch(getAngleIDFromPlayer(%client.player))
+	{
+		case 0: %newX =  %x; %newY =  %y;
+		case 1: %newX = -%y; %newY =  %x;
+		case 2: %newX = -%x; %newY = -%y;
+		case 3: %newX =  %y; %newY = -%x;
+	}
+
+	%newX = mFloor(%newX) / 2;
+	%newY = mFloor(%newY) / 2;
+	%z    = mFloor(%z   ) / 5;
+
 	if(%client.isAdmin)
 		%limit = $Pref::Server::ND::MaxCubeSizeAdmin;
 	else
 		%limit = $Pref::Server::ND::MaxCubeSizePlayer;
 
-	//Extend or retract the side
-	if(%client.ndSelectionBox.stepSide(%direction, %limit))
+	if(%client.ndSelectionBox.shiftCorner(%newX SPC %newY SPC %z, %limit))
 		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Oops!\n<font:Verdana:17>\c6Your selection box is limited to \c3" @ mFloor(%limit * 2) @ " \c6studs.", 5);
+}
+
+//Super Shift Brick
+function NDM_CubeSelect::onSuperShiftBrick(%this, %client, %x, %y, %z)
+{
+	%this.onShiftBrick(%client, %x * 8, %y * 8, %z * 20);
+}
+
+//Rotate Brick
+function NDM_CubeSelect::onRotateBrick(%this, %client, %direction)
+{
+	if(!isObject(%client.ndSelectionBox))
+		return;
+
+	%client.ndSelectionBox.switchCorner();
 }
 
 //Plant Brick
@@ -221,7 +208,6 @@ function NDM_CubeSelect::onPlantBrick(%this, %client)
 			%client.ndSelection = ND_Selection(%client);
 
 		//Start selection
-		%client.ndSelectionBox.deselectSide();
 		%box = %client.ndSelectionBox.getSize();
 
 		%client.ndSetMode(NDM_CubeSelectProgress);
@@ -237,7 +223,11 @@ function NDM_CubeSelect::onCancelBrick(%this, %client)
 	if(!isObject(%client.ndSelectionBox))
 		return;
 
-	%client.ndSelectionBox.deselectSide();
+	if(isObject(%client.ndSelection))
+		%client.ndSelection.deleteData();
+
+	%client.ndSelectionBox.delete();
+	%client.ndSelectionChanged = true;
 	%client.ndUpdateBottomPrint();
 }
 
@@ -263,16 +253,8 @@ function NDM_CubeSelect::getBottomPrint(%this, %client)
 
 	if(isObject(%client.ndSelectionBox))
 	{
-		if(%client.ndSelectionBox.selectedSide)
-		{
-			%r0 = "[Move Brick]: Select side";
-			%r1 = "[Rotate Brick]: Extend side";
-		}
-		else
-		{
-			%r0 = "Click Brick: Place selection cube";
-			%r1 = "[Move Brick]: Select side to move";
-		}
+		%r0 = "[Shift Brick]: Move corner";
+		%r1 = "[Rotate Brick]: Switch corner";
 
 		if(%client.ndSelectionChanged)
 			%r2 = "[Plant Brick]: Select bricks";

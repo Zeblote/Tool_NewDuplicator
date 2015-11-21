@@ -18,7 +18,6 @@ $ND::ScriptPath = $ND::FilePath @ "scripts/";
 $ND::ResourcePath = $ND::FilePath @ "resources/";
 
 echo(" \n--- Loading Client Scripts ---");
-exec($ND::ScriptPath @ "client/controls.cs");
 exec($ND::ScriptPath @ "client/handshake.cs");
 
 echo(" \n--- Initializing Client ---");

@@ -44,8 +44,27 @@ function NDM_StackSelect::onChangeMode(%this, %client, %nextMode)
 			%min = vectorAdd(%s.rootPosition, %s.minSize);
 			%max = vectorAdd(%s.rootPosition, %s.maxSize);
 
-			%client.ndSelectionBox = ND_SelectionBox();
-			%client.ndSelectionBox.resize(%min, %max);
+			if(%client.isAdmin)
+				%limit = $Pref::Server::ND::MaxCubeSizeAdmin;
+			else
+				%limit = $Pref::Server::ND::MaxCubeSizePlayer;
+
+			if((getWord(%max, 0) - getWord(%min, 0) <= %limit)
+			&& (getWord(%max, 1) - getWord(%min, 1) <= %limit)
+			&& (getWord(%max, 2) - getWord(%min, 2) <= %limit))
+			{
+				%name = %client.name;
+
+				if(getSubStr(%name, strLen(%name - 1), 1) $= "s")
+					%shapeName = %name @ "' Selection Cube";
+				else
+					%shapeName = %name @ "'s Selection Cube";
+
+				%client.ndSelectionBox = ND_SelectionBox(%shapeName);
+				%client.ndSelectionBox.setSize(%min, %max);
+			}
+			else
+				commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Oops!\n<font:Verdana:17>\c6Your selection box is limited to \c3" @ mFloor(%limit * 2) @ " \c6studs.", 5);
 		}
 
 		//Clear selection
@@ -130,6 +149,15 @@ function NDM_StackSelect::onPlantBrick(%this, %client)
 		return;
 
 	%client.ndSetMode(NDM_PlantCopy);
+}
+
+//Cancel Brick
+function NDM_StackSelect::onCancelBrick(%this, %client)
+{
+	if(isObject(%client.ndSelection))
+		%client.ndSelection.deleteData();
+
+	%client.ndUpdateBottomPrint();
 }
 
 

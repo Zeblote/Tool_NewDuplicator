@@ -122,6 +122,9 @@ function ND_HighlightBox::resize(%this, %point1, %point2)
 	else
 		%width = 0.5;
 
+	//Make this slightly smaller than the selection boxes
+	%width -= 0.02;
+
 	for(%i = 0; %i < 4; %i++)
 	{
 		%this.border_x[%i].setScale(%width SPC %width SPC %len_x + %width * 0.05);
