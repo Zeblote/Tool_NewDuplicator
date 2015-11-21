@@ -238,6 +238,12 @@ function ND_SelectionBox::setSize(%this, %point1, %point2)
 function ND_SelectionBox::switchCorner(%this)
 {
 	%this.selectedCorner = !%this.selectedCorner;
+
+	if(%this.selectedCorner)
+		serverPlay3d(BrickRotateSound, %this.point2);
+	else
+		serverPlay3d(BrickRotateSound, %this.point1);
+
 	%this.applyColors();
 }
 
