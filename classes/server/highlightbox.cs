@@ -22,7 +22,7 @@ function ND_HighlightBox()
 		%this.border_z[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
 	}
 
-	%this.color = "1 0.84 0 1";
+	%this.color = "1 0.84 0 0.99";
 	%this.applyColors();
 
 	return %this;

@@ -938,7 +938,7 @@ function ND_Selection::spawnGhostBricks(%this, %position, %angleID)
 	%this.ghostAngleID = %angleID;
 
 	//Change highlightbox to blue
-	%this.highlightBox.color = "0.2 0.2 1 1";
+	%this.highlightBox.color = "0.2 0.2 1 0.99";
 	%this.highlightBox.applyColors();
 	%this.updateHighlightBox();
 }
