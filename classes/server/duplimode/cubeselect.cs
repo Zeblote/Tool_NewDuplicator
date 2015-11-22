@@ -157,7 +157,7 @@ function NDM_CubeSelect::onShiftBrick(%this, %client, %x, %y, %z)
 	}
 
 	//Move the corner
-	switch(getAngleIDFromPlayer(%client.player))
+	switch(getAngleIDFromPlayer(%client.getControlObject()))
 	{
 		case 0: %newX =  %x; %newY =  %y;
 		case 1: %newX = -%y; %newY =  %x;

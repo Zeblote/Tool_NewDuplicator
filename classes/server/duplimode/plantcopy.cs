@@ -122,7 +122,7 @@ function NDM_PlantCopy::onPrevSeat(%this, %client)
 //Shift Brick
 function NDM_PlantCopy::onShiftBrick(%this, %client, %x, %y, %z)
 {
-	switch(getAngleIDFromPlayer(%client.player))
+	switch(getAngleIDFromPlayer(%client.getControlObject()))
 	{
 		case 0: %newX =  %x; %newY =  %y;
 		case 1: %newX = -%y; %newY =  %x;
@@ -136,7 +136,7 @@ function NDM_PlantCopy::onShiftBrick(%this, %client, %x, %y, %z)
 //Super Shift Brick
 function NDM_PlantCopy::onSuperShiftBrick(%this, %client, %x, %y, %z)
 {
-	switch(getAngleIDFromPlayer(%client.player))
+	switch(getAngleIDFromPlayer(%client.getControlObject()))
 	{
 		case 0: %newX =  %x; %newY =  %y;
 		case 1: %newX = -%y; %newY =  %x;
