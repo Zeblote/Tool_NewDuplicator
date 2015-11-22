@@ -452,3 +452,34 @@ function ndTrustCheck(%obj, %admin, %group1, %group2, %bl_id)
 
 	return false;
 }
+
+//Get the closest paint color to an rgb value
+function ndGetClosestColorID(%rgb)
+{
+	//Set initial value
+	%color = getColorI(getColorIdTable(0));
+
+	%best = 0;
+	%bestDiff = vectorLen(vectorSub(%rgb, %color));
+
+	if(getWord(%color, 3) != 255)
+		%bestDiff += 1000;
+
+	for(%i = 1; %i < 64; %i++)
+	{
+		%color = getColorI(getColorIdTable(%i));
+
+		%diff = vectorLen(vectorSub(%rgb, %color));
+
+		if(getWord(%color, 3) != 255)
+			%diff += 1000;
+
+		if(%diff < %bestDiff)
+		{
+			%best = %i;
+			%bestDiff = %diff;
+		}
+	}
+
+	return %best;
+}

@@ -37,10 +37,10 @@ function ND_HighlightSet::addBrick(%this, %brick)
 		%brick.ndColorFx = %brick.colorFxID;
 
 		//If the brick already has the highlight color, apply color fx instead
-		if(%brick.ndColor == $Pref::Server::ND::BrickHighlightColor)
-			%brick.setColorFx($Pref::Server::ND::BrickHighlightColorFx);
+		if(%brick.ndColor == $ND::BrickHighlightColor)
+			%brick.setColorFx(3);
 		else
-			%brick.setColor($Pref::Server::ND::BrickHighlightColor);
+			%brick.setColor($ND::BrickHighlightColor);
 	}
 
 	%brick.ndHighlightSet = %this;
@@ -80,7 +80,7 @@ function ND_HighlightSet::removeHighlightTick(%this, %start)
 		if(%brick.ndHighlightSet == %this)
 		{
 			//If the brick already had the highlight color, color fx must be removed
-			if(%brick.ndColor == $Pref::Server::ND::BrickHighlightColor)
+			if(%brick.ndColor == $ND::BrickHighlightColor)
 				%brick.setColorFx(%brick.ndColorFx);
 			else
 				%brick.setColor(%brick.ndColor);

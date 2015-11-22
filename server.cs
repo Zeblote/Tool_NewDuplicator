@@ -45,5 +45,6 @@ exec($ND::ScriptPath @ "server/duplicator.cs");
 exec($ND::ScriptPath @ "server/handshake.cs");
 
 echo(" \n--- Initializing Server ---");
+$ND::BrickHighlightColor = ndGetClosestColorID("255 255 0");
 activatePackage(NewDuplicator_Server);
 ND_PrefManager().registerPrefs();
