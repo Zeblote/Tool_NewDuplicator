@@ -353,6 +353,8 @@ function GameConnection::ndUndoTick(%this, %group, %count)
 
 		if(!%brick.isDead())
 			%brick.killBrick();
+
+		%brick.delete();
 	}
 
 	//If undo is taking long, tell the client how far we get
