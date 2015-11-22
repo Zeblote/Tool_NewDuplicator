@@ -689,16 +689,16 @@ function ND_Selection::recordBrickData(%this, %i)
 	if((%tmp = %brick.getName()) !$= "")
 		$NS[%this, "Name", %i] = getSubStr(%tmp, 1, 999);
 
-	if(%tmp = %brick.light)
+	if(%tmp = %brick.light | 0)
 		$NS[%this, "Light", %i] = %tmp.getDatablock();
 
-	if(%tmp = %brick.emitter)
+	if(%tmp = %brick.emitter | 0)
 	{
 		$NS[%this, "Emitter", %i] = %tmp.getEmitterDatablock();
 		$NS[%this, "EmitDir", %i] = %brick.emitterDirection;
 	}
 
-	if(%tmp = %brick.item)
+	if(%tmp = %brick.item | 0)
 	{
 		$NS[%this, "Item", %i] = %tmp.getDatablock();
 		$NS[%this, "ItemPos", %i] = %brick.itemPosition;
@@ -712,7 +712,7 @@ function ND_Selection::recordBrickData(%this, %i)
 		$NS[%this, "VehColor", %i] = %brick.reColorVehicle;
 	}
 
-	if(%tmp = %brick.AudioEmitter)
+	if(%tmp = %brick.AudioEmitter | 0)
 		$NS[%this, "Music", %i] = %tmp.profile.getID();
 
 	if(!%brick.isRaycasting())
