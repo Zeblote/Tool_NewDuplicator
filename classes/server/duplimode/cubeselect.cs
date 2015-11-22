@@ -79,32 +79,35 @@ function NDM_CubeSelect::onKillMode(%this, %client)
 //Selecting an object with the duplicator
 function NDM_CubeSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 {
-	if(%obj.getType() & $TypeMasks::FxBrickAlwaysObjectType)
+	if((%obj.getType() & $TypeMasks::FxBrickAlwaysObjectType) == 0)
+		return;
+
+	if(!ndTrustCheckMessage(%obj, %client))
+		return;
+
+	if(!%client.ndSelectionChanged)
 	{
-		if(!%client.ndSelectionChanged)
-		{
-			messageClient(%client, 'MsgError', "");
-			commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection Box has been changed!\n<font:Verdana:17>\c6Press [Plant Brick] to select again.", 5);
+		messageClient(%client, 'MsgError', "");
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection Box has been changed!\n<font:Verdana:17>\c6Press [Plant Brick] to select again.", 5);
 
-			%client.ndSelectionChanged = true;
-			%client.ndSelection.deleteData();
-		}
-
-		if(!isObject(%client.ndSelectionBox))
-		{
-			%name = %client.name;
-
-			if(getSubStr(%name, strLen(%name - 1), 1) $= "s")
-				%shapeName = %name @ "' Selection Cube";
-			else
-				%shapeName = %name @ "'s Selection Cube";				
-
-			%client.ndSelectionBox = ND_SelectionBox(%shapeName);
-		}
-
-		%client.ndSelectionBox.setSize(%obj.getWorldBox());
-		%client.ndUpdateBottomPrint();
+		%client.ndSelectionChanged = true;
+		%client.ndSelection.deleteData();
 	}
+
+	if(!isObject(%client.ndSelectionBox))
+	{
+		%name = %client.name;
+
+		if(getSubStr(%name, strLen(%name - 1), 1) $= "s")
+			%shapeName = %name @ "' Selection Cube";
+		else
+			%shapeName = %name @ "'s Selection Cube";				
+
+		%client.ndSelectionBox = ND_SelectionBox(%shapeName);
+	}
+
+	%client.ndSelectionBox.setSize(%obj.getWorldBox());
+	%client.ndUpdateBottomPrint();
 }
 
 
@@ -201,6 +204,21 @@ function NDM_CubeSelect::onPlantBrick(%this, %client)
 
 	if(%client.ndSelectionChanged)	
 	{
+		//Check timeout
+		if(!%client.isAdmin && %client.ndLastSelectTime + $Pref::Server::ND::SelectTimeout > $Sim::Time)
+		{
+			%remain = mCeil(%client.ndLastSelectTime + $Pref::Server::ND::SelectTimeout - $Sim::Time);
+
+			if(%remain != 1)
+				%s = "s";
+
+			messageClient(%client, 'MsgError', "");
+			commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You need to wait\c3 " @ %remain @ "\c6 second" @ %s @ " before selecting again!", 5);
+			return;
+		}
+
+		%client.ndLastSelectTime = $Sim::Time;
+
 		//Prepare a selection to copy the bricks
 		if(isObject(%client.ndSelection))
 			%client.ndSelection.deleteData();

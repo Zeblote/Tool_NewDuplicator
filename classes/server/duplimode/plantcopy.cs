@@ -170,6 +170,31 @@ function NDM_PlantCopy::onRotateBrick(%this, %client, %direction)
 //Plant Brick
 function NDM_PlantCopy::onPlantBrick(%this, %client)
 {
+	//Check timeout
+	if(!%client.isAdmin && %client.ndLastPlantTime + $Pref::Server::ND::SelectTimeout > $Sim::Time)
+	{
+		%remain = mCeil(%client.ndLastPlantTime + $Pref::Server::ND::SelectTimeout - $Sim::Time);
+
+		if(%remain != 1)
+			%s = "s";
+
+		messageClient(%client, 'MsgError', "");
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You need to wait\c3 " @ %remain @ "\c6 second" @ %s @ " before planting again!", 5);
+		return;
+	}
+
+	//Check too far distance
+	%offset = vectorSub(%client.ndSelection.getGhostCenter(), %client.getControlObject().position);
+
+	if(vectorLen(%offset) > $Pref::Server::TooFarDistance)
+	{
+		messageClient(%client, 'MsgError', "");
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You can't plant so far away!", 5);
+		return;
+	}
+
+	%client.ndLastPlantTime = $Sim::Time;
+
 	%pos = %client.ndSelection.ghostPosition;
 	%ang = %client.ndSelection.ghostAngleID;
 

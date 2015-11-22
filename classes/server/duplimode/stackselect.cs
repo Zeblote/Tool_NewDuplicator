@@ -96,6 +96,24 @@ function NDM_StackSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 {
 	if((%obj.getType() & $TypeMasks::FxBrickAlwaysObjectType) == 0)
 		return;
+
+	//Check timeout
+	if(!%client.isAdmin && %client.ndLastSelectTime + $Pref::Server::ND::SelectTimeout > $Sim::Time)
+	{
+		%remain = mCeil(%client.ndLastSelectTime + $Pref::Server::ND::SelectTimeout - $Sim::Time);
+
+		if(%remain != 1)
+			%s = "s";
+
+		messageClient(%client, 'MsgError', "");
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You need to wait\c3 " @ %remain @ "\c6 second" @ %s @ " before selecting again!", 5);
+		return;
+	}
+
+	%client.ndLastSelectTime = $Sim::Time;
+
+	if(!ndTrustCheckMessage(%obj, %client))
+		return;
 	
 	//Prepare selection to copy the bricks
 	if(isObject(%client.ndSelection))

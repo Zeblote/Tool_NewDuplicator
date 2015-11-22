@@ -406,3 +406,49 @@ function serverCmdClearDups(%client)
 			%cl.ndKillMode();
 	}
 }
+
+//Send a message if a client doesn't have trust to a brick
+function ndTrustCheckMessage(%obj, %client)
+{
+	%group1 = %obj.getGroup();
+	%group2 = %client.brickGroup;
+	%bl_id = %client.bl_id;
+	%admin = %client.isAdmin;
+
+	if(ndTrustCheck(%obj, %admin, %group1, %group2, %client.bl_id))
+		return true;
+
+	messageClient(%client, 'MsgError', "");
+	commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You don't have enough trust to do that!", 5);
+	return false;
+}
+
+//Check whether a client has enough trust to a brick
+function ndTrustCheck(%obj, %admin, %group1, %group2, %bl_id)
+{
+	//Client owns brick
+	if(%group1 == %group2)
+		return true;
+
+	//Client owns stack
+	if(%obj.stackBL_ID == %bl_id)
+		return true;
+
+	//Client has trust to the brick
+	if(%group1.Trust[%bl_id] >= $Pref::Server::ND::TrustLimit)
+		return true;
+
+	//Client has trust to the stack of the brick
+	if(%group2.Trust[%obj.stackBL_ID] >= $Pref::Server::ND::TrustLimit)
+		return true;
+
+	//Client is admin
+	if(%admin && !$Pref::Server::ND::AdminTrustRequired)
+		return true;
+
+	//Client can duplicate public bricks
+	if(%group1.isPublicDomain && $Pref::Server::ND::SelectPublicBricks)
+		return true;
+
+	return false;
+}

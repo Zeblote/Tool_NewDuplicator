@@ -67,6 +67,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 	%highlightSet = ND_HighlightSet();
 
 	%this.brickLimitReached = false;
+	%this.trustFailCount = 0;
 
 	if(%this.client.isAdmin)
 		%brickLimit = $Pref::Server::ND::MaxBricksAdmin;
@@ -86,6 +87,11 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 	%this.recordBrickData(0);
 	%highlightSet.addBrick(%brick);
 
+	//Variables for trust checks
+	%admin = %this.client.isAdmin;
+	%group2 = %this.client.brickGroup;
+	%bl_id = %this.client.bl_id;
+
 	//Add bricks connected to the first brick to queue
 	if(%direction == 1)
 	{
@@ -93,6 +99,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 		%heightLimit = $NS[%this, "MinZ"] - 0.01;
 
 		%upCount = %brick.getNumUpBricks();
+		%realUpCnt = 0;
 
 		for(%i = 0; %i < %upCount; %i++)
 		{
@@ -106,6 +113,13 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 				if(%queueCount >= %brickLimit)
 					continue;
 
+				//Check trust
+				if(!ndTrustCheck(%nextBrick, %admin, %nextBrick.getGroup(), %group2, %bl_id))
+				{
+					%trustFailCount++;
+					continue;
+				}
+
 				$NS[%this, "BR", %queueCount] = %nextBrick;
 				$NS[%this, "ID", %nextBrick] = %queueCount;
 				%nId = %queueCount;
@@ -113,11 +127,12 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 				%queueCount++;
 			}
 
-			$NS[%this, "UpId", 0, %i] = %nId;
+			$NS[%this, "UpId", 0, %realUpCnt] = %nId;
+			%realUpCnt++;
 		}
 
 		//Start brick only has up bricks
-		$NS[%this, "UpCnt", 0] = %upCount;
+		$NS[%this, "UpCnt", 0] = %realUpCnt;
 		$NS[%this, "DownCnt", 0] = 0;
 	}
 	else
@@ -126,6 +141,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 		%heightLimit = $NS[%this, "MaxZ"] + 0.01;
 
 		%downCount = %brick.getNumDownBricks();
+		%realDownCnt = 0;
 
 		for(%i = 0; %i < %downCount; %i++)
 		{
@@ -139,6 +155,13 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 				if(%queueCount >= %brickLimit)
 					continue;
 
+				//Check trust
+				if(!ndTrustCheck(%nextBrick, %admin, %nextBrick.getGroup(), %group2, %bl_id))
+				{
+					%trustFailCount++;
+					continue;
+				}
+
 				$NS[%this, "BR", %queueCount] = %nextBrick;
 				$NS[%this, "ID", %nextBrick] = %queueCount;
 				%nId = %queueCount;
@@ -146,14 +169,16 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 				%queueCount++;
 			}
 
-			$NS[%this, "DownId", 0, %i] = %nId;
+			$NS[%this, "DownId", 0, %realDownCnt] = %nId;
+			%realDownCnt++;
 		}
 
 		//Start brick only has down bricks
 		$NS[%this, "UpCnt", 0] = 0;
-		$NS[%this, "DownCnt", 0] = %downCount;
+		$NS[%this, "DownCnt", 0] = %realDownCnt;
 	}
 
+	%this.trustFailCount += %trustFailCount;
 	%this.highlightSet = %highlightSet;
 	%this.queueCount = %queueCount;
 	%this.brickCount = %brickCount;
@@ -179,6 +204,11 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 	//Continue processing where we left off last tick
 	%start = %this.brickCount;
 	%end = %start + $Pref::Server::ND::StackSelectPerTick;
+
+	//Variables for trust checks
+	%admin = %this.client.isAdmin;
+	%group2 = %this.client.brickGroup;
+	%bl_id = %this.client.bl_id;
 	
 	for(%i = %start; %i < %end; %i++)
 	{
@@ -229,6 +259,13 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 				if(%queueCount >= %brickLimit)
 					continue;
 
+				//Check trust
+				if(!ndTrustCheck(%nextBrick, %admin, %nextBrick.getGroup(), %group2, %bl_id))
+				{
+					%trustFailCount++;
+					continue;
+				}
+
 				$NS[%this, "BR", %queueCount] = %nextBrick;
 				$NS[%this, "ID", %nextBrick] = %queueCount;
 				%nId = %queueCount;				
@@ -260,6 +297,13 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 			{
 				if(%queueCount >= %brickLimit)
 					continue;
+					
+				//Check trust
+				if(!ndTrustCheck(%nextBrick, %admin, %nextBrick.getGroup(), %group2, %bl_id))
+				{
+					%trustFailCount++;
+					continue;
+				}
 
 				$NS[%this, "BR", %queueCount] = %nextBrick;
 				$NS[%this, "ID", %nextBrick] = %queueCount;
@@ -274,6 +318,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 		$NS[%this, "DownCnt", %i] = %realDownCnt;
 	}
 
+	%this.trustFailCount += %trustFailCount;
 	%this.queueCount = %queueCount;
 	%this.brickCount = %i;
 
@@ -312,6 +357,9 @@ function ND_Selection::finishStackSelection(%this)
 
 	if(%this.brickLimitReached)
 		%msg = %msg @ " (Limit Reached)";
+
+	if(%this.trustFailCount > 0)
+		%msg = %msg @ "\n<font:Verdana:17>\c3" @ %this.trustFailCount @ "\c6 missing trust.";
 
 	commandToClient(%this.client, 'centerPrint', %msg, 5);
 
@@ -363,6 +411,7 @@ function ND_Selection::startCubeSelection(%this, %box, %limited)
 	%this.queueCount = 0;
 	%this.brickCount = 0;
 
+	%this.trustFailCount = 0;
 	%this.brickLimitReached = false;
 
 	if(%this.client.isAdmin)
@@ -428,6 +477,11 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 	%_id = %this @ "_ID"; //Maximum optimization for loop
 	%_br = %this @ "_BR";
 
+	//Variables for trust checks
+	%admin = %this.client.isAdmin;
+	%group2 = %this.client.brickGroup;
+	%bl_id = %this.client.bl_id;
+
 	while(%obj = containerSearchNext())
 	{
 		if($NS[%_id, %obj] $= "")
@@ -456,6 +510,13 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 					continue;
 			}
 
+			//Check trust
+			if(!ndTrustCheck(%obj, %admin, %obj.getGroup(), %group2, %bl_id))
+			{
+				%trustFailCount++;
+				continue;
+			}
+
 			$NS[%_id, %obj] = %i;
 			$NS[%_br, %i] = %obj;
 			%i++;
@@ -468,6 +529,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 		}
 	}
 
+	%this.trustFailCount += %trustFailCount;
 	%this.queueCount = %i;
 	
 	//Tell the client which chunk we just processed
@@ -509,7 +571,13 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 				else
 				{
 					messageClient(%this.client, 'MsgError', "");
-					commandToClient(%this.client, 'centerPrint', "<font:Verdana:20>\c6No bricks were found inside the selection!", 4);
+
+					%m = "<font:Verdana:20>\c6No bricks were found inside the selection!";
+
+					if(%this.trustFailCount > 0)
+						%m = %m @ "\n<font:Verdana:17>\c3" @ %this.trustFailCount @ "\c6 missing trust.";
+
+					commandToClient(%this.client, 'centerPrint', %m, 5);
 
 					%this.cancelCubeSelection();
 					%this.client.ndSetMode(NDM_CubeSelect);
@@ -624,8 +692,11 @@ function ND_Selection::finishCubeSelection(%this)
 	if(%this.brickLimitReached)
 		%msg = %msg @ " (Limit Reached)";
 
+	if(%this.trustFailCount > 0)
+		%msg = %msg @ "\n<font:Verdana:17>\c3" @ %this.trustFailCount @ "\c6 missing trust.";
+
 	%msg = %msg @ "\n<font:Verdana:17>\c6Press [Plant Brick] again to copy.";
-	commandToClient(%this.client, 'centerPrint', %msg, 5);
+	commandToClient(%this.client, 'centerPrint', %msg, 8);
 
 	%this.client.ndSelectionChanged = false;
 	%this.client.ndSetMode(NDM_CubeSelect);
