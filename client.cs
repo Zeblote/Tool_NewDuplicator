@@ -8,7 +8,7 @@
 // *
 // * ######################################################################
 
-$ND::Version = "0.0.0";
+$ND::Version = "1.0.0";
 
 $ND::FilePath = filePath($Con::File) @ "/";
 $ND::ConfigPath = "config/NewDuplicator/";
@@ -19,6 +19,7 @@ $ND::ResourcePath = $ND::FilePath @ "resources/";
 
 echo(" \n--- Loading Client Scripts ---");
 exec($ND::ScriptPath @ "client/handshake.cs");
+exec($ND::ScriptPath @ "client/updater.cs");
 
 echo(" \n--- Initializing Client ---");
 activatePackage(NewDuplicator_Client);

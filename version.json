@@ -1,0 +1,12 @@
+{
+	"version": "1.0.0",
+	"channel": "release",
+	"repositories":
+	[
+		{
+			"url": "http://bl.zeblote.com/repository.json",
+			"format": "JSON",
+			"id": 1
+		}
+	]
+}
