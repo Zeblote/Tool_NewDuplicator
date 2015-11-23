@@ -34,7 +34,7 @@ function GameConnection::ndHandshakeTimeout(%this)
 	if($Pref::Server::ND::Advertise)
 	{
 		%m =      "\c6Hey, it looks like you don't have the \c3New Duplicator\c6 yet! Check it out: ";
-		%m = %m @ "[<a:forum.blockland.us/index.php?topic=500000.0>Forum Topic</a>\c6]";
+		%m = %m @ "[<a:forum.blockland.us/index.php?topic=288602.0>Forum Topic</a>\c6]";
 
 		messageClient(%this, '', %m);
 	}
