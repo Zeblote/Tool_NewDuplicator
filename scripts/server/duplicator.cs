@@ -296,16 +296,7 @@ package NewDuplicator_Server
 
 		if(getField(%state, 1) $= "DUPLICATE")
 		{
-			%group = getField(%state, 0);
-			
-			if(%count = %group.getCount())
-			{
-				%client.ndLastMessageTime = $Sim::Time;
-				%client.ndUndoInProgress = true;
-				%client.ndUndoTick(%group, %count);
-			}
-			else
-				%group.delete();
+			(getField(%state, 0)).ndStartUndo(%client);
 
 			if(isObject(%client.player))
 				%client.player.playThread(3, "undo");
@@ -334,43 +325,68 @@ package NewDuplicator_Server
 //Undo bricks
 ///////////////////////////////////////////////////////////////////////////
 
-//Tick undo bricks
-function GameConnection::ndUndoTick(%this, %group, %count)
+//Start undo bricks
+function SimSet::ndStartUndo(%this, %client)
 {
-	if(%count > %group.getCount())
-		%start = %group.getCount();
+	%this.brickCount = %this.getCount();
+
+	if(!%this.brickCount)
+	{
+		%this.delete();
+		return;
+	}
+
+	%client.ndUndoInProgress = true;
+	%client.ndLastMessageTime = $Sim::Time;
+	%this.ndTickUndo(%this.brickCount, %client);
+}
+
+//Tick undo bricks
+function SimSet::ndTickUndo(%this, %count, %client)
+{
+	if(%count > %this.getCount())
+		%start = %this.getCount();
 	else
 		%start = %count;
 
-	%end = %start - $Pref::Server::ND::PlantBricksPerTick;
-
-	if(%end <= 0)
+	if(%start > $Pref::Server::ND::PlantBricksPerTick)
+		%end = %start - $Pref::Server::ND::PlantBricksPerTick;
+	else
 		%end = 0;
+
+	%instant = %start > 5000;
 
 	for(%i = %start - 1; %i >= %end; %i--)
 	{
-		%brick = %group.getObject(%i);
+		%brick = %this.getObject(%i);
 
 		if(!%brick.isDead())
 			%brick.killBrick();
 
-		%brick.delete();
+		//Instantly delete bricks if we have many thousand left to
+		//prevent killBrick() from hogging schedules on the server
+		if(%instant)
+			%brick.delete();
 	}
 
 	//If undo is taking long, tell the client how far we get
-	if(%this.ndLastMessageTime + 0.1 < $Sim::Time)
+	if(%client.ndLastMessageTime + 0.1 < $Sim::Time)
 	{
-		commandToClient(%this, 'centerPrint', "<font:Verdana:20>\c6Undo in progress...\n<font:Verdana:17>\c3" @ %end @ "\c6 remaining.", 1);
-		%this.ndLastMessageTime = $Sim::Time;
+		%client.ndLastMessageTime = $Sim::Time;
+
+		%percent = mCeil(100 - (%end * 100 / %this.brickCount));
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Undo in progress...\n<font:Verdana:17>\c3" @ %percent @ "%\c6 finished.", 1);
 	}
 
-	if(!%end)
+	if(%end <= 0)
 	{
-		%group.delete();
-		%this.ndUndoInProgress = false;
+		%this.delete();
+		%client.ndUndoInProgress = false;
+
+		return;
 	}
-	else
-		%this.schedule($Pref::Server::ND::PlantBricksTickDelay, ndUndoTick, %group, %end);
+	
+	%this.schedule($Pref::Server::ND::PlantBricksTickDelay, ndUndoTick, %end, %client);
 }
 
 
