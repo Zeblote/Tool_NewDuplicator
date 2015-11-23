@@ -386,7 +386,7 @@ function SimSet::ndTickUndo(%this, %count, %client)
 		return;
 	}
 	
-	%this.schedule($Pref::Server::ND::PlantBricksTickDelay, ndUndoTick, %end, %client);
+	%this.schedule($Pref::Server::ND::PlantBricksTickDelay, ndTickUndo, %end, %client);
 }
 
 
