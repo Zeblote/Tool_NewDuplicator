@@ -24,11 +24,11 @@ function clientCmdNdHandshake(%this, %serverVersion)
 package NewDuplicator_Client
 {
 	//Reset server version on leaving server
-	function disconnectedCleanup()
+	function disconnectedCleanup(%bool)
 	{
 		$ND::ServerVersion = "0.0.0";
 		$ND::ServerHasND = false;
 		
-		parent::disconnectedCleanup();
+		parent::disconnectedCleanup(%bool);
 	}
 };
