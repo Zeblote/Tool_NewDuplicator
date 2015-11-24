@@ -1673,7 +1673,11 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 			%brick.eventTargetIdx[%j] = %targetIdx;
 
 			//Why does this need to be so complicated?
-			%targetClass = getWord($InputEvent_TargetListfxDtsBrick_[%inputIdx], %targetIdx * 2 + 1);
+			if(%targetIdx >= 0)
+				%targetClass = getWord($InputEvent_TargetListfxDtsBrick_[%inputIdx], %targetIdx * 2 + 1);
+			else
+				%targetClass = "FxDTSBrick";
+				
 			%paramList = $OutputEvent_ParameterList[%targetClass, %outputIdx];
 			%paramCount = getFieldCount(%paramList);
 
