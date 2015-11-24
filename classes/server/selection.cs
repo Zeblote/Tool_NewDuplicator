@@ -1291,6 +1291,7 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 
 		//Attempt to place brick
 		%brick = ND_Selection::plantBrick(%this, %i, %position, %angleID, %group, %bl_id);
+		%plants++;
 
 		if(%brick > 0)
 		{
@@ -1307,6 +1308,8 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 
 				if(!$NP[%this, %id])
 				{
+					%found = true;
+
 					$NS[%this, "PQueue", %qCount] = %id;
 					$NP[%this, %id] = true;
 					%qCount++;
@@ -1320,6 +1323,8 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 
 				if(!$NP[%this, %id])
 				{
+					%found = true;
+
 					$NS[%this, "PQueue", %qCount] = %id;
 					$NP[%this, %id] = true;
 					%qCount++;
@@ -1327,11 +1332,11 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 			}			
 
 			//If we added bricks to plant queue, switch to second loop
-			if(%upCnt || %downCnt)
+			if(%found)
 			{
 				%this.plantSearchIndex = %i + 1;
 				%this.plantQueueCount = %qCount;
-				%this.tickPlantTree(%remainingPlants - (%i + 1), %position, %angleID);
+				%this.tickPlantTree(%remainingPlants - %plants, %position, %angleID);
 				return;
 			}
 
