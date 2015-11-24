@@ -1496,7 +1496,6 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 
 		colorID = $NS[%this, "Color", %i];
 		colorFxID = $NS[%this, "ColorFx", %i];
-		shapeFxID = $NS[%this, "ShapeFx", %i];
 
 		printID = $NS[%this, "Print", %i];
 	};
@@ -1562,6 +1561,10 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	%brick.setTrusted(true);
 	%datablock.onTrustCheckFinished(%brick);
 
+	//Workaround - water cubes change this in onPlant
+	//so we have to set it manually after planting.
+	%brick.setShapeFx($NS[%this, "ShapeFx", %i]);
+
 	//Hole bots... why don't you use the correct function?
 	//Add-ons are supposed to package _ON_TrustCheckFinished...
 	if(%datablock.isBotHole)
@@ -1571,14 +1574,9 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	}
 
 	//Apply wrench settings
-	if($NS[%this, "NoRender", %i])
-		%brick.setRendering(false);
-
-	if($NS[%this, "NoRay", %i])
-		%brick.setRaycasting(false);
-
-	if($NS[%this, "NoCol", %i])
-		%brick.setColliding(false);
+	%brick.setRendering(!$NS[%this, "NoRender", %i]);
+	%brick.setRaycasting(!$NS[%this, "NoRay", %i]);
+	%brick.setColliding(!$NS[%this, "NoCol", %i]);
 
 	if((%tmp = $NS[%this, "Name", %i]) !$= "")
 		%brick.setNTObjectName(%tmp);
