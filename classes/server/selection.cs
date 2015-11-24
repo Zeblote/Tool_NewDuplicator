@@ -353,7 +353,8 @@ function ND_Selection::finishStackSelection(%this)
 	if($Pref::Server::ND::PlayMenuSounds)
 		messageClient(%this.client, 'MsgUploadEnd', "");
 
-	%msg = "<font:Verdana:20>\c6Selected \c3" @ %this.brickCount @ "\c6 Bricks!";
+	%s = %this.brickCount == 1 ? "" : "s";
+	%msg = "<font:Verdana:20>\c6Selected \c3" @ %this.brickCount @ "\c6 Brick" @ %s @ "!";
 
 	if(%this.brickLimitReached)
 		%msg = %msg @ " (Limit Reached)";
@@ -687,7 +688,8 @@ function ND_Selection::finishCubeSelection(%this)
 	if($Pref::Server::ND::PlayMenuSounds)
 		messageClient(%this.client, 'MsgUploadEnd', "");
 
-	%msg = "<font:Verdana:20>\c6Selected \c3" @ %this.brickCount @ "\c6 Bricks!";
+	%s = %this.brickCount == 1 ? "" : "s";
+	%msg = "<font:Verdana:20>\c6Selected \c3" @ %this.brickCount @ "\c6 Brick" @ %s @ "!";
 
 	if(%this.brickLimitReached)
 		%msg = %msg @ " (Limit Reached)";
@@ -1696,7 +1698,8 @@ function ND_Selection::finishPlant(%this)
 	%trusted = %this.plantTrustFailCount;
 	%floating = %count - %planted - %blocked - %trusted;
 
-	%message = "<font:Verdana:20>\c6Planted \c3" @ %this.plantSuccessCount @ "\c6 / \c3" @ %count @ "\c6 Bricks!";
+	%s = %this.plantSuccessCount == 1 ? "" : "s";
+	%message = "<font:Verdana:20>\c6Planted \c3" @ %this.plantSuccessCount @ "\c6 / \c3" @ %count @ "\c6 Brick" @ %s @ "!";
 
 	if(%trusted)
 		%message = %message @ "\n<font:Verdana:17>\c3" @ %trusted @ "\c6 missing trust.";
