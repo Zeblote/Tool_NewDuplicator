@@ -202,6 +202,20 @@ function GameConnection::ndHandleCommand(%this, %cmd)
 			else
 				messageClient(%this, '', "\c6You don't have the New Duplicator installed");
 
+		case "clients" or "c":
+			messageClient(%this, '', "\c6New Duplicator versions:");
+
+			%cnt = ClientGroup.getCount();
+			for(%i = 0; %i < %cnt; %i++)
+			{
+				%client = ClientGroup.getObject(%i);
+
+				if(%client.ndClient)
+					messageClient(%this, '', "\c3" @ %client.name @ "\c6 has version \c3" @ %client.ndVersion);
+				else
+					messageClient(%this, '', "\c3" @ %client.name @ "\c6 doesn't have it installed");
+			}
+
 		case "prefs" or "p":
 			ND_PrefManager.dumpPrefs(%this);
 
