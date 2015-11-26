@@ -57,6 +57,15 @@ function NDM_CubeSelect::onChangeMode(%this, %client, %nextMode)
 		if(isObject(%client.ndSelectionBox))
 			%client.ndSelectionBox.delete();
 	}
+	else if(%nextMode == $NDM::CutProgress)
+	{
+		//Start de-highlighting the bricks
+		%client.ndSelection.deHighlight();
+
+		//Remove the selection box
+		if(isObject(%client.ndSelectionBox))
+			%client.ndSelectionBox.delete();
+	}
 }
 
 //Kill this mode
@@ -247,6 +256,28 @@ function NDM_CubeSelect::onCancelBrick(%this, %client)
 	%client.ndSelectionBox.delete();
 	%client.ndSelectionChanged = true;
 	%client.ndUpdateBottomPrint();
+}
+
+//Copy Selection
+function NDM_CubeSelect::onCopy(%this, %client)
+{
+	%this.onPlantBrick(%client);
+}
+
+//Cut Selection
+function NDM_CubeSelect::onCut(%this, %client)
+{
+	if(!isObject(%client.ndSelectionBox))
+		return;
+
+	if(%client.ndSelectionChanged)
+	{
+		%this.onPlantBrick(%client);
+		return;
+	}
+
+	%client.ndSetMode(NDM_CutProgress);
+	%client.ndSelection.startCutting();
 }
 
 

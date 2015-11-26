@@ -211,6 +211,12 @@ function NDM_PlantCopy::onCancelBrick(%this, %client)
 		%client.ndKillMode();
 }
 
+//Paste Selection
+function NDM_PlantCopy::onPaste(%this, %client)
+{
+	%this.onPlantBrick(%client);
+}
+
 
 
 //Interface

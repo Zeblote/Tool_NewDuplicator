@@ -13,12 +13,13 @@ $ND::ServerVersion = "0.0.0";
 $ND::ServerHasND = false;
 
 //Receive handshake from server
-function clientCmdNdHandshake(%this, %serverVersion)
+function clientCmdNdHandshake(%serverVersion)
 {
 	$ND::ServerVersion = %serverVersion;
 	$ND::ServerHasND = true;
 
 	commandToServer('ndHandshake', $ND::Version);
+	echo("ND: Server has the New Duplicator, version " @ %serverVersion @ ".");
 }
 
 package NewDuplicator_Client
@@ -28,6 +29,9 @@ package NewDuplicator_Client
 	{
 		$ND::ServerVersion = "0.0.0";
 		$ND::ServerHasND = false;
+
+		//Disable the keybinds
+		clientCmdNdEnableKeybinds(false);
 		
 		parent::disconnectedCleanup(%bool);
 	}

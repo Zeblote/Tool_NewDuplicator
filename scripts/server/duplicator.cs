@@ -46,6 +46,17 @@ package NewDuplicator_Server
 
 		parent::onDeath(%this, %a, %b, %c, %d);
 	}
+
+	//Kill duplicator mode when a player is force respawned
+	function GameConnection::spawnPlayer(%this)
+	{
+		if(%this.ndModeIndex)
+			%this.ndKillMode(%this);
+
+		%this.ndEquipped = false;
+
+		parent::spawnPlayer(%this);
+	}
 };
 
 
@@ -66,6 +77,10 @@ function GameConnection::ndSetMode(%this, %newMode)
 
 	%oldMode.onChangeMode(%this, %newMode.index);
 	%newMode.onStartMode(%this, %oldMode.index);
+
+	//Enable keybinds
+	if(!%oldMode.index)
+		commandToClient(%this, 'ndEnableKeybinds', true);
 }
 
 //Kill duplication mode
@@ -80,6 +95,9 @@ function GameConnection::ndKillMode(%this)
 	%this.ndModeIndex = $NDM::Disabled;
 
 	%this.ndUpdateBottomPrint();
+
+	//Disable keybinds
+	commandToClient(%this, 'ndEnableKeybinds', false);
 }
 
 //Update the bottomprint
@@ -138,8 +156,25 @@ function ndFormatMessage(%title, %l0, %r0, %l1, %r1, %l2, %r2)
 
 
 
-//Duplicator command
+//Duplicator commands
 ///////////////////////////////////////////////////////////////////////////
+
+//Cancel active dups (admin command)
+function serverCmdClearDups(%client)
+{
+	if(!%client.isAdmin)
+		return;
+
+	messageAll('MsgClearBricks', "\c3" @ %client.getPlayerName() @ "\c0 cleared all dups.");
+
+	for(%i = 0; %i < ClientGroup.getCount(); %i++)
+	{
+		%cl = ClientGroup.getObject(%i);
+
+		if(%cl.ndModeIndex)
+			%cl.ndKillMode();
+	}
+}
 
 //Short commands to equip a duplicator
 function serverCmdDuplicator(%this, %cmd){%this.ndHandleCommand(%cmd);}
@@ -211,7 +246,7 @@ package NewDuplicator_Server
 
 
 
-//Existing keybinds used to control the duplicator
+//Keybinds used to control the duplicator
 ///////////////////////////////////////////////////////////////////////////
 
 	//Light key (default: R)
@@ -307,18 +342,34 @@ package NewDuplicator_Server
 		%client.undoStack.push(%state);
 		parent::serverCmdUndoBrick(%client);
 	}
-
-	//Prevent creating ghost bricks in modes that allow un-mount
-	function BrickDeployProjectile::onCollision(%this, %obj, %col, %fade, %pos, %normal)
-	{
-		%client = %obj.client;
-
-		if(isObject(%client) && %client.ndModeIndex)
-			%client.ndMode.onSelectObject(%client, %col, %pos, %normal);
-		else
-			parent::onCollision(%this, %obj, %col, %fade, %pos, %normal);
-	}
 };
+
+//Copy selection (ctrl c)
+function serverCmdNdCopy(%client)
+{
+	if(%client.ndModeIndex)
+		%client.ndMode.onCopy(%client);
+}
+
+//Paste selection (ctrl v)
+function serverCmdNdPaste(%client)
+{
+	if(%client.ndModeIndex)
+		%client.ndMode.onPaste(%client);
+}
+
+//Cut selection (ctrl x)
+function serverCmdNdCut(%client)
+{
+	if(%client.ndModeIndex)
+		%client.ndMode.onCut(%client);
+}
+
+//Cut selection (command)
+function serverCmdCut(%client)
+{
+	serverCmdNdCut(%client);
+}
 
 
 
@@ -359,9 +410,7 @@ function SimSet::ndTickUndo(%this, %count, %client)
 	for(%i = %start - 1; %i >= %end; %i--)
 	{
 		%brick = %this.getObject(%i);
-
-		if(!%brick.isDead())
-			%brick.killBrick();
+		%brick.killBrick();
 
 		//Instantly delete bricks if we have many thousand left to
 		//prevent killBrick() from hogging schedules on the server
@@ -394,6 +443,20 @@ function SimSet::ndTickUndo(%this, %count, %client)
 //General support functions
 ///////////////////////////////////////////////////////////////////////////
 
+package NewDuplicator_Server
+{
+	//Prevent creating ghost bricks in modes that allow un-mount
+	function BrickDeployProjectile::onCollision(%this, %obj, %col, %fade, %pos, %normal)
+	{
+		%client = %obj.client;
+
+		if(isObject(%client) && %client.ndModeIndex)
+			%client.ndMode.onSelectObject(%client, %col, %pos, %normal);
+		else
+			parent::onCollision(%this, %obj, %col, %fade, %pos, %normal);
+	}
+};
+
 //Rotate vector around +Z in 90 degree steps
 function ndRotateVector(%vector, %steps)
 {
@@ -406,32 +469,14 @@ function ndRotateVector(%vector, %steps)
 	}
 }
 
-//Cancel active dups (admin command)
-function serverCmdClearDups(%client)
-{
-	if(!%client.isAdmin)
-		return;
-
-	messageAll('MsgClearBricks', "\c3" @ %client.getPlayerName() @ "\c0 cleared all dups.");
-
-	for(%i = 0; %i < ClientGroup.getCount(); %i++)
-	{
-		%cl = ClientGroup.getObject(%i);
-
-		if(%cl.ndModeIndex)
-			%cl.ndKillMode();
-	}
-}
-
 //Send a message if a client doesn't have trust to a brick
 function ndTrustCheckMessage(%obj, %client)
 {
-	%group1 = %obj.getGroup();
-	%group2 = %client.brickGroup;
+	%group = %client.brickGroup;
 	%bl_id = %client.bl_id;
 	%admin = %client.isAdmin;
 
-	if(ndTrustCheck(%obj, %admin, %group1, %group2, %client.bl_id))
+	if(ndTrustCheckSelection(%obj, %group, %bl_id, %admin))
 		return true;
 
 	messageClient(%client, 'MsgError', "");
@@ -439,9 +484,11 @@ function ndTrustCheckMessage(%obj, %client)
 	return false;
 }
 
-//Check whether a client has enough trust to a brick
-function ndTrustCheck(%obj, %admin, %group1, %group2, %bl_id)
+//Check whether a client has enough trust to select a brick
+function ndTrustCheckSelection(%obj, %group2, %bl_id, %admin)
 {
+	%group1 = %obj.getGroup();
+
 	//Client owns brick
 	if(%group1 == %group2)
 		return true;
@@ -463,7 +510,31 @@ function ndTrustCheck(%obj, %admin, %group1, %group2, %bl_id)
 		return true;
 
 	//Client can duplicate public bricks
-	if(%group1.isPublicDomain && $Pref::Server::ND::SelectPublicBricks)
+	if(%group1.bl_id == 888888 && $Pref::Server::ND::SelectPublicBricks)
+		return true;
+
+	return false;
+}
+
+//Check whether a client has enough trust to cut a brick
+function ndTrustCheckCut(%obj, %group2, %bl_id)
+{
+	%group1 = %obj.getGroup();
+
+	//Client owns brick
+	if(%group1 == %group2)
+		return true;
+
+	//Client owns stack
+	if(%obj.stackBL_ID == %bl_id)
+		return true;
+
+	//Client has trust to the brick
+	if(%group1.Trust[%bl_id] >= 2)
+		return true;
+
+	//Client has trust to the stack of the brick
+	if(%group2.Trust[%obj.stackBL_ID] >= 2)
 		return true;
 
 	return false;
@@ -499,3 +570,4 @@ function ndGetClosestColorID(%rgb)
 
 	return %best;
 }
+

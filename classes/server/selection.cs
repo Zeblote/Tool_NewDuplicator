@@ -89,7 +89,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 
 	//Variables for trust checks
 	%admin = %this.client.isAdmin;
-	%group2 = %this.client.brickGroup;
+	%group = %this.client.brickGroup;
 	%bl_id = %this.client.bl_id;
 
 	//Add bricks connected to the first brick to queue
@@ -114,7 +114,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 					continue;
 
 				//Check trust
-				if(!ndTrustCheck(%nextBrick, %admin, %nextBrick.getGroup(), %group2, %bl_id))
+				if(!ndTrustCheckSelection(%nextBrick, %group, %bl_id, %admin))
 				{
 					%trustFailCount++;
 					continue;
@@ -156,7 +156,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 					continue;
 
 				//Check trust
-				if(!ndTrustCheck(%nextBrick, %admin, %nextBrick.getGroup(), %group2, %bl_id))
+				if(!ndTrustCheckSelection(%nextBrick, %group, %bl_id, %admin))
 				{
 					%trustFailCount++;
 					continue;
@@ -207,7 +207,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 
 	//Variables for trust checks
 	%admin = %this.client.isAdmin;
-	%group2 = %this.client.brickGroup;
+	%group = %this.client.brickGroup;
 	%bl_id = %this.client.bl_id;
 	
 	for(%i = %start; %i < %end; %i++)
@@ -260,7 +260,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 					continue;
 
 				//Check trust
-				if(!ndTrustCheck(%nextBrick, %admin, %nextBrick.getGroup(), %group2, %bl_id))
+				if(!ndTrustCheckSelection(%nextBrick, %group, %bl_id, %admin))
 				{
 					%trustFailCount++;
 					continue;
@@ -299,7 +299,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 					continue;
 					
 				//Check trust
-				if(!ndTrustCheck(%nextBrick, %admin, %nextBrick.getGroup(), %group2, %bl_id))
+				if(!ndTrustCheckSelection(%nextBrick, %group, %bl_id, %admin))
 				{
 					%trustFailCount++;
 					continue;
@@ -512,7 +512,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 			}
 
 			//Check trust
-			if(!ndTrustCheck(%obj, %admin, %obj.getGroup(), %group2, %bl_id))
+			if(!ndTrustCheckSelection(%obj, %admin, %obj.getGroup(), %group2, %bl_id))
 			{
 				%trustFailCount++;
 				continue;
@@ -925,6 +925,101 @@ function ND_Selection::deHighlight(%this)
 
 
 
+//Cutting bricks
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//Begin cutting
+function ND_Selection::startCutting(%this)
+{
+	//Process first tick
+	if($Pref::Server::ND::PlayMenuSounds)
+		messageClient(%this.client, 'MsgUploadStart', "");
+
+	%this.cutIndex = 0;
+	%this.cutSuccessCount = 0;
+	%this.cutFailCount = 0;
+
+	%this.tickCutting();
+}
+
+//Cut some bricks
+function ND_Selection::tickCutting(%this)
+{
+	cancel(%this.cutSchedule);
+
+	//Get bounds for this tick
+	%start = %this.cutIndex;
+	%end = %start + $Pref::Server::ND::CubeSelectPerTick;
+
+	if(%end > %this.brickCount)
+		%end = %this.brickCount;
+
+	%cutSuccessCount = %this.cutSuccessCount;
+	%cutFailCount = %this.cutFailCount;
+
+	%group = %this.client.brickGroup;
+	%bl_id = %this.client.bl_id;
+
+	//Cut bricks
+	for(%i = %start; %i < %end; %i++)
+	{
+		%brick = $NS[%this, "BR", %i];
+
+		if(!isObject(%brick))
+			continue;
+
+		if(!ndTrustCheckCut(%brick, %group, %bl_id))
+		{
+			%cutFailCount++;
+			continue;
+		}
+
+		%brick.delete();
+		%cutSuccessCount++;
+	}
+
+	//Save how far we got
+	%this.cutIndex = %i;
+
+	%this.cutSuccessCount = %cutSuccessCount;
+	%this.cutFailCount = %cutFailCount;
+
+	//Tell the client how much we selected this tick
+	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
+	{
+		%this.client.ndUpdateBottomPrint();
+		%this.client.ndLastMessageTime = $Sim::Time;
+	}
+
+	if(%i >= %this.brickCount)
+		%this.finishCutting();
+	else
+		%this.cutSchedule = %this.schedule($Pref::Server::ND::PlantBricksTickDelay, tickCutting);
+}
+
+//Finish cutting
+function ND_Selection::finishCutting(%this)
+{
+	%s = %this.cutSuccessCount == 1 ? "" : "s";
+	%msg = "<font:Verdana:20>\c6Cut \c3" @ %this.cutSuccessCount @ "\c6 Brick" @ %s @ "!";
+
+	if(%this.cutFailCount > 0)
+		%msg = %msg @ "\n<font:Verdana:17>\c3" @ %this.cutFailCount @ "\c6 missing trust.";
+
+	commandToClient(%this.client, 'centerPrint', %msg, 8);
+
+	%this.client.ndSetMode(NDM_PlantCopy);
+}
+
+//Cancel cutting
+function ND_Selection::cancelCutting(%this)
+{
+	cancel(%this.cutSchedule);
+}
+
+
+
 //Ghost bricks
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1278,8 +1373,9 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 	if(%end > %this.brickCount)
 		%end = %this.brickCount;
 
-	%group = %this.client.brickGroup;
-	%bl_id = %this.client.bl_id;
+	%client = %this.client;
+	%group = %client.brickGroup;
+	%bl_id = %client.bl_id;
 
 	%qCount = %this.plantQueueCount;
 
@@ -1290,7 +1386,7 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 			continue;
 
 		//Attempt to place brick
-		%brick = ND_Selection::plantBrick(%this, %i, %position, %angleID, %group, %bl_id);
+		%brick = ND_Selection::plantBrick(%this, %i, %position, %angleID, %group, %client, %bl_id);
 		%plants++;
 
 		if(%brick > 0)
@@ -1379,8 +1475,9 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 	%start = %this.plantQueueIndex;
 	%end = %start + %remainingPlants;
 
-	%group = %this.client.brickGroup;
-	%bl_id = %this.client.bl_id;
+	%client = %this.client;
+	%group = %client.brickGroup;
+	%bl_id = %client.bl_id;
 
 	%qCount = %this.plantQueueCount;
 
@@ -1401,7 +1498,7 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 		//Attempt to plant queued brick
 		%bId = $NS[%this, "PQueue", %i];
 
-		%brick = ND_Selection::plantBrick(%this, %bId, %position, %angleID, %group, %bl_id);
+		%brick = ND_Selection::plantBrick(%this, %bId, %position, %angleID, %group, %client, %bl_id);
 
 		if(%brick > 0)
 		{
@@ -1469,7 +1566,7 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 
 //Attempt to plant brick with id %i
 //Returns brick if planted, 0 if floating, -1 if blocked, -2 if trust failure
-function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %bl_id)
+function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %client, %bl_id)
 {
 	//Get position and rotation
 	%bPos = vectorAdd(ndRotateVector($NS[%this, "Pos", %i], %angleID), %position);
@@ -1489,6 +1586,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	%brick = new FxDTSBrick()
 	{
 		datablock = %datablock;
+		client = %client;
 
 		position = %bPos;
 		rotation = %bRot;
@@ -1500,6 +1598,10 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		printID = $NS[%this, "Print", %i];
 	};
 
+	//Add to brickgroup
+	%brickGroup.add(%brick);
+
+	//Attempt plant
 	if(%error = %brick.plant())
 	{
 		%brick.delete();
@@ -1523,7 +1625,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		if(%group.Trust[%bl_id] > 0)
 			continue;
 
-		if(%group.isPublicDomain)
+		if(%group.bl_id == 888888)
 			continue;
 
 		%brick.delete();
@@ -1542,14 +1644,14 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		if(%group.Trust[%bl_id] > 0)
 			continue;
 
-		if(%group.isPublicDomain)
+		if(%group.bl_id == 888888)
 			continue;
 
 		%brick.delete();
 		return -2;
 	}
 
-	//Add to brickgroup
+	//Finished trust check
 	if(%downCnt)
 		%brick.stackBL_ID = %brick.getDownBrick(0).stackBL_ID;
 	else if(%upCnt)
@@ -1557,7 +1659,6 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	else
 		%brick.stackBL_ID = %bl_id;
 
-	%brickGroup.add(%brick);
 	%brick.setTrusted(true);
 	%datablock.onTrustCheckFinished(%brick);
 

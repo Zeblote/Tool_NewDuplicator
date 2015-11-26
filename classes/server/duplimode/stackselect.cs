@@ -76,6 +76,11 @@ function NDM_StackSelect::onChangeMode(%this, %client, %nextMode)
 		//Start de-highlighting the bricks
 		%client.ndSelection.deHighlight();
 	}
+	else if(%nextMode == $NDM::CutProgress)
+	{
+		//Start de-highlighting the bricks
+		%client.ndSelection.deHighlight();
+	}
 }
 
 //Kill this mode
@@ -176,6 +181,22 @@ function NDM_StackSelect::onCancelBrick(%this, %client)
 		%client.ndSelection.deleteData();
 
 	%client.ndUpdateBottomPrint();
+}
+
+//Copy Selection
+function NDM_StackSelect::onCopy(%this, %client)
+{
+	%this.onPlantBrick(%client);
+}
+
+//Cut Selection
+function NDM_StackSelect::onCut(%this, %client)
+{
+	if(!isObject(%client.ndSelection) || !%client.ndSelection.brickCount)
+		return;
+
+	%client.ndSetMode(NDM_CutProgress);
+	%client.ndSelection.startCutting();
 }
 
 

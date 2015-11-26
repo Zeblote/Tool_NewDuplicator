@@ -34,6 +34,7 @@ exec($ND::ClassPath @ "server/selectionbox.cs");
 
 exec($ND::ClassPath @ "server/duplimode/cubeselect.cs");
 exec($ND::ClassPath @ "server/duplimode/cubeselectprogress.cs");
+exec($ND::ClassPath @ "server/duplimode/cutprogress.cs");
 exec($ND::ClassPath @ "server/duplimode/plantcopy.cs");
 exec($ND::ClassPath @ "server/duplimode/plantcopyprogress.cs");
 exec($ND::ClassPath @ "server/duplimode/stackselect.cs");

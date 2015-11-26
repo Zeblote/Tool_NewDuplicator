@@ -12,10 +12,11 @@
 $NDM::Disabled            = 0;
 $NDM::CubeSelect          = 1;
 $NDM::CubeSelectProgress  = 2;
-$NDM::StackSelect         = 3;
-$NDM::StackSelectProgress = 4;
-$NDM::PlantCopy           = 5;
-$NDM::PlantCopyProgress   = 6;
+$NDM::CutProgress         = 3;
+$NDM::StackSelect         = 4;
+$NDM::StackSelectProgress = 5;
+$NDM::PlantCopy           = 6;
+$NDM::PlantCopyProgress   = 7;
 
 //Disabled duplicator mode (does nothing)
 ND_ServerGroup.add(
@@ -54,6 +55,9 @@ function NewDuplicatorMode::onSuperShiftBrick(%this, %client, %x, %y, %z){}
 function NewDuplicatorMode::onRotateBrick(%this, %client, %direction){}
 function NewDuplicatorMode::onPlantBrick(%this, %client){}
 function NewDuplicatorMode::onCancelBrick(%this, %client){}
+function NewDuplicatorMode::onCopy(%this, %client){}
+function NewDuplicatorMode::onPaste(%this, %client){}
+function NewDuplicatorMode::onCut(%this, %client){}
 
 //Interface
 ///////////////////////////////////////////////////////////////////////////
