@@ -59,9 +59,6 @@ function NDM_CubeSelect::onChangeMode(%this, %client, %nextMode)
 	}
 	else if(%nextMode == $NDM::CutProgress)
 	{
-		//Start de-highlighting the bricks
-		%client.ndSelection.deHighlight();
-
 		//Remove the selection box
 		if(isObject(%client.ndSelectionBox))
 			%client.ndSelectionBox.delete();
