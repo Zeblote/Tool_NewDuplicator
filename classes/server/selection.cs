@@ -337,8 +337,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 	}
 
 	//Schedule next tick
-	%this.stackSelectSchedule = %this.schedule(30,
-		tickStackSelection, %direction, %limited, %heightLimit, %brickLimit);
+	%this.stackSelectSchedule = %this.schedule(30, tickStackSelection, %direction, %limited, %heightLimit, %brickLimit);
 }
 
 //Finish stack selection
@@ -1666,58 +1665,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	//so we have to set it manually after planting.
 	%brick.setShapeFx($NS[%this, "ShapeFx", %i]);
 
-	//Hole bots... why don't you use the correct function?
-	//Add-ons are supposed to package _ON_TrustCheckFinished...
-	if(%datablock.isBotHole)
-	{
-		%brick.isBotHole = true;
-		%brick.onHoleSpawnPlanted();
-	}
-
-	//Apply wrench settings
-	%brick.setRendering(!$NS[%this, "NoRender", %i]);
-	%brick.setRaycasting(!$NS[%this, "NoRay", %i]);
-	%brick.setColliding(!$NS[%this, "NoCol", %i]);
-
-	if((%tmp = $NS[%this, "Name", %i]) !$= "")
-		%brick.setNTObjectName(%tmp);
-
-	if(%tmp = $NS[%this, "Light", %i])
-		%brick.setLight(%tmp);
-
-	if(%tmp = $NS[%this, "Emitter", %i])
-	{
-		if((%dir = $NS[%this, "EmitDir", %i]) > 1)
-			%dir = 2 + ((%dir + %angleID - 2) % 4);
-
-		%brick.emitterDirection = %dir;
-		%brick.setEmitter(%tmp);
-	}
-
-	if(%tmp = $NS[%this, "Item", %i])
-	{
-		if((%pos = $NS[%this, "ItemPos", %i]) > 1)
-			%pos = 2 + ((%pos + %angleID - 2) % 4);
-
-		if((%dir = $NS[%this, "ItemDir", %i]) > 1)
-			%dir = 2 + ((%dir + %angleID - 2) % 4);
-
-		%brick.itemPosition = %pos;
-		%brick.itemDirection = %dir;
-		%brick.itemRespawnTime = $NS[%this, "ItemTime", %i];
-		%brick.setItem(%tmp);
-	}
-
-	if(%tmp = $NS[%this, "Vehicle", %i])
-	{
-		%brick.reColorVehicle = $NS[%this, "VehColor", %i];
-		%brick.setVehicle(%tmp);
-	}
-
-	if(%tmp = $NS[%this, "Music", %i])
-		%brick.setSound(%tmp);
-
-	//Events
+	//Apply events
 	if(%numEvents = $NS[%this, "EvNum", %i])
 	{
 		%brick.numEvents = %numEvents;
@@ -1793,6 +1741,57 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 			}
 		}
 	}
+
+	//Hole bots... why don't you use the correct function?
+	//Add-ons are supposed to package _ON_TrustCheckFinished...
+	if(%datablock.isBotHole)
+	{
+		%brick.isBotHole = true;
+		%brick.onHoleSpawnPlanted();
+	}
+
+	//Apply wrench settings
+	%brick.setRendering(!$NS[%this, "NoRender", %i]);
+	%brick.setRaycasting(!$NS[%this, "NoRay", %i]);
+	%brick.setColliding(!$NS[%this, "NoCol", %i]);
+
+	if((%tmp = $NS[%this, "Name", %i]) !$= "")
+		%brick.setNTObjectName(%tmp);
+
+	if(%tmp = $NS[%this, "Light", %i])
+		%brick.setLight(%tmp);
+
+	if(%tmp = $NS[%this, "Emitter", %i])
+	{
+		if((%dir = $NS[%this, "EmitDir", %i]) > 1)
+			%dir = 2 + ((%dir + %angleID - 2) % 4);
+
+		%brick.emitterDirection = %dir;
+		%brick.setEmitter(%tmp);
+	}
+
+	if(%tmp = $NS[%this, "Item", %i])
+	{
+		if((%pos = $NS[%this, "ItemPos", %i]) > 1)
+			%pos = 2 + ((%pos + %angleID - 2) % 4);
+
+		if((%dir = $NS[%this, "ItemDir", %i]) > 1)
+			%dir = 2 + ((%dir + %angleID - 2) % 4);
+
+		%brick.itemPosition = %pos;
+		%brick.itemDirection = %dir;
+		%brick.itemRespawnTime = $NS[%this, "ItemTime", %i];
+		%brick.setItem(%tmp);
+	}
+
+	if(%tmp = $NS[%this, "Vehicle", %i])
+	{
+		%brick.reColorVehicle = $NS[%this, "VehColor", %i];
+		%brick.setVehicle(%tmp);
+	}
+
+	if(%tmp = $NS[%this, "Music", %i])
+		%brick.setSound(%tmp);
 
 	return %brick;
 }
