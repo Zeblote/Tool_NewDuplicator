@@ -67,8 +67,8 @@ function ND_HighlightSet::removeHighlightTick(%this, %start)
 {
 	%end = $NH[%this, "Cnt"];
 
-	if(%end - %start > $Pref::Server::ND::DeHighlightPerTick)
-		%end = %start + $Pref::Server::ND::DeHighlightPerTick;
+	if(%end - %start > $Pref::Server::ND::ProcessPerTick)
+		%end = %start + $Pref::Server::ND::ProcessPerTick;
 	else
 		%lastTick = true;
 
@@ -92,7 +92,7 @@ function ND_HighlightSet::removeHighlightTick(%this, %start)
 	if(!%lastTick)
 	{
 		cancel(%this.deHighlightSchedule);
-		%this.deHighlightSchedule = %this.schedule($Pref::Server::ND::DeHighlightTickDelay, removeHighlightTick, %end);
+		%this.deHighlightSchedule = %this.schedule(30, removeHighlightTick, %end);
 	}
 	else
 		%this.delete();

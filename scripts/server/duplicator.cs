@@ -414,8 +414,8 @@ function SimSet::ndTickUndo(%this, %count, %client)
 	else
 		%start = %count;
 
-	if(%start > $Pref::Server::ND::PlantBricksPerTick)
-		%end = %start - $Pref::Server::ND::PlantBricksPerTick;
+	if(%start > $Pref::Server::ND::ProcessPerTick)
+		%end = %start - $Pref::Server::ND::ProcessPerTick;
 	else
 		%end = 0;
 
@@ -449,7 +449,7 @@ function SimSet::ndTickUndo(%this, %count, %client)
 		return;
 	}
 	
-	%this.schedule($Pref::Server::ND::PlantBricksTickDelay, ndTickUndo, %end, %client);
+	%this.schedule(30, ndTickUndo, %end, %client);
 }
 
 

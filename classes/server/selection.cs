@@ -203,7 +203,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 
 	//Continue processing where we left off last tick
 	%start = %this.brickCount;
-	%end = %start + $Pref::Server::ND::StackSelectPerTick;
+	%end = %start + $Pref::Server::ND::ProcessPerTick;
 
 	//Variables for trust checks
 	%admin = %this.client.isAdmin;
@@ -337,7 +337,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 	}
 
 	//Schedule next tick
-	%this.stackSelectSchedule = %this.schedule($Pref::Server::ND::StackSelectTickDelay,
+	%this.stackSelectSchedule = %this.schedule(30,
 		tickStackSelection, %direction, %limited, %heightLimit, %brickLimit);
 }
 
@@ -348,7 +348,7 @@ function ND_Selection::finishStackSelection(%this)
 	%this.updateHighlightBox();
 
 	//De-highlight the bricks after a few seconds
-	%this.highlightSet.deHighlightDelayed($Pref::Server::ND::HighlightTime);
+	%this.highlightSet.deHighlightDelayed($Pref::Server::ND::HighlightDelay * 1000);
 
 	if($Pref::Server::ND::PlayMenuSounds)
 		messageClient(%this.client, 'MsgUploadEnd', "");
@@ -545,7 +545,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 	{
 		%this.brickLimitReached = true;
 		%this.rootPosition = $NS[%this, "BR", 0].getPosition();
-		%this.cubeSelectSchedule = %this.schedule($Pref::Server::ND::CubeSelectTickDelay, tickCubeSelectionProcess);
+		%this.cubeSelectSchedule = %this.schedule(30, tickCubeSelectionProcess);
 
 		return;
 	}
@@ -567,7 +567,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 				if(%this.queueCount > 0)
 				{
 					%this.rootPosition = $NS[%this, "BR", 0].getPosition();
-					%this.cubeSelectSchedule = %this.schedule($Pref::Server::ND::CubeSelectTickDelay, tickCubeSelectionProcess);
+					%this.cubeSelectSchedule = %this.schedule(30, tickCubeSelectionProcess);
 				}
 				else
 				{
@@ -590,7 +590,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 	}
 
 	//Schedule next chunk
-	%this.cubeSelectSchedule = %this.schedule($Pref::Server::ND::CubeSelectTickDelay, tickCubeSelectionChunk, %limited, %brickLimit);
+	%this.cubeSelectSchedule = %this.schedule(30, tickCubeSelectionChunk, %limited, %brickLimit);
 }
 
 //Save connections between bricks and highlight them
@@ -601,7 +601,7 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 
 	//Get bounds for this tick
 	%start = %this.brickCount;
-	%end = %start + $Pref::Server::ND::CubeSelectPerTick;
+	%end = %start + $Pref::Server::ND::ProcessPerTick;
 
 	if(%end > %this.queueCount)
 		%end = %this.queueCount;
@@ -673,7 +673,7 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 	if(%i >= %this.queueCount)
 		%this.finishCubeSelection();
 	else
-		%this.cubeSelectSchedule = %this.schedule($Pref::Server::ND::CubeSelectTickDelay, tickCubeSelectionProcess);
+		%this.cubeSelectSchedule = %this.schedule(30, tickCubeSelectionProcess);
 }
 
 //Finish cube selection
@@ -683,7 +683,7 @@ function ND_Selection::finishCubeSelection(%this)
 	%this.updateHighlightBox();
 
 	//De-highlight the bricks after a few seconds
-	%this.highlightSet.deHighlightDelayed($Pref::Server::ND::HighlightTime);
+	%this.highlightSet.deHighlightDelayed($Pref::Server::ND::HighlightDelay * 8000);
 
 	if($Pref::Server::ND::PlayMenuSounds)
 		messageClient(%this.client, 'MsgUploadEnd', "");
@@ -950,7 +950,7 @@ function ND_Selection::tickCutting(%this)
 
 	//Get bounds for this tick
 	%start = %this.cutIndex;
-	%end = %start + $Pref::Server::ND::CubeSelectPerTick;
+	%end = %start + $Pref::Server::ND::ProcessPerTick;
 
 	if(%end > %this.brickCount)
 		%end = %this.brickCount;
@@ -995,7 +995,7 @@ function ND_Selection::tickCutting(%this)
 	if(%i >= %this.brickCount)
 		%this.finishCutting();
 	else
-		%this.cutSchedule = %this.schedule($Pref::Server::ND::PlantBricksTickDelay, tickCutting);
+		%this.cutSchedule = %this.schedule(30, tickCutting);
 }
 
 //Finish cutting
@@ -1130,7 +1130,7 @@ function ND_Selection::shiftGhostBricks(%this, %offset)
 		%max = $Pref::Server::ND::InstantGhostBricks;
 
 		//Start schedule to move remaining ghost bricks
-		%this.ghostMoveSchedule = %this.schedule($Pref::Server::ND::GhostBricksInitialDelay, updateGhostBricks, %max);
+		%this.ghostMoveSchedule = %this.schedule(450, updateGhostBricks, %max);
 	}
 
 	%ghostGroup = %this.ghostGroup;
@@ -1160,7 +1160,7 @@ function ND_Selection::rotateGhostBricks(%this, %direction, %useSelectionCenter)
 		%max = $Pref::Server::ND::InstantGhostBricks;
 
 		//Start schedule to move remaining ghost bricks
-		%this.ghostMoveSchedule = %this.schedule($Pref::Server::ND::GhostBricksInitialDelay, updateGhostBricks, %max);
+		%this.ghostMoveSchedule = %this.schedule(450, updateGhostBricks, %max);
 	}
 
 	//First brick is root brick
@@ -1258,12 +1258,12 @@ function ND_Selection::updateGhostBricks(%this, %start)
 	cancel(%this.ghostMoveSchedule);
 	%max = %this.ghostGroup.getCount();
 
-	if(%max - %start > $Pref::Server::ND::GhostBricksPerTick)
+	if(%max - %start > $Pref::Server::ND::ProcessPerTick)
 	{
-		%max = %start + $Pref::Server::ND::GhostBricksPerTick;
+		%max = %start + $Pref::Server::ND::ProcessPerTick;
 
 		//Start schedule to move remaining ghost bricks
-		%this.ghostMoveSchedule = %this.schedule($Pref::Server::ND::GhostBricksTickDelay, updateGhostBricks, %max);
+		%this.ghostMoveSchedule = %this.schedule(30, updateGhostBricks, %max);
 	}
 
 	%pos = %this.ghostPosition;
@@ -1358,10 +1358,10 @@ function ND_Selection::startPlant(%this, %position, %angleID)
 	%this.undoGroup = new SimSet();
 	ND_ServerGroup.add(%this.undoGroup);
 
-	if($Pref::Server::ND::PlayMenuSounds && %this.brickCount > $Pref::Server::ND::PlantBricksPerTick * 10)
+	if($Pref::Server::ND::PlayMenuSounds && %this.brickCount > $Pref::Server::ND::ProcessPerTick * 10)
 		messageClient(%this.client, 'MsgUploadStart', "");
 
-	%this.tickPlantSearch($Pref::Server::ND::PlantBricksPerTick, %position, %angleID);
+	%this.tickPlantSearch($Pref::Server::ND::ProcessPerTick, %position, %angleID);
 }
 
 //Go through the list of bricks until we find one that plants successfully
@@ -1464,7 +1464,7 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 	}
 
 	if(%end < %this.brickCount && %this.plantSuccessCount < %this.brickCount)
-		%this.plantSchedule = %this.schedule($Pref::Server::ND::PlantBricksTickDelay, tickPlantSearch, $Pref::Server::ND::PlantBricksPerTick, %position, %angleID);
+		%this.plantSchedule = %this.schedule(30, tickPlantSearch, $Pref::Server::ND::ProcessPerTick, %position, %angleID);
 	else
 		%this.finishPlant();
 }
@@ -1561,7 +1561,7 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 	%this.plantQueueCount = %qCount;
 	%this.plantQueueIndex = %i;
 
-	%this.plantSchedule = %this.schedule($Pref::Server::ND::PlantBricksTickDelay, tickPlantTree, $Pref::Server::ND::PlantBricksPerTick, %position, %angleID);
+	%this.plantSchedule = %this.schedule(30, tickPlantTree, $Pref::Server::ND::ProcessPerTick, %position, %angleID);
 }
 
 //Attempt to plant brick with id %i
@@ -1820,7 +1820,7 @@ function ND_Selection::finishPlant(%this)
 
 	commandToClient(%this.client, 'centerPrint', %message, 4);
 
-	if($Pref::Server::ND::PlayMenuSounds && %planted && %this.brickCount > $Pref::Server::ND::PlantBricksPerTick * 10)
+	if($Pref::Server::ND::PlayMenuSounds && %planted && %this.brickCount > $Pref::Server::ND::ProcessPerTick * 10)
 		messageClient(%this.client, 'MsgProcessComplete', "");
 
 	deleteVariables("$NP" @ %this @ "_*");
