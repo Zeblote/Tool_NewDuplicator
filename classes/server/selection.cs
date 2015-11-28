@@ -93,13 +93,13 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 	%bl_id = %this.client.bl_id;
 
 	//Add bricks connected to the first brick to queue
+	%conns = 0;
+
 	if(%direction == 1)
 	{
 		//Set lower height limit
 		%heightLimit = $NS[%this, "MinZ"] - 0.01;
-
 		%upCount = %brick.getNumUpBricks();
-		%realUpCnt = 0;
 
 		for(%i = 0; %i < %upCount; %i++)
 		{
@@ -127,21 +127,15 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 				%queueCount++;
 			}
 
-			$NS[%this, "UpId", 0, %realUpCnt] = %nId;
-			%realUpCnt++;
+			$NS[%this, "Conn", 0, %conns] = %nId;
+			%conns++;
 		}
-
-		//Start brick only has up bricks
-		$NS[%this, "UpCnt", 0] = %realUpCnt;
-		$NS[%this, "DownCnt", 0] = 0;
 	}
 	else
 	{
 		//Set upper height limit
 		%heightLimit = $NS[%this, "MaxZ"] + 0.01;
-
 		%downCount = %brick.getNumDownBricks();
-		%realDownCnt = 0;
 
 		for(%i = 0; %i < %downCount; %i++)
 		{
@@ -169,14 +163,13 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 				%queueCount++;
 			}
 
-			$NS[%this, "DownId", 0, %realDownCnt] = %nId;
-			%realDownCnt++;
+			$NS[%this, "Conn", 0, %conns] = %nId;
+			%conns++;
 		}
-
-		//Start brick only has down bricks
-		$NS[%this, "UpCnt", 0] = 0;
-		$NS[%this, "DownCnt", 0] = %realDownCnt;
 	}
+
+	//Save number of connections
+	$NS[%this, "Conns", 0] = %conns;
 
 	%this.trustFailCount += %trustFailCount;
 	%this.highlightSet = %highlightSet;
@@ -240,10 +233,10 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 		ND_HighlightSet::addBrick(%highlightSet, %brick);
 
 		//Queue all up bricks
-		%upCnt = %brick.getNumUpBricks();
-		%realUpCnt = 0;
+		%upCount = %brick.getNumUpBricks();
+		%conns = 0;
 
-		for(%j = 0; %j < %upCnt; %j++)
+		for(%j = 0; %j < %upCount; %j++)
 		{
 			%nextBrick = %brick.getUpBrick(%j);
 
@@ -272,17 +265,14 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 				%queueCount++;
 			}
 
-			$NS[%this, "UpId", %i, %realUpCnt] = %nId;
-			%realUpCnt++;
+			$NS[%this, "Conn", %i, %conns] = %nId;
+			%conns++;
 		}
 
-		$NS[%this, "UpCnt", %i] = %realUpCnt;
-
 		//Queue all down bricks
-		%downCnt = %brick.getNumDownBricks();
-		%realDownCnt = 0;
+		%downCount = %brick.getNumDownBricks();
 
-		for(%j = 0; %j < %downCnt; %j++)
+		for(%j = 0; %j < %downCount; %j++)
 		{
 			%nextBrick = %brick.getDownBrick(%j);
 
@@ -311,11 +301,11 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 				%queueCount++;
 			}
 
-			$NS[%this, "DownId", %i, %realDownCnt] = %nId;
-			%realDownCnt++;
+			$NS[%this, "Conn", %i, %conns] = %nId;
+			%conns++;
 		}
 
-		$NS[%this, "DownCnt", %i] = %realDownCnt;
+		$NS[%this, "Conns", %i] = %conns;
 	}
 
 	%this.trustFailCount += %trustFailCount;
@@ -624,7 +614,7 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 
 		//Save all up bricks
 		%upCount = %brick.getNumUpBricks();
-		%realUpCnt = 0;
+		%conns = 0;
 
 		for(%j = 0; %j < %upCount; %j++)
 		{
@@ -633,16 +623,13 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 			//If the brick is in the selection, save the connection
 			if((%nId = $NS[%this, "ID", %conn]) !$= "")
 			{
-				$NS[%this, "UpId", %i, %realUpCnt] = %nId;
-				%realUpCnt++;
+				$NS[%this, "Conn", %i, %conns] = %nId;
+				%conns++;
 			}
 		}
 
-		$NS[%this, "UpCnt", %i] = %realUpCnt;
-
 		//Save all down bricks
 		%downCount = %brick.getNumDownBricks();
-		%realDownCnt = 0;
 
 		for(%j = 0; %j < %downCount; %j++)
 		{
@@ -651,12 +638,12 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 			//If the brick is in the selection, save the connection
 			if((%nId = $NS[%this, "ID", %conn]) !$= "")
 			{
-				$NS[%this, "DownId", %i, %realDownCnt] = %nId;
-				%realDownCnt++;
+				$NS[%this, "Conn", %i, %conns] = %nId;
+				%conns++;
 			}
 		}
 
-		$NS[%this, "DownCnt", %i] = %realDownCnt;
+		$NS[%this, "Conns", %i] = %conns;
 	}
 
 	//Save how far we got
@@ -1396,10 +1383,10 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 
 			$NP[%this, %i] = true;
 
-			%upCnt = $NS[%this, "UpCnt", %i];
-			for(%j = 0; %j < %upCnt; %j++)
+			%conns = $NS[%this, "Conns", %i];
+			for(%j = 0; %j < %conns; %j++)
 			{
-				%id = $NS[%this, "UpId", %i, %j];
+				%id = $NS[%this, "Conn", %i, %j];
 
 				if(!$NP[%this, %id])
 				{
@@ -1410,21 +1397,6 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 					%qCount++;
 				}
 			}
-
-			%downCnt = $NS[%this, "DownCnt", %i];
-			for(%j = 0; %j < %downCnt; %j++)
-			{
-				%id = $NS[%this, "DownId", %i, %j];
-
-				if(!$NP[%this, %id])
-				{
-					%found = true;
-
-					$NS[%this, "PQueue", %qCount] = %id;
-					$NP[%this, %id] = true;
-					%qCount++;
-				}
-			}			
 
 			//If we added bricks to plant queue, switch to second loop
 			if(%found)
@@ -1507,23 +1479,10 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 
 			$NP[%this, %bId] = true;
 
-			%upCnt = $NS[%this, "UpCnt", %bId];
-			for(%j = 0; %j < %upCnt; %j++)
+			%conns = $NS[%this, "Conns", %bId];
+			for(%j = 0; %j < %conns; %j++)
 			{
-				%id = $NS[%this, "UpId", %bId, %j];
-
-				if(!$NP[%this, %id])
-				{
-					$NS[%this, "PQueue", %qCount] = %id;
-					$NP[%this, %id] = true;
-					%qCount++;
-				}
-			}
-
-			%downCnt = $NS[%this, "DownCnt", %bId];
-			for(%j = 0; %j < %downCnt; %j++)
-			{
-				%id = $NS[%this, "DownId", %bId, %j];
+				%id = $NS[%this, "Conn", %bId, %j];
 
 				if(!$NP[%this, %id])
 				{
@@ -1612,9 +1571,9 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	}
 
 	//Check for trust
-	%downCnt = %brick.getNumDownBricks();
+	%downCount = %brick.getNumDownBricks();
 
-	for(%j = 0; %j < %downCnt; %j++)
+	for(%j = 0; %j < %downCount; %j++)
 	{
 		%group = %brick.getDownBrick(%j).getGroup();
 
@@ -1631,9 +1590,9 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		return -2;
 	}
 
-	%upCnt = %brick.getNumUpBricks();
+	%upCount = %brick.getNumUpBricks();
 
-	for(%j = 0; %j < %upCnt; %j++)
+	for(%j = 0; %j < %upCount; %j++)
 	{
 		%group = %brick.getUpBrick(%j).getGroup();
 
@@ -1651,9 +1610,9 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	}
 
 	//Finished trust check
-	if(%downCnt)
+	if(%downCount)
 		%brick.stackBL_ID = %brick.getDownBrick(0).stackBL_ID;
-	else if(%upCnt)
+	else if(%upCount)
 		%brick.stackBL_ID = %brick.getUpBrick(0).stackBL_ID;
 	else
 		%brick.stackBL_ID = %bl_id;
