@@ -232,6 +232,14 @@ function GameConnection::ndHandleCommand(%this, %cmd)
 				return;
 			}
 
+			%minigame = getMinigameFromObject(%this);
+
+			if(isObject(%minigame) && !%minigame.enablebuilding)
+			{
+				messageClient(%this, '', "\c6Building must be enabled to use the duplicator!");
+				return;
+			}
+
 			//Hide brick selector and tool gui
 			%this.ndLastEquipTime = $Sim::Time;
 			commandToClient(%this, 'setScrollMode', 3);

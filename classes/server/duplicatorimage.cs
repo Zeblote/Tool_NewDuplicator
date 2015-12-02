@@ -168,6 +168,14 @@ function GameConnection::ndUnEquipped(%this)
 //Duplicator was fired
 function GameConnection::ndFired(%this)
 {
+	%minigame = getMinigameFromObject(%this);
+
+	if(isObject(%minigame) && !%minigame.enablebuilding)
+	{
+		commandToClient(%this, 'centerPrint', "<font:Verdana:20>\c6Oops! Building is disabled.", 5);
+		return;
+	}
+
 	%player = %this.player;
 
 	//Fire raycast in the direction the player is looking, from his camera position
