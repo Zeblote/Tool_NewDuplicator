@@ -411,11 +411,11 @@ function SimSet::ndStartUndo(%this, %client)
 
 	%client.ndUndoInProgress = true;
 	%client.ndLastMessageTime = $Sim::Time;
-	%this.ndTickUndo(%this.brickCount, %client);
+	%this.ndTickUndo(%this.brickCount, %this.getCount() > 1500, %client);
 }
 
 //Tick undo bricks
-function SimSet::ndTickUndo(%this, %count, %client)
+function SimSet::ndTickUndo(%this, %count, %instant, %client)
 {
 	if(%count > %this.getCount())
 		%start = %this.getCount();
@@ -426,8 +426,6 @@ function SimSet::ndTickUndo(%this, %count, %client)
 		%end = %start - $Pref::Server::ND::ProcessPerTick;
 	else
 		%end = 0;
-
-	%instant = %start > 5000;
 
 	for(%i = %start - 1; %i >= %end; %i--)
 	{
@@ -457,7 +455,7 @@ function SimSet::ndTickUndo(%this, %count, %client)
 		return;
 	}
 	
-	%this.schedule(30, ndTickUndo, %end, %client);
+	%this.schedule(30, ndTickUndo, %end, %instant, %client);
 }
 
 
