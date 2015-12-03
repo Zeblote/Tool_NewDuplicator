@@ -469,7 +469,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 
 	//Variables for trust checks
 	%admin = %this.client.isAdmin;
-	%group2 = %this.client.brickGroup;
+	%group = %this.client.brickGroup;
 	%bl_id = %this.client.bl_id;
 
 	while(%obj = containerSearchNext())
@@ -501,7 +501,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 			}
 
 			//Check trust
-			if(!ndTrustCheckSelection(%obj, %admin, %obj.getGroup(), %group2, %bl_id))
+			if(!ndTrustCheckSelection(%obj, %group, %bl_id, %admin))
 			{
 				%trustFailCount++;
 				continue;
