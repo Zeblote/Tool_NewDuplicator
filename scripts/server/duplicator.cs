@@ -494,7 +494,7 @@ function ndRotateVector(%vector, %steps)
 //Send a message if a client doesn't have trust to a brick
 function ndTrustCheckMessage(%obj, %client)
 {
-	%group = %client.brickGroup;
+	%group = %client.brickGroup.getId();
 	%bl_id = %client.bl_id;
 	%admin = %client.isAdmin;
 

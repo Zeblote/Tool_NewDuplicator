@@ -89,7 +89,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 
 	//Variables for trust checks
 	%admin = %this.client.isAdmin;
-	%group = %this.client.brickGroup;
+	%group = %this.client.brickGroup.getId();
 	%bl_id = %this.client.bl_id;
 
 	//Add bricks connected to the first brick to queue
@@ -200,7 +200,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 
 	//Variables for trust checks
 	%admin = %this.client.isAdmin;
-	%group = %this.client.brickGroup;
+	%group = %this.client.brickGroup.getId();
 	%bl_id = %this.client.bl_id;
 	
 	for(%i = %start; %i < %end; %i++)
@@ -469,7 +469,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 
 	//Variables for trust checks
 	%admin = %this.client.isAdmin;
-	%group = %this.client.brickGroup;
+	%group = %this.client.brickGroup.getId();
 	%bl_id = %this.client.bl_id;
 
 	while(%obj = containerSearchNext())
@@ -944,7 +944,7 @@ function ND_Selection::tickCutting(%this)
 	%cutSuccessCount = %this.cutSuccessCount;
 	%cutFailCount = %this.cutFailCount;
 
-	%group = %this.client.brickGroup;
+	%group = %this.client.brickGroup.getId();
 	%bl_id = %this.client.bl_id;
 
 	//Cut bricks
@@ -1360,7 +1360,7 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 		%end = %this.brickCount;
 
 	%client = %this.client;
-	%group = %client.brickGroup;
+	%group = %client.brickGroup.getId();
 	%bl_id = %client.bl_id;
 
 	%qCount = %this.plantQueueCount;
@@ -1447,7 +1447,7 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 	%end = %start + %remainingPlants;
 
 	%client = %this.client;
-	%group = %client.brickGroup;
+	%group = %client.brickGroup.getId();
 	%bl_id = %client.bl_id;
 
 	%qCount = %this.plantQueueCount;
