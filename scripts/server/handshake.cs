@@ -28,13 +28,9 @@ package NewDuplicator_Server
 //Handshake request timed out, client doesn't have new duplicator
 function GameConnection::ndHandshakeTimeout(%this)
 {
-	echo("ND: Client " @ %this.getPlayerName() @ " doesn't have the New Duplicator.");
-
 	//Show client where to get the new duplicator
 	if($Pref::Server::ND::Advertise)
 	{
-		echo("ND: Sending advertisement to client " @ %this.getPlayerName() @ ".");
-
 		%m =      "\c6Hey, it looks like you don't have the \c3New Duplicator\c6 yet! Check it out: ";
 		%m = %m @ "[<a:forum.blockland.us/index.php?topic=288602.0>Forum Topic</a>\c6]";
 
@@ -53,19 +49,12 @@ function serverCmdNdHandshake(%this, %version)
 	//Inform client whether he has an outdated version
 	switch(ndCompareVersion($ND::Version, %version))
 	{
-		case 0:
-			echo("ND: Client " @ %this.getPlayerName() @ " has the same version of the New Duplicator. (" @ %version @ ");");
-
 		case 1:
-			echo("ND: Client " @ %this.getPlayerName() @ " has an old version of the New Duplicator. (" @ %version @ " vs " @ $ND::Version @ ")");
-
 			%m =      "\c6Your version of the \c3New Duplicator\c6 is outdated! Some features might not work. ";
 			%m = %m @ "(Server Version: \c3" @ $ND::Version @ "\c6 | Your Version: \c0" @ %version @ "\c6)";
 			messageClient(%this, '', %m);
 
 		case 2:
-			echo("ND: Client " @ %this.getPlayerName() @ " has NEWER version of the New Duplicator! Consider updating. (" @ %version @ " vs " @ $ND::Version @ ")");
-
 			%m =      "\c6Your version of the \c3New Duplicator\c6 is newer than the server's! Ask the host to update it! ";
 			%m = %m @ "(Server Version: \c0" @ $ND::Version @ "\c6 | Your Version: \c3" @ %version @ "\c6)";
 			messageClient(%this, '', %m);

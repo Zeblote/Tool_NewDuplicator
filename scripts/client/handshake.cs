@@ -19,7 +19,6 @@ function clientCmdNdHandshake(%serverVersion)
 	$ND::ServerHasND = true;
 
 	commandToServer('ndHandshake', $ND::Version);
-	echo("ND: Server has the New Duplicator, version " @ %serverVersion @ ".");
 }
 
 package NewDuplicator_Client
