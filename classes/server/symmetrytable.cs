@@ -19,24 +19,19 @@ function ND_SymmetryTable()
     return %this;
 }
 
-//Delete symmetry data
-function ND_SymmetryTable::deleteData(%this)
-{
-    deleteVariables("$ND::Symmetry*");
-}
-
 //Rebuild the symmetry table
 function ND_SymmetryTable::buildTable(%this)
 {
-    %this.deleteData();
-    deleteVariables("$TMP::*");
-
     %start = getRealTime();
-    $ND::SymmetryCubicCount = 0;
-    $ND::SymmetryMeshCount = 0;
 
-    $TMP::AsymCountTotal = 0;
-    $TMP::ZAsymCountTotal = 0;
+    //Delete previous data
+    deleteVariables("$ND::Symmetry*");
+
+    $NDT::CubicCount = 0;
+    $NDT::MeshCount = 0;
+
+    $NDT::AsymXCountTotal = 0;
+    $NDT::AsymZCountTotal = 0;
 
     echo("ND: Start building brick symmetry table...");
     echo("==========================================================================");
@@ -50,22 +45,22 @@ function ND_SymmetryTable::buildTable(%this)
             %this.processDatablock(%db);
     }
 
-    %cubic = $ND::SymmetryCubicCount;
-    %mesh = $ND::SymmetryMeshCount;
+    %cubic = $NDT::CubicCount;
+    %mesh = $NDT::MeshCount;
 
-    %asym = $TMP::AsymCountTotal;
-    %asymz = $TMP::ZAsymCountTotal;
+    %asymx = $NDT::AsymXCountTotal;
+    %asymz = $NDT::AsymZCountTotal;
 
     echo("==========================================================================");
-    echo("ND: Finished basic tests: " @ %cubic @ " cubic, " @ %mesh @ " with mesh, " @ %asym @ " asymmetric, " @ %asymz @ " z-asymmetric");
+    echo("ND: Finished basic tests: " @ %cubic @ " cubic, " @ %mesh @ " with mesh, " @ %asymx @ " asymmetric, " @ %asymz @ " z-asymmetric");
     echo("ND: Starting X symmetric pair search...");
     echo("==========================================================================");
 
-    for(%i = 0; %i < $TMP::AsymCountTotal; %i++)
+    for(%i = 0; %i < $NDT::AsymXCountTotal; %i++)
     {
-        %index = $TMP::AsymBrick[%i];
+        %index = $NDT::AsymXBrick[%i];
 
-        if(!$TMP::skipAsym[%index])
+        if(!$NDT::SkipAsymX[%index])
             %this.processPair(%index);
     }
 
@@ -74,15 +69,16 @@ function ND_SymmetryTable::buildTable(%this)
     echo("ND: Starting Z symmetric pair search...");
     echo("==========================================================================");
 
-    for(%i = 0; %i < $TMP::ZAsymCountTotal; %i++)
+    for(%i = 0; %i < $NDT::AsymZCountTotal; %i++)
     {
-        %index = $TMP::ZAsymBrick[%i];
+        %index = $NDT::AsymZBrick[%i];
 
-        if(!$TMP::skipAsymZ[%index])
+        if(!$NDT::SkipAsymZ[%index])
             %this.processZPair(%index);
     }
     
-    deleteVariables("$TMP::*");
+    //Delete temporary arrays
+    deleteVariables("$NDT::*");
 
     echo("==========================================================================");
     echo("ND: Finished finding Z symmetric pairs");
@@ -92,17 +88,18 @@ function ND_SymmetryTable::buildTable(%this)
 //Detect symmetry of a single blb file
 function ND_SymmetryTable::processDatablock(%this, %datablock)
 {
-    //Load blb file
+    //Open blb file
     %file = new FileObject();
     %file.openForRead(%datablock.brickFile);
 
-    //Skip brick size
+    //Skip brick size - irrelevant
     %file.readLine();
 
     //Cubic bricks are always fully symmetric
     if(%file.readLine() $= "BRICK")
     {
-        $ND::SymmetryCubicCount++;
+        $NDT::CubicCount++;
+
         $ND::Symmetry[%datablock] = 1;
         $ND::SymmetryZ[%datablock] = true;
 
@@ -110,11 +107,12 @@ function ND_SymmetryTable::processDatablock(%this, %datablock)
         %file.delete();
         return;
     }
+
+    //Not cubic, get mesh data index in temp arrays
+    %dbi = $NDT::MeshCount;
+    $NDT::MeshCount++;
     
-    ///////////////////////////////////////////////////
-    // Load mesh
-    ///////////////////////////////////////////////////
-    %dbi = $ND::SymmetryMeshCount++;
+    //Load mesh from blb file
     %faces = 0;
     %points = 0;
 
@@ -132,7 +130,7 @@ function ND_SymmetryTable::processDatablock(%this, %datablock)
                 continue;
 
             //Add face
-            $TMP::faceTex[%dbi, %faces] = (%tex $= "SIDE" ? 0 : (%tex $= "RAMP" ? 1 : 2));
+            $NDT::FaceTexId[%dbi, %faces] = (%tex $= "SIDE" ? 0 : (%tex $= "RAMP" ? 1 : 2));
 
             //Skip useless lines
             while(%file.readLine() !$= "POSITION:") {}
@@ -148,30 +146,36 @@ function ND_SymmetryTable::processDatablock(%this, %datablock)
                     %line = %file.readLine();
 
                 //Remove formatting from point
-                %pt = vectorAdd(%line, "0 0 0");
+                %pos = vectorAdd(%line, "0 0 0");
 
                 //Round down two digits to fix float errors
-                %pt = mFloatLength(getWord(%pt, 0), 4) * 1.0
-                  SPC mFloatLength(getWord(%pt, 1), 4) * 1.0
-                  SPC mFloatLength(getWord(%pt, 2), 4) * 1.0;
+                %pos = mFloatLength(getWord(%pos, 0), 4) * 1.0
+                   SPC mFloatLength(getWord(%pos, 1), 4) * 1.0
+                   SPC mFloatLength(getWord(%pos, 2), 4) * 1.0;
 
                 //Get index of this point
-                if(!%ptIndex = $TMP::pointAt[%dbi, %pt])
+                if(!%ptIndex = $NDT::PtAtPosition[%dbi, %pos])
                 {
-                    //New point... add to list
+                    //Points array is 1-indexed so we can quickly test !PtAtPosition[...]
                     %points++;
                     %ptIndex = %points;
-                    $TMP::position[%dbi, %points] = %pt;
-                    $TMP::pointAt[%dbi, %pt] = %points;
+
+                    //Add new point to array
+                    $NDT::PtPosition[%dbi, %points] = %pos;
+                    $NDT::PtAtPosition[%dbi, %pos] = %points;
                 }
 
                 //Add face to point
-                if(!$TMP::pointInFace[%dbi, %faces, %ptIndex])
-                    $TMP::faceAt[%dbi, %ptIndex, $TMP::facesAt[%dbi, %ptIndex]++ - 1] = %faces;
+                if(!$NDT::PtInFace[%dbi, %faces, %ptIndex])
+                {
+                    //Increase first then subtract 1 to get 0 the first time
+                    %fIndex = $NDT::FacesAtPt[%dbi, %ptIndex]++ - 1;
+                    $NDT::FaceAtPt[%dbi, %ptIndex, %fIndex] = %faces;
+                }
 
                 //Add point to face
-                $TMP::facePoint[%dbi, %faces, %i] = %ptIndex;
-                $TMP::pointInFace[%dbi, %faces, %ptIndex] = true;
+                $NDT::FacePt[%dbi, %faces, %i] = %ptIndex;
+                $NDT::PtInFace[%dbi, %faces, %ptIndex] = true;
             }
 
             //Added face
@@ -179,19 +183,11 @@ function ND_SymmetryTable::processDatablock(%this, %datablock)
         }
     }
 
-    $TMP::faceCount[%dbi] = %faces;
-    $TMP::pointCount[%dbi] = %points;
-    $TMP::datablock[%dbi] = %datablock;
+    $NDT::FaceCount[%dbi] = %faces;
+    $NDT::Datablock[%dbi] = %datablock;
 
     %file.close();
     %file.delete();
-
-    //Assume brick is fully symmetric
-    %failX  = false;
-    %failY  = false;
-    %failZ  = false;
-    %failXY = false;
-    %failYX = false;
 
     //Possible symmetries:
     // 0: asymmetric
@@ -212,15 +208,13 @@ function ND_SymmetryTable::processDatablock(%this, %datablock)
     %failY = %this.symmetryPlaneTest(%dbi, 1);
     %failZ = %this.symmetryPlaneTest(%dbi, 2);
 
+    //Diagonals are only needed if the brick isn't symmetric to the axis
     if(%failX && %failY)
         %failXY = %this.symmetryPlaneTest(%dbi, 3);
 
+    //One diagonal is enough, only test second if first one fails
     if(%failXY)
         %failYX = %this.symmetryPlaneTest(%dbi, 4);
-
-    ///////////////////////////////////////////////////
-    // Tests finished
-    ///////////////////////////////////////////////////
 
     //X, Y symmetry
     if(!%failX && !%failY)
@@ -237,48 +231,43 @@ function ND_SymmetryTable::processDatablock(%this, %datablock)
     {
         %sym = 0;
 
-        //Add to lookup table of asymmetric bricks of this type
-        //These will be used to find asymmetric pairs
-        %l = $TMP::AsymCount[%faces, !%failZ]++;
-        $TMP::AsymBrick[%faces, !%failZ, %l] = %dbi;
+        //Add to lookup table of X-asymmetric bricks of this type
+        %bIndex = $NDT::AsymXCount[%faces, !%failZ]++;
+        $NDT::AsymXBrick[%faces, !%failZ, %bIndex] = %dbi;
 
         //Add to list of asymmetric bricks
-        $TMP::AsymBrick[$TMP::AsymCountTotal] = %dbi;
-        $TMP::AsymCountTotal++;
+        $NDT::AsymXBrick[$NDT::AsymXCountTotal] = %dbi;
+        $NDT::AsymXCountTotal++;
     }
-
-    $ND::Symmetry[%datablock] = %sym;
-
 
     //Z symmetry
-    if(!%failZ)
-        $ND::SymmetryZ[%datablock] = true;
-    else
+    if(%failZ)
     {
-        $ND::SymmetryZ[%datablock] = false;
-
         //Add to lookup table of Z-asymmetric bricks of this type
-        //These will be used to find asymmetric pairs
-        %l = $TMP::ZAsymCount[%faces, %sym]++;
-        $TMP::ZAsymBrick[%faces, %sym, %l] = %dbi;
+        %bIndex = $NDT::AsymZCount[%faces, %sym]++;
+        $NDT::AsymZBrick[%faces, %sym, %bIndex] = %dbi;
 
         //Add to list of Z-asymmetric bricks
-        $TMP::ZAsymBrick[$TMP::ZAsymCountTotal] = %dbi;
-        $TMP::ZAsymCountTotal++;
+        $NDT::AsymZBrick[$NDT::AsymZCountTotal] = %dbi;
+        $NDT::AsymZCountTotal++;
     }
+
+    //Save symmetries
+    $ND::Symmetry[%datablock] = %sym;
+    $ND::SymmetryZ[%datablock] = !%failZ;
 }
 
 //Find symmetric pair between two bricks
 function ND_SymmetryTable::processPair(%this, %dbi)
 {
-    if($TMP::skipAsym[%dbi])
+    if($NDT::SkipAsymX[%dbi])
         return;
 
-    %datablock = $TMP::datablock[%dbi];
+    %datablock = $NDT::Datablock[%dbi];
 
     %zsym = $ND::SymmetryZ[%datablock];
-    %faces = $TMP::faceCount[%dbi];
-    %count = $TMP::AsymCount[%faces, %zsym];
+    %faces = $NDT::FaceCount[%dbi];
+    %count = $NDT::AsymXCount[%faces, %zsym];
 
     //Only potential match is the brick itself - fail
     if(%count == 1)
@@ -291,33 +280,37 @@ function ND_SymmetryTable::processPair(%this, %dbi)
 
     for(%i = 1; %i <= %count; %i++)
     {
-        %other = $TMP::AsymBrick[%faces, %zsym, %i];
+        %other = $NDT::AsymXBrick[%faces, %zsym, %i];
 
         //Don't compare with itself... won't be symmetric
         if(%other == %dbi)
             continue;
 
+        //Don't compare with bricks that already have a pair
+        if($NDT::SkipAsymX[%other])
+            continue;
+
         //Test all 4 possible rotations
         //Not using loop due to lack of goto command
-        if(!%this.symmetryPlaneTest2(%dbi, %other, 0, 0))
+        if(!%this.symmetryPlaneTest2(%dbi, %other, true, 0))
         {
             %off = 0;
             break;
         }
 
-        if(!%this.symmetryPlaneTest2(%dbi, %other, 0, 1))
+        if(!%this.symmetryPlaneTest2(%dbi, %other, true, 1))
         {
             %off = 1;
             break;
         }
 
-        if(!%this.symmetryPlaneTest2(%dbi, %other, 0, 2))
+        if(!%this.symmetryPlaneTest2(%dbi, %other, true, 2))
         {
             %off = 2;
             break;
         }
 
-        if(!%this.symmetryPlaneTest2(%dbi, %other, 0, 3))
+        if(!%this.symmetryPlaneTest2(%dbi, %other, true, 3))
         {
             %off = 3;
             break;
@@ -326,10 +319,13 @@ function ND_SymmetryTable::processPair(%this, %dbi)
 
     if(%off != -1)
     {
-        %otherdb = $TMP::datablock[%other];
-        $TMP::skipAsym[%other] = true;
-        $TMP::skipAsym[%dbi] = true;
-        //echo(%datablock.category @ "/" @ %datablock.subCategory @ "/" @ %datablock.uiname @ " is symmetric to " @ %otherdb.category @ "/" @ %otherdb.subCategory @ "/" @ %otherdb.uiname @ ", offset " @ %off);
+        //Save symmetry
+        $ND::SymmetryXDatablock[%datablock] = $NDT::Datablock[%other];
+        $ND::SymmetryXOffset[%datablock] = %off;
+
+        //No need to process these bricks again
+        $NDT::SkipAsymX[%other] = true;
+        $NDT::SkipAsymX[%dbi] = true;
     }
     else
         echo("No X match for " @ %datablock.getName() @ " (" @ %datablock.category @ "/" @ %datablock.subCategory @ "/" @ %datablock.uiname @ ")");
@@ -338,14 +334,14 @@ function ND_SymmetryTable::processPair(%this, %dbi)
 //Find symmetric pair between two bricks
 function ND_SymmetryTable::processZPair(%this, %dbi)
 {
-    if($TMP::skipAsymZ[%dbi])
+    if($NDT::SkipAsymZ[%dbi])
         return;
 
-    %datablock = $TMP::datablock[%dbi];
+    %datablock = $NDT::Datablock[%dbi];
 
     %sym = $ND::Symmetry[%datablock];
-    %faces = $TMP::faceCount[%dbi];
-    %count = $TMP::ZAsymCount[%faces, %sym];
+    %faces = $NDT::FaceCount[%dbi];
+    %count = $NDT::AsymZCount[%faces, %sym];
 
     //Only potential match is the brick itself - fail
     if(%count == 1)
@@ -358,87 +354,62 @@ function ND_SymmetryTable::processZPair(%this, %dbi)
 
     for(%i = 1; %i <= %count; %i++)
     {
-        %other = $TMP::ZAsymBrick[%faces, %sym, %i];
+        %other = $NDT::AsymZBrick[%faces, %sym, %i];
 
         //Don't compare with itself... won't be symmetric
         if(%other == %dbi)
             continue;
 
+        //Don't compare with bricks that already have a pair
+        if($NDT::SkipAsymZ[%other])
+            continue;
+
         //Test all 4 possible rotations
         //Not using loop due to lack of goto command
-        if(!%this.symmetryPlaneTest2(%dbi, %other, 1, 0))
+        if(!%this.symmetryPlaneTest2(%dbi, %other, false, 0))
         {
             %off = 0;
             break;
         }
 
-        if(!%this.symmetryPlaneTest2(%dbi, %other, 1, 1))
+        if(!%this.symmetryPlaneTest2(%dbi, %other, false, 1))
         {
             %off = 1;
             break;
         }
 
-        if(!%this.symmetryPlaneTest2(%dbi, %other, 1, 2))
+        if(!%this.symmetryPlaneTest2(%dbi, %other, false, 2))
         {
             %off = 2;
             break;
         }
 
-        if(!%this.symmetryPlaneTest2(%dbi, %other, 1, 3))
+        if(!%this.symmetryPlaneTest2(%dbi, %other, false, 3))
         {
             %off = 3;
-            break;
-        }
-
-        //Some upside down versions are just rotated on X or Y - try these too
-        if(!%this.symmetryPlaneTest2(%dbi, %other, 2, 0))
-        {
-            %off = 4;
-            break;
-        }
-
-        if(!%this.symmetryPlaneTest2(%dbi, %other, 2, 1))
-        {
-            %off = 5;
-            break;
-        }
-
-        if(!%this.symmetryPlaneTest2(%dbi, %other, 2, 2))
-        {
-            %off = 6;
-            break;
-        }
-
-        if(!%this.symmetryPlaneTest2(%dbi, %other, 2, 3))
-        {
-            %off = 7;
             break;
         }
     }
 
     if(%off != -1)
     {
-        %otherdb = $TMP::datablock[%other];
-        $TMP::skipAsymZ[%other] = true;
-        $TMP::skipAsymZ[%dbi] = true;
-        //echo(%datablock.category @ "/" @ %datablock.subCategory @ "/" @ %datablock.uiname @ " is Z symmetric to " @ %otherdb.category @ "/" @ %otherdb.subCategory @ "/" @ %otherdb.uiname @ ", offset " @ %off);
+        //Save symmetry
+        $ND::SymmetryZDatablock[%datablock] = $NDT::Datablock[%other];
+        $ND::SymmetryZOffset[%datablock] = %off;
+
+        //No need to process these bricks again
+        $NDT::SkipAsymZ[%other] = true;
+        $NDT::SkipAsymZ[%dbi] = true;
     }
     else
-    {
         echo("No Z match for " @ %datablock.getName() @ " (" @ %datablock.category @ "/" @ %datablock.subCategory @ "/" @ %datablock.uiname @ ")");
-       // for(%i = 1; %i <= %count; %i++)
-        //{
-        //    %otherdb = $TMP::datablock[$TMP::ZAsymBrick[%faces, %sym, %i]];
-        //    echo("   - " @ %otherdb.getName() @ " (" @ %otherdb.category @ "/" @ %otherdb.subCategory @ "/" @ %otherdb.uiname @ ")");
-       // }
-    }
 }
 
 //Test a mesh for a single symmetry plane in itself
 function ND_SymmetryTable::symmetryPlaneTest(%this, %dbi, %plane)
 {
     %fail = false;
-    %faces = $TMP::faceCount[%dbi];
+    %faces = $NDT::FaceCount[%dbi];
 
     for(%i = 0; %i < %faces; %i++)
     {
@@ -449,7 +420,7 @@ function ND_SymmetryTable::symmetryPlaneTest(%this, %dbi, %plane)
         //Attempt to find the mirrored points
         for(%j = 0; %j < 4; %j++)
         {
-            %pt = $TMP::facePoint[%dbi, %i, %j];
+            %pt = $NDT::FacePt[%dbi, %i, %j];
 
             //Do we already know the mirrored one?
             if(%mirrPt[%pt])
@@ -459,21 +430,21 @@ function ND_SymmetryTable::symmetryPlaneTest(%this, %dbi, %plane)
             }
 
             //Get position of point
-            %v = $TMP::position[%dbi, %pt];
+            %v = $NDT::PtPosition[%dbi, %pt];
 
             //Get point at mirrored position based on plane
             switch$(%plane)
             {
                 //Flip X
-                case 0:  %mirr = $TMP::pointAt[%dbi, -firstWord(%v) SPC restWords(%v)];
+                case 0:  %mirr = $NDT::PtAtPosition[%dbi, -firstWord(%v) SPC restWords(%v)];
                 //Flip Y
-                case 1:  %mirr = $TMP::pointAt[%dbi, getWord(%v, 0) SPC -getWord(%v, 1) SPC getWord(%v, 2)];
+                case 1:  %mirr = $NDT::PtAtPosition[%dbi, getWord(%v, 0) SPC -getWord(%v, 1) SPC getWord(%v, 2)];
                 //Flip Z
-                case 2:  %mirr = $TMP::pointAt[%dbi, getWords(%v, 0, 1) SPC -getWord(%v, 2)];
+                case 2:  %mirr = $NDT::PtAtPosition[%dbi, getWords(%v, 0, 1) SPC -getWord(%v, 2)];
                 //Mirror along X+Y
-                case 3:  %mirr = $TMP::pointAt[%dbi, -getWord(%v, 1) SPC -getWord(%v, 0) SPC getWord(%v, 2)];
+                case 3:  %mirr = $NDT::PtAtPosition[%dbi, -getWord(%v, 1) SPC -getWord(%v, 0) SPC getWord(%v, 2)];
                 //Mirror along X-Y
-                default: %mirr = $TMP::pointAt[%dbi, getWord(%v, 1) SPC getWord(%v, 0) SPC getWord(%v, 2)];
+                default: %mirr = $NDT::PtAtPosition[%dbi, getWord(%v, 1) SPC getWord(%v, 0) SPC getWord(%v, 2)];
             }
 
             if(%mirr)
@@ -495,24 +466,24 @@ function ND_SymmetryTable::symmetryPlaneTest(%this, %dbi, %plane)
 
         //Test whether the points have a common face
         %fail = true;
-        %count = $TMP::facesAt[%dbi, %mirr0];
+        %count = $NDT::FacesAtPt[%dbi, %mirr0];
 
         for(%j = 0; %j < %count; %j++)
         {
-            %potentialFace = $TMP::faceAt[%dbi, %mirr0, %j];
+            %potentialFace = $NDT::FaceAtPt[%dbi, %mirr0, %j];
 
             //Mirrored face must have the same texture id
-            if($TMP::faceTex[%dbi, %i] != $TMP::faceTex[%dbi, %potentialFace])
+            if($NDT::FaceTexId[%dbi, %i] != $NDT::FaceTexId[%dbi, %potentialFace])
                 continue;
 
             //Check whether remaining points are in the face
-            if(!$TMP::pointInFace[%dbi, %potentialFace, %mirr1])
+            if(!$NDT::PtInFace[%dbi, %potentialFace, %mirr1])
                 continue;
 
-            if(!$TMP::pointInFace[%dbi, %potentialFace, %mirr2])
+            if(!$NDT::PtInFace[%dbi, %potentialFace, %mirr2])
                 continue;
 
-            if(!$TMP::pointInFace[%dbi, %potentialFace, %mirr3])
+            if(!$NDT::PtInFace[%dbi, %potentialFace, %mirr3])
                 continue;
 
             //We found a matching face!
@@ -532,14 +503,14 @@ function ND_SymmetryTable::symmetryPlaneTest(%this, %dbi, %plane)
 function ND_SymmetryTable::symmetryPlaneTest2(%this, %dbi, %other, %plane, %rotation)
 {
     %fail = false;
-    %faces = $TMP::faceCount[%dbi];
+    %faces = $NDT::FaceCount[%dbi];
 
     for(%i = 0; %i < %faces; %i++)
     {
         //Attempt to find the mirrored points
         for(%j = 0; %j < 4; %j++)
         {
-            %pt = $TMP::facePoint[%dbi, %i, %j];
+            %pt = $NDT::FacePt[%dbi, %i, %j];
 
             //Do we already know the mirrored one?
             if(%mirrPt[%pt])
@@ -549,37 +520,22 @@ function ND_SymmetryTable::symmetryPlaneTest2(%this, %dbi, %other, %plane, %rota
             }
 
             //Get position of point
-            %v = $TMP::position[%dbi, %pt];
+            %v = $NDT::PtPosition[%dbi, %pt];
 
-            //0 = X, 1 = Z, 2 = X & Z
-            if(%plane == 0)
+            //true = X, false = Z
+            if(%plane)
             {
                 //Get point at mirrored position based on rotation
                 switch(%rotation)
                 {
                     //Flip X
-                    case 0:  %mirr = $TMP::pointAt[%other, -firstWord(%v) SPC restWords(%v)];
+                    case 0:  %mirr = $NDT::PtAtPosition[%other, -firstWord(%v) SPC restWords(%v)];
                     //Flip X, rotate 90
-                    case 1:  %mirr = $TMP::pointAt[%other, getWord(%v, 1) SPC getWord(%v, 0) SPC getWord(%v, 2)];
+                    case 1:  %mirr = $NDT::PtAtPosition[%other, getWord(%v, 1) SPC getWord(%v, 0) SPC getWord(%v, 2)];
                     //Flip X, rotate 180
-                    case 2:  %mirr = $TMP::pointAt[%other, getWord(%v, 0) SPC -getWord(%v, 1) SPC getWord(%v, 2)];
+                    case 2:  %mirr = $NDT::PtAtPosition[%other, getWord(%v, 0) SPC -getWord(%v, 1) SPC getWord(%v, 2)];
                     //Flip X, rotate 270
-                    default: %mirr = $TMP::pointAt[%other, -getWord(%v, 1) SPC -getWord(%v, 0) SPC getWord(%v, 2)];
-                }
-            }
-            else if(%plane == 1)
-            {
-                //Get point at mirrored position based on rotation
-                switch(%rotation)
-                {
-                    //Flip Z
-                    case 0:  %mirr = $TMP::pointAt[%other, getWord(%v, 0) SPC getWord(%v, 1) SPC -getWord(%v, 2)];
-                    //Flip Z, rotate 90
-                    case 1:  %mirr = $TMP::pointAt[%other, getWord(%v, 1) SPC -getWord(%v, 0) SPC -getWord(%v, 2)];
-                    //Flip Z, rotate 180
-                    case 2:  %mirr = $TMP::pointAt[%other, -getWord(%v, 0) SPC -getWord(%v, 1) SPC -getWord(%v, 2)];
-                    //Flip Z, rotate 270
-                    default: %mirr = $TMP::pointAt[%other, -getWord(%v, 1) SPC getWord(%v, 0) SPC -getWord(%v, 2)];
+                    default: %mirr = $NDT::PtAtPosition[%other, -getWord(%v, 1) SPC -getWord(%v, 0) SPC getWord(%v, 2)];
                 }
             }
             else
@@ -587,14 +543,14 @@ function ND_SymmetryTable::symmetryPlaneTest2(%this, %dbi, %other, %plane, %rota
                 //Get point at mirrored position based on rotation
                 switch(%rotation)
                 {
-                    //Flip X, Z
-                    case 0:  %mirr = $TMP::pointAt[%other, -getWord(%v, 0) SPC getWord(%v, 1) SPC -getWord(%v, 2)];
-                    //Flip X, Z, rotate 90
-                    case 1:  %mirr = $TMP::pointAt[%other, getWord(%v, 1) SPC getWord(%v, 0) SPC -getWord(%v, 2)];
-                    //Flip X, Z, rotate 180
-                    case 2:  %mirr = $TMP::pointAt[%other, getWord(%v, 0) SPC -getWord(%v, 1) SPC -getWord(%v, 2)];
-                    //Flip X, Z, rotate 270
-                    default: %mirr = $TMP::pointAt[%other, -getWord(%v, 1) SPC -getWord(%v, 0) SPC -getWord(%v, 2)];
+                    //Flip Z
+                    case 0:  %mirr = $NDT::PtAtPosition[%other, getWord(%v, 0) SPC getWord(%v, 1) SPC -getWord(%v, 2)];
+                    //Flip Z, rotate 90
+                    case 1:  %mirr = $NDT::PtAtPosition[%other, getWord(%v, 1) SPC -getWord(%v, 0) SPC -getWord(%v, 2)];
+                    //Flip Z, rotate 180
+                    case 2:  %mirr = $NDT::PtAtPosition[%other, -getWord(%v, 0) SPC -getWord(%v, 1) SPC -getWord(%v, 2)];
+                    //Flip Z, rotate 270
+                    default: %mirr = $NDT::PtAtPosition[%other, -getWord(%v, 1) SPC getWord(%v, 0) SPC -getWord(%v, 2)];
                 }
             }
 
@@ -615,24 +571,24 @@ function ND_SymmetryTable::symmetryPlaneTest2(%this, %dbi, %other, %plane, %rota
 
         //Test whether the points have a common face
         %fail = true;
-        %count = $TMP::facesAt[%other, %mirr0];
+        %count = $NDT::FacesAtPt[%other, %mirr0];
 
         for(%j = 0; %j < %count; %j++)
         {
-            %potentialFace = $TMP::faceAt[%other, %mirr0, %j];
+            %potentialFace = $NDT::FaceAtPt[%other, %mirr0, %j];
 
             //Mirrored face must have the same texture id
-            if($TMP::faceTex[%dbi, %i] != $TMP::faceTex[%other, %potentialFace])
+            if($NDT::FaceTexId[%dbi, %i] != $NDT::FaceTexId[%other, %potentialFace])
                 continue;
 
             //Check whether remaining points are in the face
-            if(!$TMP::pointInFace[%other, %potentialFace, %mirr1])
+            if(!$NDT::PtInFace[%other, %potentialFace, %mirr1])
                 continue;
 
-            if(!$TMP::pointInFace[%other, %potentialFace, %mirr2])
+            if(!$NDT::PtInFace[%other, %potentialFace, %mirr2])
                 continue;
 
-            if(!$TMP::pointInFace[%other, %potentialFace, %mirr3])
+            if(!$NDT::PtInFace[%other, %potentialFace, %mirr3])
                 continue;
 
             //We found a matching face!
