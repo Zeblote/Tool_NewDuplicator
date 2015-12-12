@@ -31,6 +31,7 @@ exec($ND::ClassPath @ "server/highlightset.cs");
 exec($ND::ClassPath @ "server/prefmanager.cs");
 exec($ND::ClassPath @ "server/selection.cs");
 exec($ND::ClassPath @ "server/selectionbox.cs");
+exec($ND::ClassPath @ "server/symmetrytable.cs");
 
 exec($ND::ClassPath @ "server/duplimode/cubeselect.cs");
 exec($ND::ClassPath @ "server/duplimode/cubeselectprogress.cs");

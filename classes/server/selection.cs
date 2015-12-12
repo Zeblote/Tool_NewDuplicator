@@ -1011,7 +1011,11 @@ function ND_Selection::cancelCutting(%this)
 
 //Spawn ghost bricks at a specific location
 function ND_Selection::spawnGhostBricks(%this, %position, %angleID)
-{	
+{
+	%this.ghostMirrorX = false;
+	%this.ghostMirrorY = false;
+	%this.ghostMirrorZ = false;
+
 	//Create group to hold the ghost bricks
 	%this.ghostGroup = ND_GhostGroup();
 
@@ -1108,31 +1112,12 @@ function ND_Selection::shiftGhostBricks(%this, %offset)
 	if(%x == 0 && %y == 0 && %z == 0)
 		return;
 
-	cancel(%this.ghostMoveSchedule);
-	%max = %this.ghostGroup.getCount();
-
-	if(%max > $Pref::Server::ND::InstantGhostBricks)
-	{
-		%max = $Pref::Server::ND::InstantGhostBricks;
-
-		//Start schedule to move remaining ghost bricks
-		%this.ghostMoveSchedule = %this.schedule(450, updateGhostBricks, %max);
-	}
-
-	%ghostGroup = %this.ghostGroup;
-
-	%offset = %x SPC %y SPC %z;
-
-	//Move the instant ghost bricks right now
-	for(%i = 0; %i < %max; %i++)
-	{
-		%brick = %ghostGroup.getObject(%i);
-		%brick.setTransform(vectorAdd(%brick.position, %offset));
-	}
-
 	//Update variables
-	%this.ghostPosition = %this.ghostGroup.getObject(0).getPosition();
+	%this.ghostPosition = vectorAdd(%this.ghostPosition, %x SPC %y SPC %z);
 	%this.updateHighlightBox();
+
+	//Update ghost bricks
+	%this.updateGhostBricks(0, $Pref::Server::ND::InstantGhostBricks, 450);
 }
 
 //Rotate ghost bricks left/right
@@ -1179,8 +1164,6 @@ function ND_Selection::rotateGhostBricks(%this, %direction, %useSelectionCenter)
 			%shiftCorrect = "0.25 0.25 0";
 	}
 
-	%this.ghostAngleID = (%this.ghostAngleID + %direction) % 4;
-
 	//Get vector from pivot to root brick
 	%pOffset = vectorSub(%rootBrick.getPosition(), %pivot);
 
@@ -1190,71 +1173,94 @@ function ND_Selection::rotateGhostBricks(%this, %direction, %useSelectionCenter)
 	//Add shift correction
 	%pOffset = vectorAdd(%pOffset, %shiftCorrect);
 
-	//Get angleID for root brick
-	%bAngle = ($NS[%this, "Rot", 0] + %this.ghostAngleID) % 4;
-
-	switch(%bAngle)
-	{
-		case 0: %bRot = "1 0 0 0";
-		case 1: %bRot = "0 0 1 1.5708";
-		case 2: %bRot = "0 0 1 3.14150";
-		case 3: %bRot = "0 0 -1 1.5708";
-	}
-
-	//Transform root brick
-	%rootBrick.setTransform(vectorAdd(%pivot, %pOffset) SPC %bRot);
-
-	//Rootbrick snapped to brick grid, get new position
-	%rootPos = %rootBrick.getPosition();
-
-	%angle = %this.ghostAngleID;
-	%ghostGroup = %this.ghostGroup;
-
-	//Now move some other bricks
-	for(%i = 1; %i < %max; %i++)
-	{
-		%brick = %ghostGroup.getObject(%i);
-		%j = %brick.selectionIndex;
-
-		//Offset position
-		%bPos = vectorAdd(ndRotateVector($NS[%this, "Pos", %j], %angle), %rootPos);
-
-		//Rotate local angle id and get correct rotation value
-		%bAngle = ($NS[%this, "Rot", %j] + %angle ) % 4;
-
-		switch(%bAngle)
-		{
-			case 0: %bRot = "1 0 0 0";
-			case 1: %bRot = "0 0 1 1.5708";
-			case 2: %bRot = "0 0 1 3.14150";
-			case 3: %bRot = "0 0 -1 1.5708";
-		}
-
-		%brick.setTransform(%bPos SPC %bRot);
-	}
-
 	//Update variables
-	%this.ghostPosition = %rootPos;
+	%this.ghostAngleID = (%this.ghostAngleID + %direction) % 4;
+	%this.ghostPosition = vectorAdd(%pivot, %pOffset);
 	%this.updateHighlightBox();
+
+	//Update ghost bricks
+	%this.updateGhostBricks(0, $Pref::Server::ND::InstantGhostBricks, 450);
+}
+
+//Mirror ghost bricks on x,y,z axis
+function ND_Selection::mirrorGhostBricks(%this, %axis)
+{
+	//Update variables
+	if(%axis == 0)
+	{
+		%this.ghostMirrorX = !%this.ghostMirrorX;
+
+		//Offset ghost so we end up in the same area
+		if(%this.ghostMirrorX)
+			%offset = (getWord(%this.rootToCenter, 0) * 2) @ " 0 0";
+		else
+			%offset = (getWord(%this.rootToCenter, 0) * -2) @ " 0 0";
+	}
+	else if(%axis == 1)
+	{
+		%this.ghostMirrorY = !%this.ghostMirrorY;
+
+		//Offset ghost so we end up in the same area
+		if(%this.ghostMirrorY)
+			%offset = "0 " @ (getWord(%this.rootToCenter, 1) * 2) @ " 0";
+		else
+			%offset = "0 " @ (getWord(%this.rootToCenter, 1) * -2) @ " 0";
+	}
+	else
+	{
+		%this.ghostMirrorZ = !%this.ghostMirrorZ;
+
+		//Offset ghost so we end up in the same area
+		if(%this.ghostMirrorZ)
+			%offset = "0 0 " @ getWord(%this.rootToCenter, 2) * 2;
+		else
+			%offset = "0 0 " @ getWord(%this.rootToCenter, 2) * -2;
+	}
+
+	//Double mirror is just a rotation
+	if(%this.ghostMirrorX && %this.ghostMirrorY)
+	{
+		%this.ghostAngleID = (%this.ghostAngleID + 2) % 4;
+		%this.ghostMirrorX = false;
+		%this.ghostMirrorY = false;
+
+		if(%axis == 0)
+			%offset = (getWord(%this.rootToCenter, 0) * -2) @ " 0 0";
+		else
+			%offset = "0 " @ (getWord(%this.rootToCenter, 1) * -2) @ " 0";
+	}
+
+	//If pivot is whole selection, shift bricks to keep area
+	if(%this.client.ndPivot)
+		%this.ghostPosition = vectorAdd(%this.ghostPosition, ndRotateVector(%offset, %this.ghostAngleID));
+
+	%this.updateHighlightBox();
+
+	//Update ghost bricks
+	%this.updateGhostBricks(0, $Pref::Server::ND::InstantGhostBricks, 450);
 }
 
 //Update some of the ghost bricks to the latest position/rotation
-function ND_Selection::updateGhostBricks(%this, %start)
+function ND_Selection::updateGhostBricks(%this, %start, %count, %wait)
 {
 	cancel(%this.ghostMoveSchedule);
 	%max = %this.ghostGroup.getCount();
 
-	if(%max - %start > $Pref::Server::ND::ProcessPerTick)
+	if(%max - %start > %count)
 	{
-		%max = %start + $Pref::Server::ND::ProcessPerTick;
+		%max = %start + %count;
 
 		//Start schedule to move remaining ghost bricks
-		%this.ghostMoveSchedule = %this.schedule(30, updateGhostBricks, %max);
+		%this.ghostMoveSchedule = %this.schedule(%wait, updateGhostBricks,
+			%max, $Pref::Server::ND::ProcessPerTick, 30);
 	}
 
 	%pos = %this.ghostPosition;
 	%angle = %this.ghostAngleID;
 	%ghostGroup = %this.ghostGroup;
+	%mirrX = %this.ghostMirrorX;
+	%mirrY = %this.ghostMirrorY;
+	%mirrZ = %this.ghostMirrorZ;
 
 	//Update the ghost bricks in this tick
 	for(%i = %start; %i < %max; %i++)
@@ -1263,10 +1269,132 @@ function ND_Selection::updateGhostBricks(%this, %start)
 		%j = %brick.selectionIndex;
 
 		//Offset position
-		%bPos = vectorAdd(%pos, ndRotateVector($NS[%this, "Pos", %j], %angle));
+		%bPos = $NS[%this, "Pos", %j];
 
-		//Rotate local angle id and get correct rotation value
-		%bAngle = ($NS[%this, "Rot", %j] + %angle ) % 4;
+		//Rotated local angle id
+		%bAngle = $NS[%this, "Rot", %j];
+
+		//Apply mirror effects (ugh)
+		%datablock = $NS[%this, "Data", %j];
+
+		if(%mirrX)
+		{
+			//Mirror offset
+			%bPos = -firstWord(%bPos) SPC restWords(%bPos);
+
+			//Handle symmetries
+			switch($ND::Symmetry[%datablock])
+			{
+				//Asymmetric
+				case 0:
+					if(%db = $ND::SymmetryXDatablock[%datablock])
+					{
+						%datablock = %db;
+						%bAngle = (%bAngle + $ND::SymmetryXOffset[%datablock]) % 4;
+
+						//Pair is made on X, so apply mirror logic for X afterwards
+						if(%bAngle % 2 == 1)
+							%bAngle = (%bAngle + 2) % 4;
+					}
+
+				//Do nothing for fully symmetric
+
+				//X symmetric - rotate 180 degrees if brick is angled 90 or 270 degrees
+				case 2:
+					if(%bAngle % 2 == 1)
+						%bAngle = (%bAngle + 2) % 4;
+
+				//Y symmetric - rotate 180 degrees if brick is angled 0 or 180 degrees
+				case 3:
+					if(%bAngle % 2 == 0)
+						%bAngle = (%bAngle + 2) % 4;
+
+				//X+Y symmetric - rotate 90 degrees
+				case 4:
+					if(%bAngle % 2 == 0)
+						%bAngle = (%bAngle + 1) % 4;
+					else						
+						%bAngle = (%bAngle + 3) % 4;
+
+				//X-Y symmetric - rotate -90 degrees
+				case 5:
+					if(%bAngle % 2 == 0)
+						%bAngle = (%bAngle + 3) % 4;
+					else						
+						%bAngle = (%bAngle + 1) % 4;
+			}
+		}
+		else if(%mirrY)
+		{
+			//Mirror offset
+			%bPos = getWord(%bPos, 0) SPC -getWord(%bPos, 1) SPC getWord(%bPos, 2);
+
+			//Handle symmetries
+			switch($ND::Symmetry[%datablock])
+			{
+				//Asymmetric
+				case 0:
+					if(%db = $ND::SymmetryXDatablock[%datablock])
+					{
+						%datablock = %db;
+						%bAngle = (%bAngle + $ND::SymmetryXOffset[%datablock]) % 4;
+
+						//Pair is made on X, so apply mirror logic for X afterwards
+						if(%bAngle % 2 == 0)
+							%bAngle = (%bAngle + 2) % 4;
+					}
+
+				//Do nothing for fully symmetric
+
+				//X symmetric - rotate 180 degrees if brick is angled 90 or 270 degrees
+				case 2:
+					if(%bAngle % 2 == 0)
+						%bAngle = (%bAngle + 2) % 4;
+
+				//Y symmetric - rotate 180 degrees if brick is angled 0 or 180 degrees
+				case 3:
+					if(%bAngle % 2 == 1)
+						%bAngle = (%bAngle + 2) % 4;
+
+				//X+Y symmetric - rotate 90 degrees
+				case 4:
+					if(%bAngle % 2 == 1)
+						%bAngle = (%bAngle + 1) % 4;
+					else						
+						%bAngle = (%bAngle + 3) % 4;
+
+				//X-Y symmetric - rotate -90 degrees
+				case 5:
+					if(%bAngle % 2 == 1)
+						%bAngle = (%bAngle + 3) % 4;
+					else						
+						%bAngle = (%bAngle + 1) % 4;
+			}
+		}
+
+		if(%mirrZ)
+		{
+			//Mirror offset
+			%bPos = getWords(%bPos, 0, 1) SPC -getWord(%bPos, 2);
+
+			//Change datablock if asymmetric
+			if(!$ND::SymmetryZ[%datablock])
+			{
+				if(%db = $ND::SymmetryZDatablock[%datablock])
+				{
+					%datablock = %db;
+					%bAngle = (%bAngle + $ND::SymmetryZOffset[%datablock]) % 4;
+				}
+			}
+		}
+
+		//Apply datablock
+		if(%brick.getDatablock() != %datablock)
+			%brick.setDatablock(%datablock);
+
+		//Rotate and add offset		
+		%bAngle = (%bAngle + %angle) % 4;
+		%bPos = vectorAdd(%pos, ndRotateVector(%bPos, %angle));
 
 		switch(%bAngle)
 		{
@@ -1276,6 +1404,7 @@ function ND_Selection::updateGhostBricks(%this, %start)
 			case 3: %bRot = "0 0 -1 1.5708";
 		}
 
+		//Apply transform
 		%brick.setTransform(%bPos SPC %bRot);
 	}
 }
@@ -1310,10 +1439,32 @@ function ND_Selection::getGhostWorldBox(%this)
 	if(!isObject(%this.ghostGroup))
 		return "0 0 0 0 0 0";
 
-	%pos = %this.ghostGroup.getObject(0).getPosition();
-	%min = ndRotateVector(%this.minSize, %this.ghostAngleID);
-	%max = ndRotateVector(%this.maxSize, %this.ghostAngleID);
+	%min = %this.minSize;
+	%max = %this.maxSize;
 
+	//Handle mirrors
+	if(%this.ghostMirrorX)
+	{
+		%min = -firstWord(%min) SPC restWords(%min);
+		%max = -firstWord(%max) SPC restWords(%max);
+	}
+	else if(%this.ghostMirrorY)
+	{
+		%min = getWord(%min, 0) SPC -getWord(%min, 1) SPC getWord(%min, 2);
+		%max = getWord(%max, 0) SPC -getWord(%max, 1) SPC getWord(%max, 2);
+	}
+
+	if(%this.ghostMirrorZ)
+	{
+		%min = getWords(%min, 0, 1) SPC -getWord(%min, 2);
+		%max = getWords(%max, 0, 1) SPC -getWord(%max, 2);
+	}
+
+	//Handle rotation
+	%min = ndRotateVector(%min, %this.ghostAngleID);
+	%max = ndRotateVector(%max, %this.ghostAngleID);
+
+	//Get max values
 	%minX = getMin(getWord(%min, 0), getWord(%max, 0));
 	%minY = getMin(getWord(%min, 1), getWord(%max, 1));
 	%minZ = getMin(getWord(%min, 2), getWord(%max, 2));
@@ -1322,6 +1473,7 @@ function ND_Selection::getGhostWorldBox(%this)
 	%maxY = getMax(getWord(%min, 1), getWord(%max, 1));
 	%maxZ = getMax(getWord(%min, 2), getWord(%max, 2));
 
+	%pos = %this.ghostPosition;
 	return vectorAdd(%pos, %minX SPC %minY SPC %minZ) SPC vectorAdd(%pos, %maxX SPC %maxY SPC %maxZ);
 }
 
@@ -1526,9 +1678,133 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 //Returns brick if planted, 0 if floating, -1 if blocked, -2 if trust failure
 function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %client, %bl_id)
 {
-	//Get position and rotation
-	%bPos = vectorAdd(ndRotateVector($NS[%this, "Pos", %i], %angleID), %position);
-	%bAngle = ($NS[%this, "Rot", %i] + %angleID) % 4;
+	//Offset position
+	%bPos = $NS[%this, "Pos", %i];
+
+	//Local angle id
+	%bAngle = $NS[%this, "Rot", %i];
+
+	//Apply mirror effects (ugh)
+	%datablock = $NS[%this, "Data", %i];
+
+	%mirrX = %this.ghostMirrorX;
+	%mirrY = %this.ghostMirrorY;
+	%mirrZ = %this.ghostMirrorZ;
+
+	if(%mirrX)
+	{
+		//Mirror offset
+		%bPos = -firstWord(%bPos) SPC restWords(%bPos);
+
+		//Handle symmetries
+		switch($ND::Symmetry[%datablock])
+		{
+			//Asymmetric
+			case 0:
+				if(%db = $ND::SymmetryXDatablock[%datablock])
+				{
+					%datablock = %db;
+					%bAngle = (%bAngle + $ND::SymmetryXOffset[%datablock]) % 4;
+
+					//Pair is made on X, so apply mirror logic for X afterwards
+					if(%bAngle % 2 == 1)
+						%bAngle = (%bAngle + 2) % 4;
+				}
+
+			//Do nothing for fully symmetric
+
+			//X symmetric - rotate 180 degrees if brick is angled 90 or 270 degrees
+			case 2:
+				if(%bAngle % 2 == 1)
+					%bAngle = (%bAngle + 2) % 4;
+
+			//Y symmetric - rotate 180 degrees if brick is angled 0 or 180 degrees
+			case 3:
+				if(%bAngle % 2 == 0)
+					%bAngle = (%bAngle + 2) % 4;
+
+			//X+Y symmetric - rotate 90 degrees
+			case 4:
+				if(%bAngle % 2 == 0)
+					%bAngle = (%bAngle + 1) % 4;
+				else						
+					%bAngle = (%bAngle + 3) % 4;
+
+			//X-Y symmetric - rotate -90 degrees
+			case 5:
+				if(%bAngle % 2 == 0)
+					%bAngle = (%bAngle + 3) % 4;
+				else						
+					%bAngle = (%bAngle + 1) % 4;
+		}
+	}
+	else if(%mirrY)
+	{
+		//Mirror offset
+		%bPos = getWord(%bPos, 0) SPC -getWord(%bPos, 1) SPC getWord(%bPos, 2);
+
+		//Handle symmetries
+		switch($ND::Symmetry[%datablock])
+		{
+			//Asymmetric
+			case 0:
+				if(%db = $ND::SymmetryXDatablock[%datablock])
+				{
+					%datablock = %db;
+					%bAngle = (%bAngle + $ND::SymmetryXOffset[%datablock]) % 4;
+
+					//Pair is made on X, so apply mirror logic for X afterwards
+					if(%bAngle % 2 == 0)
+						%bAngle = (%bAngle + 2) % 4;
+				}
+
+			//Do nothing for fully symmetric
+
+			//X symmetric - rotate 180 degrees if brick is angled 90 or 270 degrees
+			case 2:
+				if(%bAngle % 2 == 0)
+					%bAngle = (%bAngle + 2) % 4;
+
+			//Y symmetric - rotate 180 degrees if brick is angled 0 or 180 degrees
+			case 3:
+				if(%bAngle % 2 == 1)
+					%bAngle = (%bAngle + 2) % 4;
+
+			//X+Y symmetric - rotate 90 degrees
+			case 4:
+				if(%bAngle % 2 == 1)
+					%bAngle = (%bAngle + 1) % 4;
+				else						
+					%bAngle = (%bAngle + 3) % 4;
+
+			//X-Y symmetric - rotate -90 degrees
+			case 5:
+				if(%bAngle % 2 == 1)
+					%bAngle = (%bAngle + 3) % 4;
+				else						
+					%bAngle = (%bAngle + 1) % 4;
+		}
+	}
+
+	if(%mirrZ)
+	{
+		//Mirror offset
+		%bPos = getWords(%bPos, 0, 1) SPC -getWord(%bPos, 2);
+
+		//Change datablock if asymmetric
+		if(!$ND::SymmetryZ[%datablock])
+		{
+			if(%db = $ND::SymmetryZDatablock[%datablock])
+			{
+				%datablock = %db;
+				%bAngle = (%bAngle + $ND::SymmetryZOffset[%datablock]) % 4;
+			}
+		}
+	}
+
+	//Rotate and add offset
+	%bAngle = (%bAngle + %angleID) % 4;
+	%bPos = vectorAdd(%position, ndRotateVector(%bPos, %angleID));
 
 	switch(%bAngle)
 	{
@@ -1537,8 +1813,6 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		case 2: %bRot = "0 0 1 180";
 		case 3: %bRot = "0 0 -1 90.0002";
 	}
-
-	%datablock = $NS[%this, "Data", %i];
 
 	//Attempt to plant brick	
 	%brick = new FxDTSBrick()
@@ -1647,24 +1921,41 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 			//Rotate fireRelay events
 			switch$(%output)
 			{
-				case "fireRelayNorth": %dir = 0;
-				case "fireRelayEast":  %dir = 1;
-				case "fireRelaySouth": %dir = 2;
-				case "fireRelayWest":  %dir = 3;
+				case "fireRelayUp":    %dir = 0;
+				case "fireRelayDown":  %dir = 1;
+				case "fireRelayNorth": %dir = 2;
+				case "fireRelayEast":  %dir = 3;
+				case "fireRelaySouth": %dir = 4;
+				case "fireRelayWest":  %dir = 5;
 				default: %dir = -1;
 			}
 
 			if(%dir >= 0)
 			{
-				%rotated = (%dir + %angleID) % 4;
+				%rotated = %dir;
+
+				//Apply mirror effects
+				if(%rotated > 1)
+				{
+					if(%mirrX && %rotated % 2 == 1
+					|| %mirrY && %rotated % 2 == 0)
+						%rotated += 2;
+
+					%rotated = (%rotated + %angleID - 2) % 4 + 2;
+				}
+				else if(%mirrZ)
+					%rotated = !%rotated;
+
 				%outputIdx += %rotated - %dir;
 
 				switch(%rotated)
 				{
-					case 0: %output = "fireRelayNorth";
-					case 1: %output = "fireRelayEast";
-					case 2: %output = "fireRelaySouth";
-					case 3: %output = "fireRelayWest";
+					case 0: %output = "fireRelayUp";
+					case 1: %output = "fireRelayDown";
+					case 2: %output = "fireRelayNorth";
+					case 3: %output = "fireRelayEast";
+					case 4: %output = "fireRelaySouth";
+					case 5: %output = "fireRelayWest";
 				}
 			}
 
@@ -1694,7 +1985,18 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 				%param = $NS[%this, "EvPar", %i, %j, %k];
 
 				if(getWord(getField(%paramList, %k), 0) $= "vector")
+				{
+					//Apply mirror effects
+					if(%mirrX)
+						%param = -firstWord(%param) SPC restWords(%param);
+					else if(%mirrY)
+						%param = getWord(%param, 0) SPC -getWord(%param, 1) SPC getWord(%param, 2);
+
+					if(%mirrZ)
+						%param = getWord(%param, 0) SPC getWord(%param, 1) SPC -getWord(%param, 2);
+
 					%param = ndRotateVector(%param, %angleID);
+				}
 
 				%brick.eventOutputParameter[%j, %k + 1] = %param;
 			}
@@ -1722,8 +2024,19 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 
 	if(%tmp = $NS[%this, "Emitter", %i])
 	{
-		if((%dir = $NS[%this, "EmitDir", %i]) > 1)
-			%dir = 2 + ((%dir + %angleID - 2) % 4);
+		%dir = $NS[%this, "EmitDir", %i];
+
+		//Apply mirror effects
+		if(%dir > 1)
+		{
+			if(%mirrX && %dir % 2 == 1
+			|| %mirrY && %dir % 2 == 0)
+				%dir += 2;
+
+			%dir = (%dir + %angleID - 2) % 4 + 2;
+		}
+		else if(%mirrZ)
+			%dir = !%dir;
 
 		%brick.emitterDirection = %dir;
 		%brick.setEmitter(%tmp);
@@ -1731,11 +2044,31 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 
 	if(%tmp = $NS[%this, "Item", %i])
 	{
-		if((%pos = $NS[%this, "ItemPos", %i]) > 1)
-			%pos = 2 + ((%pos + %angleID - 2) % 4);
+		%pos = $NS[%this, "ItemPos", %i];
+		%dir = $NS[%this, "ItemDir", %i];
 
-		if((%dir = $NS[%this, "ItemDir", %i]) > 1)
-			%dir = 2 + ((%dir + %angleID - 2) % 4);
+		//Apply mirror effects
+		if(%pos > 1)
+		{
+			if(%mirrX && %pos % 2 == 1
+			|| %mirrY && %pos % 2 == 0)
+				%pos += 2;
+
+			%pos = (%pos + %angleID - 2) % 4 + 2;
+		}
+		else if(%mirrZ)
+			%pos = !%pos;
+
+		if(%dir > 1)
+		{
+			if(%mirrX && %dir % 2 == 1
+			|| %mirrY && %dir % 2 == 0)
+				%dir += 2;
+
+			%dir = (%dir + %angleID - 2) % 4 + 2;
+		}
+		else if(%mirrZ)
+			%dir = !%dir;
 
 		%brick.itemPosition = %pos;
 		%brick.itemDirection = %dir;

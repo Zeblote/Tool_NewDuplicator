@@ -19,13 +19,18 @@ function ND_SymmetryTable()
     return %this;
 }
 
-//Rebuild the symmetry table
+//Start schedule to create the table
 function ND_SymmetryTable::buildTable(%this)
 {
-    %start = getRealTime();
+	//Tell everyone what is happening
+	messageAll('', "\c6Building Brick Symmetry Table...");
 
     //Delete previous data
     deleteVariables("$ND::Symmetry*");
+
+    $ND::SymmetryTableCreated = false;
+    $ND::SymmetryTableCreating = true;
+    $ND::SymmetryTableStart = getRealTime();
 
     $NDT::CubicCount = 0;
     $NDT::MeshCount = 0;
@@ -36,13 +41,22 @@ function ND_SymmetryTable::buildTable(%this)
     echo("ND: Start building brick symmetry table...");
     echo("==========================================================================");
 
-    %count = getDatablockGroupSize();
-    for(%i = 0; %i < %count; %i++)
+    %this.tickLoadFiles(0, getDatablockGroupSize());
+}
+
+//Loads a single datablock
+function ND_SymmetryTable::tickLoadFiles(%this, %index, %max)
+{
+    for(%i = %index; %i < %max; %i++)
     {
         %db = getDatablock(%i);
 
         if(%db.getClassName() $= "FxDtsBrickData")
+        {
             %this.processDatablock(%db);
+            %this.schedule(1, tickLoadFiles, %i + 1, %max);
+            return;
+        }
     }
 
     %cubic = $NDT::CubicCount;
@@ -53,6 +67,13 @@ function ND_SymmetryTable::buildTable(%this)
 
     echo("==========================================================================");
     echo("ND: Finished basic tests: " @ %cubic @ " cubic, " @ %mesh @ " with mesh, " @ %asymx @ " asymmetric, " @ %asymz @ " z-asymmetric");
+
+    %this.processPairs();
+}
+
+//Rebuild the symmetry table
+function ND_SymmetryTable::processPairs(%this)
+{
     echo("ND: Starting X symmetric pair search...");
     echo("==========================================================================");
 
@@ -82,7 +103,13 @@ function ND_SymmetryTable::buildTable(%this)
 
     echo("==========================================================================");
     echo("ND: Finished finding Z symmetric pairs");
-    echo("ND: Symmetry table complete in " @ (getRealTime() - %start) / 1000 @ " seconds");
+    echo("ND: Symmetry table complete in " @ (getRealTime() - $ND::SymmetryTableStart) / 1000 @ " seconds");
+
+    $ND::SymmetryTableCreated = true;
+    $ND::SymmetryTableCreating = false;
+
+	//We're done!
+	messageAll('', "\c6Generated Table in " @ mFloatLength((getRealTime() - $ND::SymmetryTableStart) / 1000, 0) @ " seconds.");
 }
 
 //Detect symmetry of a single blb file
@@ -319,9 +346,14 @@ function ND_SymmetryTable::processPair(%this, %dbi)
 
     if(%off != -1)
     {
+    	%otherdb = $NDT::Datablock[%other];
+    	
         //Save symmetry
-        $ND::SymmetryXDatablock[%datablock] = $NDT::Datablock[%other];
+        $ND::SymmetryXDatablock[%datablock] = %otherdb;
         $ND::SymmetryXOffset[%datablock] = %off;
+
+        $ND::SymmetryXDatablock[%otherdb] = %datablock;
+        $ND::SymmetryXOffset[%otherdb] = -%off;
 
         //No need to process these bricks again
         $NDT::SkipAsymX[%other] = true;
@@ -393,9 +425,14 @@ function ND_SymmetryTable::processZPair(%this, %dbi)
 
     if(%off != -1)
     {
+    	%otherdb = $NDT::Datablock[%other];
+
         //Save symmetry
-        $ND::SymmetryZDatablock[%datablock] = $NDT::Datablock[%other];
+        $ND::SymmetryZDatablock[%datablock] = %otherdb;
         $ND::SymmetryZOffset[%datablock] = %off;
+
+        $ND::SymmetryZDatablock[%otherdb] = %datablock;
+        $ND::SymmetryZOffset[%otherdb] = -%off;
 
         //No need to process these bricks again
         $NDT::SkipAsymZ[%other] = true;

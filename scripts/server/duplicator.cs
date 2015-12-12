@@ -460,6 +460,54 @@ function SimSet::ndTickUndo(%this, %count, %instant, %client)
 
 
 
+//Mirrors
+///////////////////////////////////////////////////////////////////////////
+
+//Mirror selection on X relative to player
+function serverCmdMirrorX(%client)
+{
+	if((getAngleIDFromPlayer(%client.getControlObject()) - %client.ndSelection.ghostAngleID) % 2 == 1)
+		%client.ndMirror(0);
+	else
+		%client.ndMirror(1);
+}
+
+//Mirror selection on Y relative to player
+function serverCmdMirrorY(%client)
+{
+	if((getAngleIDFromPlayer(%client.getControlObject()) - %client.ndSelection.ghostAngleID) % 2 == 1)
+		%client.ndMirror(1);
+	else
+		%client.ndMirror(0);
+}
+
+//Mirror selection on Z
+function serverCmdMirrorZ(%client)
+{
+	%client.ndMirror(2);
+}
+
+//Attempt to mirror selection on axis
+function GameConnection::ndMirror(%client, %axis)
+{
+	if(!isObject(%client.ndSelection) || %client.ndModeIndex != $NDM::PlantCopy)
+		return;
+
+	//Make sure symmetry table is created
+	if(!$ND::SymmetryTableCreated)
+	{
+		if(!isObject(ND_SymmetryTable))
+			ND_SymmetryTable();
+
+		if(!$ND::SymmetryTableCreating)
+			ND_SymmetryTable.buildTable();
+	}
+	else
+		%client.ndSelection.mirrorGhostBricks(%axis);
+}
+
+
+
 //General support functions
 ///////////////////////////////////////////////////////////////////////////
 
