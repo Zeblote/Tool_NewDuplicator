@@ -176,9 +176,9 @@ function ND_SymmetryTable::processDatablock(%this, %datablock)
                 %pos = vectorAdd(%line, "0 0 0");
 
                 //Round down two digits to fix float errors
-                %pos = mFloatLength(getWord(%pos, 0), 4) * 1.0
-                   SPC mFloatLength(getWord(%pos, 1), 4) * 1.0
-                   SPC mFloatLength(getWord(%pos, 2), 4) * 1.0;
+                %pos = mFloatLength(getWord(%pos, 0), 3) * 1.0
+                   SPC mFloatLength(getWord(%pos, 1), 3) * 1.0
+                   SPC mFloatLength(getWord(%pos, 2), 3) * 1.0;
 
                 //Get index of this point
                 if(!%ptIndex = $NDT::PtAtPosition[%dbi, %pos])
@@ -387,10 +387,6 @@ function ND_SymmetryTable::processZPair(%this, %dbi)
     for(%i = 1; %i <= %count; %i++)
     {
         %other = $NDT::AsymZBrick[%faces, %sym, %i];
-
-        //Don't compare with itself... won't be symmetric
-        if(%other == %dbi)
-            continue;
 
         //Don't compare with bricks that already have a pair
         if($NDT::SkipAsymZ[%other])
