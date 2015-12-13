@@ -1496,6 +1496,21 @@ function ND_Selection::startPlant(%this, %position, %angleID)
 	%this.undoGroup = new SimSet();
 	ND_ServerGroup.add(%this.undoGroup);
 
+	//Reset mirror error list
+	%client = %this.client;
+
+	%countX = $NS[%client, "MirErrorsX"];
+	%countZ = $NS[%client, "MirErrorsZ"];
+
+	for(%i = 0; %i < %countX; %i++)
+		$NS[%client, "MirKnownX", $NS[%client, "MirErrorX", %i]] = "";
+
+	for(%i = 0; %i < %countZ; %i++)
+		$NS[%client, "MirKnownZ", $NS[%client, "MirErrorZ", %i]] = "";
+
+	$NS[%client, "MirErrorsZ"] = 0;
+	$NS[%client, "MirErrorsX"] = 0;
+
 	if($Pref::Server::ND::PlayMenuSounds && %this.brickCount > $Pref::Server::ND::ProcessPerTick * 10)
 		messageClient(%this.client, 'MsgUploadStart', "");
 
@@ -1710,6 +1725,18 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 					if(%bAngle % 2 == 1)
 						%bAngle = (%bAngle + 2) % 4;
 				}
+				else
+				{
+					//Add datablock to list of mirror problems
+					if(!$NS[%client, "MirKnownX", %datablock])
+					{
+						%id = $NS[%client, "MirErrorsX"];
+						$NS[%client, "MirErrorsX"]++;
+
+						$NS[%client, "MirErrorX", %id]= %datablock;
+						$NS[%client, "MirKnownX", %datablock] = true;
+					}
+				}
 
 			//Do nothing for fully symmetric
 
@@ -1757,6 +1784,18 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 					if(%bAngle % 2 == 0)
 						%bAngle = (%bAngle + 2) % 4;
 				}
+				else
+				{
+					//Add datablock to list of mirror problems
+					if(!$NS[%client, "MirKnownX", %datablock])
+					{
+						%id = $NS[%client, "MirErrorsX"];
+						$NS[%client, "MirErrorsX"]++;
+
+						$NS[%client, "MirErrorX", %id]= %datablock;
+						$NS[%client, "MirKnownX", %datablock] = true;
+					}
+				}
 
 			//Do nothing for fully symmetric
 
@@ -1798,6 +1837,18 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 			{
 				%datablock = %db;
 				%bAngle = (%bAngle + $ND::SymmetryZOffset[%datablock]) % 4;
+			}
+			else
+			{
+				//Add datablock to list of mirror problems
+				if(!$NS[%client, "MirKnownZ", %datablock])
+				{
+					%id = $NS[%client, "MirErrorsZ"];
+					$NS[%client, "MirErrorsZ"]++;
+
+					$NS[%client, "MirErrorZ", %id]= %datablock;
+					$NS[%client, "MirKnownZ", %datablock] = true;
+				}
 			}
 		}
 	}
@@ -2091,6 +2142,10 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 //Finished planting all the bricks!
 function ND_Selection::finishPlant(%this)
 {
+	//Report mirror errors
+	if($NS[%this.client, "MirErrorsX"] > 0 || $NS[%this.client, "MirErrorsZ"] > 0)
+		messageClient(%this.client, '', "\c6Some bricks were probably mirrored incorrectly. Say \c3/mirErrors\c6 to find out more.");
+
 	%count = %this.brickCount;
 	%planted = %this.plantSuccessCount;
 	%blocked = %this.plantBlockedFailCount;

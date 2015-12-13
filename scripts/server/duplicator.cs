@@ -529,6 +529,39 @@ function GameConnection::ndMirror(%client, %axis)
 		%client.ndSelection.mirrorGhostBricks(%axis);
 }
 
+function serverCmdMirErrors(%client)
+{
+	%xerr = $NS[%client, "MirErrorsX"];
+	%zerr = $NS[%client, "MirErrorsZ"];
+
+	if(%xerr)
+	{
+		messageClient(%client, '', " ");
+		messageClient(%client, '', "\c6These bricks are asymmetric and probably mirrored incorrectly:");
+
+		for(%i = 0; %i < %xerr; %i++)
+		{
+			%db = $NS[%client, "MirErrorX", %i];
+			messageClient(%client, '', "\c7 -" @ %i + 1 @ "- \c6" @ %db.category @ "/" @ %db.subCategory @ "/" @ %db.uiName);
+		}
+	}
+
+	if(%zerr)
+	{
+		messageClient(%client, '', " ");
+		messageClient(%client, '', "\c6These bricks are not symmetric on Z and probably incorrect:");
+
+		for(%i = 0; %i < %zerr; %i++)
+		{
+			%db = $NS[%client, "MirErrorZ", %i];
+			messageClient(%client, '', "\c7 -" @ %i + 1 @ "- \c6" @ %db.category @ "/" @ %db.subCategory @ "/" @ %db.uiName);
+		}		
+	}
+
+	if(!%xerr && !%zerr)
+		messageClient(%client, '', "\c6There were no mirror errors in your last plant attempt.");
+}
+
 
 
 //General support functions
