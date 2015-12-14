@@ -29,13 +29,13 @@ package NewDuplicator_Server
 function GameConnection::ndHandshakeTimeout(%this)
 {
 	//Show client where to get the new duplicator
-	if($Pref::Server::ND::Advertise)
-	{
-		%m =      "\c6Hey, it looks like you don't have the \c3New Duplicator\c6 yet! Check it out: ";
-		%m = %m @ "[<a:forum.blockland.us/index.php?topic=288602.0>Forum Topic</a>\c6]";
-
-		messageClient(%this, '', %m);
-	}
+//	if($Pref::Server::ND::Advertise)
+//	{
+//		%m =      "\c6Hey, it looks like you don't have the \c3New Duplicator\c6 yet! Check it out: ";
+//		%m = %m @ "[<a:forum.blockland.us/index.php?topic=288602.0>Forum Topic</a>\c6]";
+//
+//		messageClient(%this, '', %m);
+//	}
 }
 
 //Client responded, so he has new duplicator
