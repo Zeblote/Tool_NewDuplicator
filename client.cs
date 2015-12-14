@@ -8,7 +8,7 @@
 // *
 // * ######################################################################
 
-$ND::Version = "1.0.4";
+$ND::Version = "1.1.0";
 
 $ND::FilePath = filePath($Con::File) @ "/";
 $ND::ConfigPath = "config/NewDuplicator/";
