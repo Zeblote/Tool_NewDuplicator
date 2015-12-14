@@ -99,7 +99,20 @@ function NDM_PlantCopy::onSelectObject(%this, %client, %obj, %pos, %normal)
 	%pos = vectorSub(vectorAdd(%pos, %offset), %client.ndSelection.ghostPosition);
 
 	if(%client.ndPivot)
-		%pos = vectorSub(%pos, ndRotateVector(%client.ndSelection.rootToCenter, %client.ndSelection.ghostAngleID));
+	{
+		%toCenter = %client.ndSelection.rootToCenter;
+
+		//Apply mirror	
+		if(%client.ndSelection.ghostMirrorX)
+			%toCenter = -firstWord(%toCenter) SPC restWords(%toCenter);
+		else if(%client.ndSelection.ghostMirrorY)
+			%toCenter = getWord(%toCenter, 0) SPC -getWord(%toCenter, 1) SPC getWord(%toCenter, 2);
+
+		if(%client.ndSelection.ghostMirrorZ)
+			%toCenter = getWord(%toCenter, 0) SPC getWord(%toCenter, 1) SPC -getWord(%toCenter, 2);
+
+		%pos = vectorSub(%pos, ndRotateVector(%toCenter, %client.ndSelection.ghostAngleID));
+	}
 
 	%client.ndSelection.shiftGhostBricks(%pos);
 }
