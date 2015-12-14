@@ -33,6 +33,31 @@ package NewDuplicator_Server
 		if(%this.ndModeIndex)
 			%this.ndKillMode(%this);
 
+		//Remove from client lists of selections
+		for(%i = 0; %i < ND_ServerGroup.getCount(); %i++)
+		{
+			%obj = ND_ServerGroup.getObject(%i);
+
+			if(%obj.getName() $= "ND_Selection")
+			{				
+				%obj.numClients = 0;
+
+				for(%j = 0; %j < ClientGroup.getCount(); %j++)
+				{
+					%cl = ClientGroup.getObject(%j);
+
+					if(%cl.getId() != %this.getId()
+					&& %cl.hasSpawnedOnce
+					&& isObject(%ctrl = %cl.getControlObject())
+					&& vectorDist(%obj.ghostPosition, %ctrl.getTransform()) < 10000)
+					{
+						$NS[%obj, "CL", %obj.numClients] = %cl;
+						%obj.numClients++;
+					}
+				}
+			}
+		}
+
 		parent::onClientLeaveGame(%this);
 	}
 

@@ -1519,7 +1519,7 @@ function ND_Selection::startPlant(%this, %position, %angleID)
 		%cl = ClientGroup.getObject(%i);
 
 		if(%cl.hasSpawnedOnce
-		&& isObject(%obj = %client.getControlObject())
+		&& isObject(%obj = %cl.getControlObject())
 		&& vectorDist(%this.ghostPosition, %obj.getTransform()) < 10000)
 		{
 			$NS[%this, "CL", %this.numClients] = %cl;
