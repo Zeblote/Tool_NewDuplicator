@@ -25,6 +25,10 @@ function ND_SymmetryTable::buildTable(%this)
 	//Tell everyone what is happening
 	messageAll('', "\c6Building Brick Symmetry Table...");
 
+    //Make sure we have the uiname table for manual symmetry
+    if(!$UINameTableCreated)
+        createUINameTable();
+
     //Delete previous data
     deleteVariables("$ND::Symmetry*");
 
@@ -150,7 +154,7 @@ function ND_SymmetryTable::processDatablock(%this, %datablock)
 
         if(getSubStr(%line, 0, 4) $= "TEX:")
         {
-            %tex = getSubStr(%line, 4, strLen(%line));
+            %tex = trim(getSubStr(%line, 4, strLen(%line)));
             
             //Top and bottom faces have different topology, skip
             if(%tex $= "TOP" || %tex $= "BOTTOMLOOP" || %tex $= "BOTTOMEDGE")
@@ -160,7 +164,7 @@ function ND_SymmetryTable::processDatablock(%this, %datablock)
             $NDT::FaceTexId[%dbi, %faces] = (%tex $= "SIDE" ? 0 : (%tex $= "RAMP" ? 1 : 2));
 
             //Skip useless lines
-            while(%file.readLine() !$= "POSITION:") {}
+            while(trim(%file.readLine()) !$= "POSITION:") {}
 
             //Add the 4 points
             for(%i = 0; %i < 4; %i++)
@@ -227,48 +231,104 @@ function ND_SymmetryTable::processDatablock(%this, %datablock)
     //We will test in the following order:
     // X
     // Y
-    // Z
     // X+Y
     // X-Y
+    // Z
 
-    %failX = %this.symmetryPlaneTest(%dbi, 0);
-    %failY = %this.symmetryPlaneTest(%dbi, 1);
-    %failZ = %this.symmetryPlaneTest(%dbi, 2);
+    //Check manual symmetry first
+    %sym = $ND::ManualSymmetry[%datablock.uiname];
 
-    //Diagonals are only needed if the brick isn't symmetric to the axis
-    if(%failX && %failY)
-        %failXY = %this.symmetryPlaneTest(%dbi, 3);
-
-    //One diagonal is enough, only test second if first one fails
-    if(%failXY)
-        %failYX = %this.symmetryPlaneTest(%dbi, 4);
-
-    //X, Y symmetry
-    if(!%failX && !%failY)
-        %sym = 1;
-    else if(!%failX)
-        %sym = 2;
-    else if(!%failY)
-        %sym = 3;
-    else if(!%failXY)
-        %sym = 4;
-    else if(!%failYX)
-        %sym = 5;
-    else
+    if(%sym !$= "")
     {
-        %sym = 0;
+        if(!%sym)
+        {
+            //Try to find the other brick
+            %otherdb = $UINameTable[$ND::ManualSymmetryDB[%datablock.uiname]];
+            %offset = $ND::ManualSymmetryOffset[%datablock.uiname];
 
+            //...
+            if(!isObject(%otherdb))
+            {
+                %otherdb = "";
+                %offset = 0;
+                echo("ERROR: " @ %datablock.uiname @ " has manual symmetry but the paired brick does not exist");
+            }
+
+            $ND::SymmetryXDatablock[%datablock] = %otherdb;
+            $ND::SymmetryXOffset[%datablock] = %offset;
+        }
+
+        %manualSym = true;
+    }
+    else
+    {   
+        %failX = %this.symmetryPlaneTest(%dbi, 0);
+        %failY = %this.symmetryPlaneTest(%dbi, 1);
+
+        //Diagonals are only needed if the brick isn't symmetric to the axis
+        if(%failX && %failY)
+            %failXY = %this.symmetryPlaneTest(%dbi, 3);
+
+        //One diagonal is enough, only test second if first one fails
+        if(%failXY)
+            %failYX = %this.symmetryPlaneTest(%dbi, 4);
+
+        //X, Y symmetry
+        if(!%failX && !%failY)
+            %sym = 1;
+        else if(!%failX)
+            %sym = 2;
+        else if(!%failY)
+            %sym = 3;
+        else if(!%failXY)
+            %sym = 4;
+        else if(!%failYX)
+            %sym = 5;
+        else
+            %sym = 0;
+    }
+
+    //Check manual symmetry first
+    %symZ = $ND::ManualSymmetryZ[%datablock.uiname];
+
+    //Z symmetry
+    if(%symZ !$= "")
+    {
+        if(!%symZ)
+        {
+            //Try to find the other brick
+            %otherdb = $UINameTable[$ND::ManualSymmetryZDB[%datablock.uiname]];
+            %offset = $ND::ManualSymmetryZOffset[%datablock.uiname];
+
+            //...
+            if(!isObject(%otherdb))
+            {
+                %otherdb = "";
+                %offset = 0;
+                echo("ERROR: " @ %datablock.uiname @ " has manual Z symmetry but the paired brick does not exist");
+            }
+
+            $ND::SymmetryZDatablock[%datablock] = %otherdb;
+            $ND::SymmetryZOffset[%datablock] = %offset;
+        }
+
+        %manualZSym = true;
+    }
+    else
+        %symZ = !%this.symmetryPlaneTest(%dbi, 2);
+
+    if(!%manualSym && !%sym)
+    {
         //Add to lookup table of X-asymmetric bricks of this type
-        %bIndex = $NDT::AsymXCount[%faces, !%failZ]++;
-        $NDT::AsymXBrick[%faces, !%failZ, %bIndex] = %dbi;
+        %bIndex = $NDT::AsymXCount[%faces, %symZ]++;
+        $NDT::AsymXBrick[%faces, %symZ, %bIndex] = %dbi;
 
         //Add to list of asymmetric bricks
         $NDT::AsymXBrick[$NDT::AsymXCountTotal] = %dbi;
         $NDT::AsymXCountTotal++;
     }
 
-    //Z symmetry
-    if(%failZ)
+    if(!%manualZSym && !%symZ)
     {
         //Add to lookup table of Z-asymmetric bricks of this type
         %bIndex = $NDT::AsymZCount[%faces, %sym]++;
@@ -281,7 +341,7 @@ function ND_SymmetryTable::processDatablock(%this, %datablock)
 
     //Save symmetries
     $ND::Symmetry[%datablock] = %sym;
-    $ND::SymmetryZ[%datablock] = !%failZ;
+    $ND::SymmetryZ[%datablock] = %symZ;
 }
 
 //Find symmetric pair between two bricks

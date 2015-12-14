@@ -45,6 +45,7 @@ echo(" \n--- Loading Server Scripts ---");
 exec($ND::ScriptPath @ "server/datablocks.cs");
 exec($ND::ScriptPath @ "server/duplicator.cs");
 exec($ND::ScriptPath @ "server/handshake.cs");
+exec($ND::ScriptPath @ "server/manualsymmetry.cs");
 
 echo(" \n--- Initializing Server ---");
 $ND::BrickHighlightColor = ndGetClosestColorID("255 255 0");
