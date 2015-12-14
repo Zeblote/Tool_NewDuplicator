@@ -1511,6 +1511,22 @@ function ND_Selection::startPlant(%this, %position, %angleID)
 	$NS[%client, "MirErrorsZ"] = 0;
 	$NS[%client, "MirErrorsX"] = 0;
 
+	//Make list of spawned clients to scope bricks
+	%this.numClients = 0;
+
+	for(%i = 0; %i < ClientGroup.getCount(); %i++)
+	{
+		%cl = ClientGroup.getObject(%i);
+
+		if(%cl.hasSpawnedOnce
+		&& isObject(%obj = %client.getControlObject())
+		&& vectorDist(%this.ghostPosition, %obj.getTransform()) < 10000)
+		{
+			$NS[%this, "CL", %this.numClients] = %cl;
+			%this.numClients++;
+		}
+	}
+
 	if($Pref::Server::ND::PlayMenuSounds && %this.brickCount > $Pref::Server::ND::ProcessPerTick * 10)
 		messageClient(%this.client, 'MsgUploadStart', "");
 
@@ -1531,6 +1547,7 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 	%bl_id = %client.bl_id;
 
 	%qCount = %this.plantQueueCount;
+	%numClients = %this.numClients;
 
 	for(%i = %start; %i < %end; %i++)
 	{
@@ -1563,6 +1580,14 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 					$NP[%this, %id] = true;
 					%qCount++;
 				}
+			}
+
+			//Instantly ghost the brick to all spawned clients (wow hacks)
+			for(%j = 0; %j < %numClients; %j++)
+			{
+				%cl = $NS[%this, "CL", %j];
+				%brick.scopeToClient(%cl);
+				%brick.clearScopeToClient(%cl);
 			}
 
 			//If we added bricks to plant queue, switch to second loop
@@ -1618,6 +1643,7 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 	%bl_id = %client.bl_id;
 
 	%qCount = %this.plantQueueCount;
+	%numClients = %this.numClients;
 
 	for(%i = %start; %i < %end; %i++)
 	{
@@ -1660,6 +1686,14 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 			}
 
 			%lastPos = %brick.position;
+
+			//Instantly ghost the brick to all spawned clients (wow hacks)
+			for(%j = 0; %j < %numClients; %j++)
+			{
+				%cl = $NS[%this, "CL", %j];
+				%brick.scopeToClient(%cl);
+				%brick.clearScopeToClient(%cl);
+			}
 		}
 		else if(%brick == -1)
 		{
