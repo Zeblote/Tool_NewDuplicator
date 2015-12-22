@@ -328,8 +328,8 @@ package NewDuplicator_Server
 	{
 		if(%client.ndModeIndex)
 			%client.ndMode.onShiftBrick(%client, %x, %y, %z);
-		else
-			parent::serverCmdShiftBrick(%client, %x, %y, %z);
+			
+		parent::serverCmdShiftBrick(%client, %x, %y, %z);
 	}
 
 	//Super-shifting the ghost brick (default: alt numpad 2468/5+)
@@ -337,8 +337,8 @@ package NewDuplicator_Server
 	{
 		if(%client.ndModeIndex)
 			%client.ndMode.onSuperShiftBrick(%client, %x, %y, %z);
-		else
-			parent::serverCmdSuperShiftBrick(%client, %x, %y, %z);
+
+		parent::serverCmdSuperShiftBrick(%client, %x, %y, %z);
 	}
 
 	//Rotating the ghost brick (default: numpad 79)
@@ -346,8 +346,8 @@ package NewDuplicator_Server
 	{
 		if(%client.ndModeIndex)
 			%client.ndMode.onRotateBrick(%client, %direction);
-		else
-			parent::serverCmdRotateBrick(%client, %direction);
+
+		parent::serverCmdRotateBrick(%client, %direction);
 	}
 
 	//Planting the ghost brick (default: numpad enter)

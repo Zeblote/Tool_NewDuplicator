@@ -172,11 +172,6 @@ function NDM_PlantCopy::onSuperShiftBrick(%this, %client, %x, %y, %z)
 //Rotate Brick
 function NDM_PlantCopy::onRotateBrick(%this, %client, %direction)
 {
-	if(%direction > 0)
-		%client.player.playThread("3", "rotCW");
-	else
-		%client.player.playThread("3", "rotCCW");
-
 	%client.ndSelection.rotateGhostBricks(%direction, %client.ndPivot);
 }
 
