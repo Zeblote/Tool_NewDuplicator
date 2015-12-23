@@ -50,4 +50,5 @@ exec($ND::ScriptPath @ "server/manualsymmetry.cs");
 echo(" \n--- Initializing Server ---");
 $ND::BrickHighlightColor = ndGetClosestColorID("255 255 0");
 activatePackage(NewDuplicator_Server);
+schedule(10, 0, activatePackage, NewDuplicator_Server_Final);
 ND_PrefManager().registerPrefs();

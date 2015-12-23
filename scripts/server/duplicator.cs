@@ -201,17 +201,38 @@ function serverCmdClearDups(%client)
 	}
 }
 
-//Short commands to equip a duplicator
-function serverCmdDuplicator(%this, %cmd){%this.ndHandleCommand(%cmd);}
-function serverCmdDuplicato (%this, %cmd){%this.ndHandleCommand(%cmd);}
-function serverCmdDuplicat  (%this, %cmd){%this.ndHandleCommand(%cmd);}
-function serverCmdDuplica   (%this, %cmd){%this.ndHandleCommand(%cmd);}
-function serverCmdDuplic    (%this, %cmd){%this.ndHandleCommand(%cmd);}
-function serverCmdDupli     (%this, %cmd){%this.ndHandleCommand(%cmd);}
-function serverCmdDupl      (%this, %cmd){%this.ndHandleCommand(%cmd);}
-function serverCmdDup       (%this, %cmd){%this.ndHandleCommand(%cmd);}
-function serverCmdDu        (%this, %cmd){%this.ndHandleCommand(%cmd);}
-function serverCmdD         (%this, %cmd){%this.ndHandleCommand(%cmd);}
+//Command to equip old duplicator
+function serverCmdOldDup(%client)
+{
+	if(!isObject(%client.player))
+		return;
+
+	if(isObject(DuplorcatorImage))
+	{
+		%client.player.updateArm(DuplorcatorImage);
+		%client.player.mountImage(DuplorcatorImage, 0);
+	}
+	else if(isObject(DuplicatorImage))
+	{
+		%client.player.updateArm(DuplicatorImage);
+		%client.player.mountImage(DuplicatorImage, 0);
+	}
+}
+
+//Short commands to equip a duplicator (override old duplicators)
+package NewDuplicator_Server_Final
+{
+	function serverCmdDuplicator(%this, %cmd){%this.ndHandleCommand(%cmd);}
+	function serverCmdDuplicato (%this, %cmd){%this.ndHandleCommand(%cmd);}
+	function serverCmdDuplicat  (%this, %cmd){%this.ndHandleCommand(%cmd);}
+	function serverCmdDuplica   (%this, %cmd){%this.ndHandleCommand(%cmd);}
+	function serverCmdDuplic    (%this, %cmd){%this.ndHandleCommand(%cmd);}
+	function serverCmdDupli     (%this, %cmd){%this.ndHandleCommand(%cmd);}
+	function serverCmdDupl      (%this, %cmd){%this.ndHandleCommand(%cmd);}
+	function serverCmdDup       (%this, %cmd){%this.ndHandleCommand(%cmd);}
+	function serverCmdDu        (%this, %cmd){%this.ndHandleCommand(%cmd);}
+	function serverCmdD         (%this, %cmd){%this.ndHandleCommand(%cmd);}
+};
 
 //Equip a duplicator or show information
 function GameConnection::ndHandleCommand(%this, %cmd)
