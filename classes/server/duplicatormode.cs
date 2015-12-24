@@ -24,6 +24,7 @@ ND_ServerGroup.add(
 	{
 		class = "NewDuplicatorMode";
 		index = $NDM::Disabled;
+		image = "ND_Image";
 
 		allowSelecting = false;
 		allowUnMount   = false;

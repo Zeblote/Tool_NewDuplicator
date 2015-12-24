@@ -106,6 +106,10 @@ function GameConnection::ndSetMode(%this, %newMode)
 	//Enable keybinds
 	if(!%oldMode.index)
 		commandToClient(%this, 'ndEnableKeybinds', true);
+
+	//Change image
+	if(%newMode.image !$= "any")
+		%this.ndSetImage(nameToId(%newMode.image));
 }
 
 //Kill duplication mode
@@ -291,11 +295,11 @@ function GameConnection::ndHandleCommand(%this, %cmd)
 			commandToClient(%this, 'setScrollMode', 3);
 
 			//Give player a duplicator
-			if(%this.ndBlueImage)
-				%image = NewDuplicatorBlueImage.getId();
-			else
-				%image = NewDuplicatorImage.getId();
+			%image = %this.ndImage;
 
+			if(!isObject(%image))
+				%image = ND_Image;
+				
 			%player.updateArm(%image);
 			%player.mountImage(%image, 0);
 	}

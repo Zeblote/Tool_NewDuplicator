@@ -14,6 +14,7 @@ ND_ServerGroup.add(
 	{
 		class = "NewDuplicatorMode";
 		index = $NDM::CutProgress;
+		image = "any";
 
 		allowSelecting = false;
 		allowUnMount   = false;

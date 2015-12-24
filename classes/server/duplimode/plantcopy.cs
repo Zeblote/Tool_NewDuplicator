@@ -14,6 +14,7 @@ ND_ServerGroup.add(
 	{
 		class = "NewDuplicatorMode";
 		index = $NDM::PlantCopy;
+		image = "ND_Image_Blue";
 
 		allowSelecting = true;
 		allowUnMount   = true;
@@ -32,7 +33,6 @@ function NDM_PlantCopy::onStartMode(%this, %client, %lastMode)
 		%client.ndSelection.spawnGhostBricks(%client.ndSelection.rootPosition, 0);
 
 	%client.ndUpdateBottomPrint();
-	%client.ndSetBlueImage(true);
 }
 
 //Switch away from this mode
@@ -41,7 +41,6 @@ function NDM_PlantCopy::onChangeMode(%this, %client, %nextMode)
 	if(%nextMode != $NDM::PlantCopyProgress)
 	{
 		%client.ndSelection.deleteData();
-		%client.ndSetBlueImage(false);
 	}
 }
 
@@ -50,7 +49,6 @@ function NDM_PlantCopy::onKillMode(%this, %client)
 {
 	//Destroy the selection
 	%client.ndSelection.delete();
-	%client.ndSetBlueImage(false);
 }
 
 

@@ -8,65 +8,67 @@
 // *
 // * ######################################################################
 
-//Duplicator to hold in your hand
+//Basic golden duplicator
 ///////////////////////////////////////////////////////////////////////////
 
 //Duplicator Item
-datablock ItemData(NewDuplicatorItem)
+datablock ItemData(ND_Item)
 {
 	cameraMaxDist   = 0.1;
 	canDrop         = 1;
 	category        = "Weapon";
 	className       = "Tool";
-	colorShiftColor = "1 0.84 0 1";
 	density         = 0.2;
-	doColorShift    = 1;
+	doColorShift    = false;
+	colorShiftColor = "1 0.84 0 1";
 	elasticity      = 0.2;
 	emap            = 1;
 	friction        = 0.6;
-	iconName        = "base/client/ui/itemIcons/wand";
-	image           = "NewDuplicatorImage";
-	shapeFile       = "base/data/shapes/wand.dts";
+	iconName        = $ND::ResourcePath @ "server/icon";
+	image           = "ND_Image";
+	shapeFile       = $ND::ResourcePath @ "server/duplicator_brick.dts";
 	uiName          = "Duplicator";
 };
 
 //Particles for explosion
-datablock ParticleData(NewDuplicatorExplosionParticle)
+datablock ParticleData(ND_HitParticle)
 {
 	colors[0]          = "1 0.84 0 0.9";
 	colors[1]          = "1 0.84 0 0.7";
 	colors[2]          = "1 0.84 0 0.5";
-	gravityCoefficient = 0;
-	lifetimeMS         = 400;
+	gravityCoefficient = 0.7;
+	lifetimeMS         = 600;
 	lifetimeVarianceMS = 200;
 	sizes[0]           = 0.6;
 	sizes[1]           = 0.4;
 	sizes[2]           = 0.3;
 	spinRandomMax      = 90;
 	spinRandomMin      = -90;
-	textureName        = "base/data/particles/ring";
+	textureName        = "base/client/ui/brickIcons/2x2";
 	times[1]           = 0.8;
 	times[2]           = 1;
 };
 
 //Emitter for explosion
-datablock ParticleEmitterData(NewDuplicatorExplosionEmitter)
+datablock ParticleEmitterData(ND_HitEmitter)
 {
-	ejectionOffset   = 0.5;
-	ejectionPeriodMS = 4;
+	lifetimeMS       = 20;
+	ejectionPeriodMS = 1;
+	periodVarianceMS = 0;
 	ejectionVelocity = 3;
-	particles        = NewDuplicatorExplosionParticle;
-	periodVarianceMS = 2;
-	thetaMax         = 180;
+	ejectionOffset   = 0.2;
+	particles        = ND_HitParticle;
+	thetaMin         = 20;
+	thetaMax         = 80;
 	velocityVariance = 0;
 };
 
 //Explosion 
-datablock ExplosionData(NewDuplicatorExplosion)
+datablock ExplosionData(ND_HitExplosion)
 {
 	camShakeDuration = 0.5;
 	camShakeFreq     = "1 1 1";
-	emitter[0]       = NewDuplicatorExplosionEmitter;
+	emitter[0]       = ND_HitEmitter;
 	faceViewer       = 1;
 	lifetimeMS       = 180;
 	lightEndRadius   = 0;
@@ -77,51 +79,20 @@ datablock ExplosionData(NewDuplicatorExplosion)
 };
 
 //Projectile to make explosion
-datablock ProjectileData(NewDuplicatorProjectile)
+datablock ProjectileData(ND_HitProjectile)
 {
 	bounceElasticity = 0;
 	bounceFriction   = 0;
 	explodeOnDeath   = 1;
-	explosion        = NewDuplicatorExplosion;
+	explosion        = ND_HitExplosion;
 	fadeDelay        = 2;
 	gravityMod       = 0;
 	lifetime         = 0;
 	range            = 10;
 };
 
-//Idle particles
-datablock ParticleData(NewDuplicatorParticleA)
-{
-	colors[0]          = "1 0.84 0 0.9";
-	colors[1]          = "1 0.84 0 0.7";
-	colors[2]          = "1 0.84 0 0.5";
-	gravityCoefficient = -0.5;
-	lifetimeMS         = 400;
-	lifetimeVarianceMS = 200;
-	sizes[0]           = 0.1;
-	sizes[1]           = 0.4;
-	sizes[2]           = 0.6;
-	spinRandomMax      = 90;
-	spinRandomMin      = -90;
-	textureName        = "base/data/particles/ring";
-	times[1]           = 0.8;
-	times[2]           = 1;
-};
-
-//Idle emitter
-datablock ParticleEmitterData(NewDuplicatorEmitterA)
-{
-	ejectionOffset   = 0.09;
-	ejectionPeriodMS = 50;
-	ejectionVelocity = 0.2;
-	particles        = NewDuplicatorParticleA;
-	periodVarianceMS = 2;
-	thetaMax         = 180;
-	velocityVariance = 0;
-};
-
-//Active particles
-datablock ParticleData(NewDuplicatorParticleB)
+//Swing particles
+datablock ParticleData(ND_WaitParticle)
 {
 	colors[0]          = "1 0.84 0 0.9";
 	colors[1]          = "1 0.84 0 0.7";
@@ -130,9 +101,9 @@ datablock ParticleData(NewDuplicatorParticleB)
 	dragCoefficient    = 2;
 	lifetimeMS         = 400;
 	lifetimeVarianceMS = 200;
-	sizes[0]           = 0.4;
-	sizes[1]           = 0.6;
-	sizes[2]           = 0.9;
+	sizes[0]           = 0.5;
+	sizes[1]           = 0.8;
+	sizes[2]           = 0;
 	spinRandomMax      = 0;
 	spinRandomMin      = 0;
 	textureName        = "base/client/ui/brickIcons/1x1";
@@ -140,38 +111,92 @@ datablock ParticleData(NewDuplicatorParticleB)
 	times[2]           = 1;
 };
 
-//Active emitter
-datablock ParticleEmitterData(NewDuplicatorEmitterB)
+//Swing emitter
+datablock ParticleEmitterData(ND_WaitEmitter)
 {
-	ejectionOffset   = -0.0;
+	lifetimeMS       = 400;
 	ejectionPeriodMS = 10;
-	ejectionVelocity = 0;
-	particles        = NewDuplicatorParticleB;
-	periodVarianceMS = 2;
-	thetaMin		 = 0.0;
-	thetaMax         = 0.1;
+	periodVarianceMS = 0;
+	ejectionVelocity = 1;
+	ejectionOffset   = 0.01;
+	particles        = ND_WaitParticle;
+	thetaMin         = 20;
+	thetaMax         = 80;
 	velocityVariance = 0;
-	orientParticles  = true;
-	phiVariance		 = 10;
 };
 
 //Duplicator image
-datablock ShapeBaseImageData(NewDuplicatorImage : wandImage)
+datablock ShapeBaseImageData(ND_Image)
 {
-	showBricks      = true;
+	shapeFile       = $ND::ResourcePath @ "server/duplicator_brick.dts";
+	className       = "WeaponImage";
+	emap            = true;
+	mountPoint      = 0;
 	offset          = "0 0 0";
+	eyeOffset       = "0.6 1.2 -0.6";
+	armReady        = true;
+	showBricks      = true;
+	doColorShift    = true;
 	colorShiftColor = "1 0.84 0 1";
-	item            = NewDuplicatorItem;
-	stateEmitter[1] = NewDuplicatorEmitterA;
-	stateEmitter[3] = NewDuplicatorEmitterB;
-	projectile      = NewDuplicatorProjectile;
+	item            = ND_Item;
+	projectile      = ND_HitProjectile;
+
+	//Image states
+	stateName[0]                    = "Activate";
+	stateTimeoutValue[0]            = 0;
+	stateAllowImageChange[0]        = false;
+	stateTransitionOnTimeout[0]     = "Idle";
+
+	stateName[1]                    = "Idle";
+	stateAllowImageChange[1]        = true;
+	stateTransitionOnTriggerDown[1] = "PreFire";
+
+	stateName[2]                    = "PreFire";
+	stateScript[2]                  = "onPreFire";
+	stateTimeoutValue[2]            = 0.01;
+	stateAllowImageChange[2]        = false;
+	stateTransitionOnTimeout[2]     = "Fire";
+
+	stateName[3]                    = "Fire";
+	stateFire[3]                    = true;
+	stateScript[3]                  = "onFire";
+	stateEmitter[3]                 = ND_WaitEmitter;
+	stateSequence[3]                = "swing";
+	stateEmitterNode[3] 		    = "muzzlePoint";
+	stateEmitterTime[3] 		    = 0.4;
+	stateTimeoutValue[3]            = 0.4;
+	stateWaitForTimeout[3]          = true;
+	stateAllowImageChange[3]        = false;
+	stateTransitionOnTimeout[3]     = "CheckFire";
+
+	stateName[4]                    = "CheckFire";
+	stateTransitionOnTriggerUp[4]   = "PostFire";
+
+	stateName[5]                    = "PostFire";
+	stateScript[5]                  = "onPostFire";
+	stateTimeoutValue[5]            = "0.01";
+	stateWaitForTimeout[5]          = true;
+	stateAllowImageChange[5]        = false;
+	stateTransitionOnTimeout[5]     = "Idle";
 };
 
-//Special blue duplicator for plant mode
+
+//Spinning selection cube for cubic mode
+///////////////////////////////////////////////////////////////////////////
+
+
+//Duplicator image
+datablock ShapeBaseImageData(ND_Image_Cube : ND_Image)
+{
+	shapeFile = $ND::ResourcePath @ "server/duplicator_selection.dts";
+};
+
+
+//Blue duplicator for plant mode
 ///////////////////////////////////////////////////////////////////////////
 
 //Particles for explosion
-datablock ParticleData(NewDuplicatorBlueExplosionParticle : NewDuplicatorExplosionParticle)
+datablock ParticleData(ND_HitParticle_Blue : ND_HitParticle)
 {
 	colors[0] = "0 0.25 1 0.9";
 	colors[1] = "0 0.25 1 0.7";
@@ -179,59 +204,47 @@ datablock ParticleData(NewDuplicatorBlueExplosionParticle : NewDuplicatorExplosi
 };
 
 //Emitter for explosion
-datablock ParticleEmitterData(NewDuplicatorBlueExplosionEmitter : NewDuplicatorExplosionEmitter)
+datablock ParticleEmitterData(ND_HitEmitter_Blue : ND_HitEmitter)
 {
-	particles = NewDuplicatorBlueExplosionParticle;
+	particles = ND_HitParticle_Blue;
 };
 
 //Explosion 
-datablock ExplosionData(NewDuplicatorBlueExplosion : NewDuplicatorExplosion)
+datablock ExplosionData(ND_HitExplosion_Blue : ND_HitExplosion)
 {
-	emitter[0] = NewDuplicatorBlueExplosionEmitter;
+	emitter[0] = ND_HitEmitter_Blue;
 };
 
 //Projectile to make explosion
-datablock ProjectileData(NewDuplicatorBlueProjectile : NewDuplicatorProjectile)
+datablock ProjectileData(ND_HitProjectile_Blue : ND_HitProjectile)
 {
-	explosion = NewDuplicatorBlueExplosion;
+	explosion = ND_HitExplosion_Blue;
 };
 
-//Idle particles
-datablock ParticleData(NewDuplicatorBlueParticleA : NewDuplicatorParticleA)
+//Swing particles
+datablock ParticleData(ND_WaitParticle_Blue : ND_WaitParticle)
 {
 	colors[0] = "0 0.25 1 0.9";
 	colors[1] = "0 0.25 1 0.7";
 	colors[2] = "0 0.25 1 0.5";
 };
 
-//Idle emitter
-datablock ParticleEmitterData(NewDuplicatorBlueEmitterA : NewDuplicatorEmitterA)
+//Swing emitter
+datablock ParticleEmitterData(ND_WaitEmitter_Blue : ND_WaitEmitter)
 {
-	particles = NewDuplicatorBlueParticleA;
-};
-
-//Active particles
-datablock ParticleData(NewDuplicatorBlueParticleB : NewDuplicatorParticleB)
-{
-	colors[0] = "0 0.25 1 0.9";
-	colors[1] = "0 0.25 1 0.7";
-	colors[2] = "0 0.25 1 0.5";
-};
-
-//Active emitter
-datablock ParticleEmitterData(NewDuplicatorBlueEmitterB : NewDuplicatorEmitterB)
-{
-	particles = NewDuplicatorBlueParticleB;
+	particles = ND_WaitParticle_Blue;
 };
 
 //Duplicator image
-datablock ShapeBaseImageData(NewDuplicatorBlueImage : NewDuplicatorImage)
+datablock ShapeBaseImageData(ND_Image_Blue : ND_Image)
 {
 	colorShiftColor = "0 0.25 1 1";
-	stateEmitter[1] = NewDuplicatorBlueEmitterA;
-	stateEmitter[3] = NewDuplicatorBlueEmitterB;
-	projectile      = NewDuplicatorBlueProjectile;
+	projectile      = ND_HitProjectile_Blue;
+
+	//Image states
+	stateEmitter[3] = ND_WaitEmitter_Blue;
 };
+
 
 //Resizable selection and highlight box
 ///////////////////////////////////////////////////////////////////////////

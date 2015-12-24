@@ -14,6 +14,7 @@ ND_ServerGroup.add(
 	{
 		class = "NewDuplicatorMode";
 		index = $NDM::PlantCopyProgress;
+		image = "ND_Image_Blue";
 
 		allowSelecting = false;
 		allowUnMount   = true;
@@ -30,7 +31,6 @@ function NDM_PlantCopyProgress::onKillMode(%this, %client)
 {
 	//Destroy the selection
 	%client.ndSelection.delete();
-	%client.ndSetBlueImage(false);
 }
 
 
