@@ -110,6 +110,9 @@ function GameConnection::ndSetMode(%this, %newMode)
 	//Change image
 	if(%newMode.image !$= "any")
 		%this.ndSetImage(nameToId(%newMode.image));
+
+	//Start or stop spinning
+	%this.player.setImageLoaded(0, !%newMode.spin);
 }
 
 //Kill duplication mode

@@ -15,6 +15,7 @@ ND_ServerGroup.add(
 		class = "NewDuplicatorMode";
 		index = $NDM::PlantCopyProgress;
 		image = "ND_Image_Blue";
+		spin = true;
 
 		allowSelecting = false;
 		allowUnMount   = true;

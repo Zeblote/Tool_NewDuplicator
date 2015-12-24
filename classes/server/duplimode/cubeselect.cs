@@ -15,6 +15,7 @@ ND_ServerGroup.add(
 		class = "NewDuplicatorMode";
 		index = $NDM::CubeSelect;
 		image = "ND_Image_Cube";
+		spin = false;
 
 		allowSelecting = true;
 		allowUnMount   = false;

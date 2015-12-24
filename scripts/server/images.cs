@@ -82,17 +82,17 @@ package NewDuplicator_Server
 //Start the swinging animation
 function ND_Image::onPreFire(%this, %player, %slot)
 {
-	%player.playThread(2, shiftAway);
+	%player.playThread(2, shiftTo);
 }
 
 function ND_Image_Blue::onPreFire(%this, %player, %slot)
 {
-	%player.playThread(2, shiftAway);
+	%player.playThread(2, shiftTo);
 }
 
 function ND_Image_Cube::onPreFire(%this, %player, %slot)
 {
-	%player.playThread(2, shiftAway);
+	%player.playThread(2, shiftTo);
 }
 
 //Handle selecting things
@@ -211,8 +211,8 @@ package NewDuplicator_Server
 	{
 		parent::onAdd(%this, %obj);
 
-		//Automatically start the "spin" animation on duplicator items
-		%obj.playThread(0, spin);
+		//Automatically start the "ambient" animation on duplicator items
+		%obj.playThread(0, ambient);
 
 		//Fix colorshift bullshit
 		%obj.schedule(100, setNodeColor, "ALL", %this.colorShiftColor);
