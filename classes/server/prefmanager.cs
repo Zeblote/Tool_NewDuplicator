@@ -37,7 +37,6 @@ function ND_PrefManager::registerRTBPrefs(%this)
 	//General
 	RTB_registerPref("Admin Only",                 "New Duplicator | General",  "$Pref::Server::ND::AdminOnly",           "bool",             "Tool_NewDuplicator", false,   false, false, "");
 	RTB_registerPref("Enable Menu Sounds",         "New Duplicator | General",  "$Pref::Server::ND::PlayMenuSounds",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
-//	RTB_registerPref("Advertise New Duplicator",   "New Duplicator | General",  "$Pref::Server::ND::Advertise",           "bool",             "Tool_NewDuplicator", true,    false, false, "");
 
 	//Limits
 	RTB_RegisterPref("Trust Limit",                "New Duplicator | Limits",   "$Pref::Server::ND::TrustLimit",          %trustDropDown,     "Tool_NewDuplicator", 2,       false, false, "");
@@ -72,7 +71,6 @@ function ND_PrefManager::extendDefaultValues(%this)
 	//General
 	if($Pref::Server::ND::AdminOnly           $= "") $Pref::Server::ND::AdminOnly           = false;
 	if($Pref::Server::ND::PlayMenuSounds      $= "") $Pref::Server::ND::PlayMenuSounds      = true;
-//	if($Pref::Server::ND::Advertise           $= "") $Pref::Server::ND::Advertise           = true;
 
 	//Limits
 	if($Pref::Server::ND::TrustLimit          $= "") $Pref::Server::ND::TrustLimit          = 2;
@@ -107,7 +105,6 @@ function ND_PrefManager::setDefaultValues(%this)
 	//General
 	$Pref::Server::ND::AdminOnly           = false;
 	$Pref::Server::ND::PlayMenuSounds      = true;
-//	$Pref::Server::ND::Advertise           = true;
 
 	//Limits
 	$Pref::Server::ND::TrustLimit          = 2;
@@ -141,7 +138,6 @@ function ND_PrefManager::dumpPrefs(%this, %client)
 	messageClient(%client, '', "\c7General");
 	messageClient(%client, '', "\c6      Admin Only: \c3" @ ($Pref::Server::ND::AdminOnly ? "Y" : "N"));
 	messageClient(%client, '', "\c6      Enable Menu Sounds: \c3" @ ($Pref::Server::ND::PlayMenuSounds ? "Y" : "N"));
-//	messageClient(%client, '', "\c6      Advertise New Duplicator: \c3" @ ($Pref::Server::ND::Advertise ? "Y" : "N"));
 
 	messageClient(%client, '', "\c7Limits");
 	messageClient(%client, '', "\c6      Trust Limit: \c3" @ $Pref::Server::ND::TrustLimit);

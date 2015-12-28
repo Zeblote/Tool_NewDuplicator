@@ -19,24 +19,17 @@ package NewDuplicator_Server
 		commandToClient(%this, 'ndHandshake', $ND::Version);
 
 		//Client has 5 seconds to respond
-		%this.ndHandshakeTimeout = %this.schedule(5000, "ndHandshakeTimeout");
+		//%this.ndHandshakeTimeout = %this.schedule(5000, "ndHandshakeTimeout");
 
 		return parent::autoAdminCheck(%this);
 	}
 };
 
 //Handshake request timed out, client doesn't have new duplicator
-function GameConnection::ndHandshakeTimeout(%this)
-{
-	//Show client where to get the new duplicator
-//	if($Pref::Server::ND::Advertise)
-//	{
-//		%m =      "\c6Hey, it looks like you don't have the \c3New Duplicator\c6 yet! Check it out: ";
-//		%m = %m @ "[<a:forum.blockland.us/index.php?topic=288602.0>Forum Topic</a>\c6]";
+//function GameConnection::ndHandshakeTimeout(%this)
+//{
 //
-//		messageClient(%this, '', %m);
-//	}
-}
+//}
 
 //Client responded, so he has new duplicator
 function serverCmdNdHandshake(%this, %version)
