@@ -617,6 +617,29 @@ function serverCmdMirErrors(%client)
 
 
 
+//Floating bricks
+///////////////////////////////////////////////////////////////////////////
+function serverCmdForcePlant(%client)
+{
+	//Check dupli mode
+	if(%client.ndModeIndex != $NDM::PlantCopy)
+	{
+		messageClient(%client, '', "\c6Force Plant can only be used in Plant Mode.");
+		return;
+	}
+
+	//Check admin
+	if($Pref::Server::ND::FloatAdminOnly && !%client.isAdmin)
+	{
+		messageClient(%client, '', "\c6Force Plant is admin only. Ask an admin for help.");
+		return;
+	}
+
+	%client.ndMode.conditionalPlant(%client, true);
+}
+
+
+
 //General support functions
 ///////////////////////////////////////////////////////////////////////////
 

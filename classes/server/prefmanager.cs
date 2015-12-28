@@ -49,7 +49,8 @@ function ND_PrefManager::registerRTBPrefs(%this)
 	RTB_registerPref("Max Cube Size (Player)",     "New Duplicator | Limits",   "$Pref::Server::ND::MaxCubeSizePlayer",   "int 1 50000",      "Tool_NewDuplicator", 32,      false, false, "");
 
 	RTB_registerPref("Selecting Timeout (Player)", "New Duplicator | Limits",   "$Pref::Server::ND::SelectTimeout",       "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
-	RTB_registerPref("Planting Timeout (Player)",   "New Duplicator | Limits",  "$Pref::Server::ND::PlantTimeout",        "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
+	RTB_registerPref("Planting Timeout (Player)",  "New Duplicator | Limits",   "$Pref::Server::ND::PlantTimeout",        "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
+	RTB_registerPref("Floating Bricks Admin Only", "New Duplicator | Limits",   "$Pref::Server::ND::FloatAdminOnly",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
 
 	//Advanced
 	RTB_registerPref("Highlight Time",             "New Duplicator | Advanced", "$Pref::Server::ND::HighlightDelay",      "int 1 60",         "Tool_NewDuplicator", 8,       false, false, "");
@@ -84,6 +85,7 @@ function ND_PrefManager::extendDefaultValues(%this)
 
 	if($Pref::Server::ND::SelectTimeout       $= "") $Pref::Server::ND::SelectTimeout       = 1;
 	if($Pref::Server::ND::PlantTimeout        $= "") $Pref::Server::ND::PlantTimeout        = 1;
+	if($Pref::Server::ND::FloatAdminOnly      $= "") $Pref::Server::ND::FloatAdminOnly      = true;
 
 	//Advanced
 	if($Pref::Server::ND::HighlightDelay      $= "") $Pref::Server::ND::HighlightDelay      = 8;
@@ -118,6 +120,7 @@ function ND_PrefManager::setDefaultValues(%this)
 
 	$Pref::Server::ND::SelectTimeout       = 1;
 	$Pref::Server::ND::PlantTimeout        = 1;
+	$Pref::Server::ND::FloatAdminOnly      = true;
 
 	//Advanced
 	$Pref::Server::ND::HighlightDelay      = 8;
@@ -151,6 +154,7 @@ function ND_PrefManager::dumpPrefs(%this, %client)
 
 	messageClient(%client, '', "\c6      Selecting Timeout (Player): \c3" @ $Pref::Server::ND::SelectTimeout);
 	messageClient(%client, '', "\c6      Planting Timeout (Player): \c3" @ $Pref::Server::ND::PlantTimeout);
+	messageClient(%client, '', "\c6      Floating Bricks Admin Only: \c3" @ $Pref::Server::ND::FloatAdminOnly);
 
 	messageClient(%client, '', "\c7Advanced");
 	messageClient(%client, '', "\c6      Highlight Time: \c3" @ $Pref::Server::ND::HighlightDelay);

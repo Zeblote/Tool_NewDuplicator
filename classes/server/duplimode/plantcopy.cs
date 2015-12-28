@@ -177,36 +177,7 @@ function NDM_PlantCopy::onRotateBrick(%this, %client, %direction)
 //Plant Brick
 function NDM_PlantCopy::onPlantBrick(%this, %client)
 {
-	//Check timeout
-	if(!%client.isAdmin && %client.ndLastPlantTime + $Pref::Server::ND::SelectTimeout > $Sim::Time)
-	{
-		%remain = mCeil(%client.ndLastPlantTime + $Pref::Server::ND::SelectTimeout - $Sim::Time);
-
-		if(%remain != 1)
-			%s = "s";
-
-		messageClient(%client, 'MsgError', "");
-		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You need to wait\c3 " @ %remain @ "\c6 second" @ %s @ " before planting again!", 5);
-		return;
-	}
-
-	//Check too far distance
-	%offset = vectorSub(%client.ndSelection.getGhostCenter(), %client.getControlObject().position);
-
-	if(vectorLen(%offset) > $Pref::Server::TooFarDistance)
-	{
-		messageClient(%client, 'MsgError', "");
-		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You can't plant so far away!", 5);
-		return;
-	}
-
-	%client.ndLastPlantTime = $Sim::Time;
-
-	%pos = %client.ndSelection.ghostPosition;
-	%ang = %client.ndSelection.ghostAngleID;
-
-	%client.ndSetMode(NDM_PlantCopyProgress);
-	%client.ndSelection.startPlant(%pos, %ang);
+	%this.conditionalPlant(%client, false);
 }
 
 //Cancel Brick
@@ -254,4 +225,44 @@ function NDM_PlantCopy::getBottomPrint(%this, %client)
 	%r1 = "[Cancel Brick] to exit plant mode";
 
 	return ndFormatMessage(%title, %l0, %r0, %l1, %r1);
+}
+
+
+
+//Functions
+///////////////////////////////////////////////////////////////////////////
+
+//Check time limit and attempt to plant bricks
+function NDM_PlantCopy::conditionalPlant(%this, %client, %force)
+{
+	//Check timeout
+	if(!%client.isAdmin && %client.ndLastPlantTime + $Pref::Server::ND::SelectTimeout > $Sim::Time)
+	{
+		%remain = mCeil(%client.ndLastPlantTime + $Pref::Server::ND::SelectTimeout - $Sim::Time);
+
+		if(%remain != 1)
+			%s = "s";
+
+		messageClient(%client, 'MsgError', "");
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You need to wait\c3 " @ %remain @ "\c6 second" @ %s @ " before planting again!", 5);
+		return;
+	}
+
+	//Check too far distance
+	%offset = vectorSub(%client.ndSelection.getGhostCenter(), %client.getControlObject().position);
+
+	if(vectorLen(%offset) > $Pref::Server::TooFarDistance)
+	{
+		messageClient(%client, 'MsgError', "");
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You can't plant so far away!", 5);
+		return;
+	}
+
+	%client.ndLastPlantTime = $Sim::Time;
+
+	%pos = %client.ndSelection.ghostPosition;
+	%ang = %client.ndSelection.ghostAngleID;
+
+	%client.ndSetMode(NDM_PlantCopyProgress);
+	%client.ndSelection.startPlant(%pos, %ang, %force);
 }

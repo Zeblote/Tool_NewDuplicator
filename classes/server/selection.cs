@@ -1483,8 +1483,10 @@ function ND_Selection::getGhostWorldBox(%this)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //Start planting bricks!
-function ND_Selection::startPlant(%this, %position, %angleID)
+function ND_Selection::startPlant(%this, %position, %angleID, %forcePlant)
 {
+	%this.forcePlant = %forcePlant;
+
 	%this.plantSearchIndex = 0;
 	%this.plantQueueIndex = 0;
 	%this.plantQueueCount = 0;
@@ -1903,6 +1905,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	%brick = new FxDTSBrick()
 	{
 		datablock = %datablock;
+		isPlanted = true;
 		client = %client;
 
 		position = %bPos;
@@ -1919,13 +1922,28 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	%brickGroup.add(%brick);
 
 	//Attempt plant
-	if(%error = %brick.plant())
-	{
-		%brick.delete();
+	%error = %brick.plant();
 
-		if(%error == 2)
+	if(%error == 2)
+	{
+		//Do we plant floating bricks?
+		if(%this.forcePlant)
+		{
+			//Brick is floating. Pretend it is supported by terrain
+			%brick.isBaseplate = true;
+
+			//Make engine recompute distance from ground to apply it
+			%brick.willCauseChainKill();
+		}
+		else
+		{
+			%brick.delete();
 			return 0;
-		
+		}
+	}
+	else if(%error)
+	{
+		%brick.delete();		
 		return -1;
 	}
 
