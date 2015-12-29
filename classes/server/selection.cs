@@ -114,7 +114,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 					continue;
 
 				//Check trust
-				if(!ndTrustCheckSelection(%nextBrick, %group, %bl_id, %admin))
+				if(!ndTrustCheckSelect(%nextBrick, %group, %bl_id, %admin))
 				{
 					%trustFailCount++;
 					continue;
@@ -150,7 +150,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 					continue;
 
 				//Check trust
-				if(!ndTrustCheckSelection(%nextBrick, %group, %bl_id, %admin))
+				if(!ndTrustCheckSelect(%nextBrick, %group, %bl_id, %admin))
 				{
 					%trustFailCount++;
 					continue;
@@ -223,7 +223,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 
 		if(!%brick)
 		{
-			messageClient(%this.client, 'MsgError', "\c6(\c3New Duplicator\c6) Queued brick does not exist anymore. Do not modify the build during selection!");
+			messageClient(%this.client, 'MsgError', "\c0Error: \c6Queued brick does not exist anymore. Do not modify the build during selection!");
 
 			%this.cancelStackSelection();
 			%this.client.ndSetMode(NDM_StackSelect);
@@ -253,7 +253,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 					continue;
 
 				//Check trust
-				if(!ndTrustCheckSelection(%nextBrick, %group, %bl_id, %admin))
+				if(!ndTrustCheckSelect(%nextBrick, %group, %bl_id, %admin))
 				{
 					%trustFailCount++;
 					continue;
@@ -289,7 +289,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 					continue;
 					
 				//Check trust
-				if(!ndTrustCheckSelection(%nextBrick, %group, %bl_id, %admin))
+				if(!ndTrustCheckSelect(%nextBrick, %group, %bl_id, %admin))
 				{
 					%trustFailCount++;
 					continue;
@@ -501,7 +501,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 			}
 
 			//Check trust
-			if(!ndTrustCheckSelection(%obj, %group, %bl_id, %admin))
+			if(!ndTrustCheckSelect(%obj, %group, %bl_id, %admin))
 			{
 				%trustFailCount++;
 				continue;
@@ -603,7 +603,7 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 
 		if(!%brick)
 		{
-			messageClient(%this.client, 'MsgError', "\c6(\c3New Duplicator\c6) \c0Error: \c6Queued brick does not exist anymore. Do not modify the build during selection!");
+			messageClient(%this.client, 'MsgError', "\c0Error: \c6Queued brick does not exist anymore. Do not modify the build during selection!");
 
 			%this.cancelCubeSelection();
 			%this.client.ndSetMode(NDM_CubeSelect);
@@ -955,7 +955,7 @@ function ND_Selection::tickCutting(%this)
 		if(!isObject(%brick))
 			continue;
 
-		if(!ndTrustCheckCut(%brick, %group, %bl_id))
+		if(!ndTrustCheckModify(%brick, %group, %bl_id))
 		{
 			%cutFailCount++;
 			continue;
@@ -2224,7 +2224,7 @@ function ND_Selection::finishPlant(%this)
 	deleteVariables("$NP" @ %this @ "_*");
 
 	if(%planted)
-		%this.client.undoStack.push(%this.undoGroup TAB "DUPLICATE");
+		%this.client.undoStack.push(%this.undoGroup TAB "NEWDUPLICATE");
 	else
 		%this.undoGroup.delete();
 
@@ -2238,7 +2238,7 @@ function ND_Selection::cancelPlanting(%this)
 	deleteVariables("$NP" @ %this @ "_*");
 
 	if(%this.plantSuccessCount)
-		%this.client.undoStack.push(%this.undoGroup TAB "DUPLICATE");
+		%this.client.undoStack.push(%this.undoGroup TAB "NEWDUPLICATE");
 	else
 		%this.undoGroup.delete();
 }

@@ -29,6 +29,7 @@ exec($ND::ClassPath @ "server/highlightbox.cs");
 exec($ND::ClassPath @ "server/highlightset.cs");
 exec($ND::ClassPath @ "server/selection.cs");
 exec($ND::ClassPath @ "server/selectionbox.cs");
+exec($ND::ClassPath @ "server/undogroup.cs");
 
 exec($ND::ClassPath @ "server/duplimode/cubeselect.cs");
 exec($ND::ClassPath @ "server/duplimode/cubeselectprogress.cs");
@@ -39,8 +40,10 @@ exec($ND::ClassPath @ "server/duplimode/stackselect.cs");
 exec($ND::ClassPath @ "server/duplimode/stackselectprogress.cs");
 
 echo(" \n--- Loading Server Scripts ---");
+exec($ND::ScriptPath @ "server/commands.cs");
 exec($ND::ScriptPath @ "server/datablocks.cs");
 exec($ND::ScriptPath @ "server/duplicator.cs");
+exec($ND::ScriptPath @ "server/functions.cs");
 exec($ND::ScriptPath @ "server/handshake.cs");
 exec($ND::ScriptPath @ "server/images.cs");
 exec($ND::ScriptPath @ "server/manualsymmetry.cs");

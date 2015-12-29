@@ -19,6 +19,7 @@
 
 //Built-in Bricks
 $ND::ManualSymmetryZ["1x1 Round"] = true;
+$ND::ManualSymmetryZ["1x1F Round"] = true;
 $ND::ManualSymmetryZ["Castle Wall"] = true;
 $ND::ManualSymmetryZ["1x4x5 Window"] = true;
 
