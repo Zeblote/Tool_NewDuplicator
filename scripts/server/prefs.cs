@@ -1,36 +1,26 @@
 // * ######################################################################
 // *
-// *    New Duplicator - Classes - Server
-// *    ND_PrefManager
+// *    New Duplicator - Scripts - Server
+// *    Pref Manager
 // *
 // *    -------------------------------------------------------------------
 // *    Detect services like RTB to register preferences
 // *
 // * ######################################################################
 
-//Create pref manager
-function ND_PrefManager()
-{
-	ND_ServerGroup.add(
-		%this = new ScriptObject(ND_PrefManager)
-	);
-
-	return %this;
-}
-
 //Detect pref service and register preferences
-function ND_PrefManager::registerPrefs(%this)
+function ndAutoRegisterPrefs(%this)
 {
 	if($RTB::Hooks::ServerControl)
-		%this.registerRTBPrefs();
+		ndRegisterRTBPrefs();
 	else
-		%this.extendDefaultValues();
+		ndExtendDefaultPrefs();
 }
 
 //Register preferences to RTB
-function ND_PrefManager::registerRTBPrefs(%this)
+function ndRegisterRTBPrefs()
 {
-	echo("ND_PrefManager registering RTB prefs");
+	echo("ND: Registering RTB prefs");
 
 	%trustDropDown = "list None 0 Build 1 Full 2 Self 3";
 
@@ -65,9 +55,9 @@ function ND_PrefManager::registerRTBPrefs(%this)
 }
 
 //Set default values, if they haven't been set already
-function ND_PrefManager::extendDefaultValues(%this)
+function ndExtendDefaultPrefs()
 {
-	echo("ND_PrefManager extending default prefs");
+	echo("ND: Extending default prefs");
 
 	//General
 	if($Pref::Server::ND::AdminOnly           $= "") $Pref::Server::ND::AdminOnly           = false;
@@ -100,9 +90,10 @@ function ND_PrefManager::extendDefaultValues(%this)
 }
 
 //Set default values
-function ND_PrefManager::setDefaultValues(%this)
+function ndApplyDefaultPrefs(%this)
 {
-	echo("ND_PrefManager setting default prefs");
+	echo("ND: Applying default prefs");
+	messageAll('', "\c6(\c3New Duplicator\c6) \c6Prefs reset to default values.");
 
 	//General
 	$Pref::Server::ND::AdminOnly           = false;
@@ -135,7 +126,7 @@ function ND_PrefManager::setDefaultValues(%this)
 }
 
 //Print prefs to client (debug, may be useful for release?)
-function ND_PrefManager::dumpPrefs(%this, %client)
+function ndDumpPrefs(%client)
 {
 	messageClient(%client, '', "\c6New Duplicator pref values");
 	messageClient(%client, '', "\c7General");
@@ -169,5 +160,5 @@ function ND_PrefManager::dumpPrefs(%this, %client)
 function ndResetPrefs()
 {
 	if($ND::RestoreDefaultPrefs)
-		ND_PrefManager.setDefaultValues();
+		ndApplyDefaultPrefs();
 }

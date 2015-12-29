@@ -223,7 +223,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 
 		if(!%brick)
 		{
-			messageClient(%this.client, 'MsgError', "\c0Error: Queued brick does not exist anymore. Do not modify the build during selection!");
+			messageClient(%this.client, 'MsgError', "\c6(\c3New Duplicator\c6) Queued brick does not exist anymore. Do not modify the build during selection!");
 
 			%this.cancelStackSelection();
 			%this.client.ndSetMode(NDM_StackSelect);
@@ -603,7 +603,7 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 
 		if(!%brick)
 		{
-			messageClient(%this.client, 'MsgError', "\c0Error: Queued brick does not exist anymore. Do not modify the build during selection!");
+			messageClient(%this.client, 'MsgError', "\c6(\c3New Duplicator\c6) \c0Error: \c6Queued brick does not exist anymore. Do not modify the build during selection!");
 
 			%this.cancelCubeSelection();
 			%this.client.ndSetMode(NDM_CubeSelect);
@@ -1417,7 +1417,7 @@ function ND_Selection::deleteGhostBricks(%this)
 
 	cancel(%this.ghostMoveSchedule);
 
-	%this.ghostGroup.deletionTick();
+	%this.ghostGroup.tickDelete();
 	%this.ghostGroup = false;
 }
 

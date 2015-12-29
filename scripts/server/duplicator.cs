@@ -197,7 +197,7 @@ function serverCmdClearDups(%client)
 	if(!%client.isAdmin)
 		return;
 
-	messageAll('MsgClearBricks', "\c3" @ %client.getPlayerName() @ "\c0 cleared all dups.");
+	messageAll('MsgClearBricks', "\c3" @ %client.getPlayerName() @ "\c0 canceled all duplicators.");
 
 	for(%i = 0; %i < ClientGroup.getCount(); %i++)
 	{
@@ -270,7 +270,7 @@ function GameConnection::ndHandleCommand(%this, %cmd)
 			}
 
 		case "prefs" or "p":
-			ND_PrefManager.dumpPrefs(%this);
+			ndDumpPrefs(%this);
 
 		default:
 			if(!isObject(%player = %this.player))
@@ -572,11 +572,8 @@ function GameConnection::ndMirror(%client, %axis)
 	//Make sure symmetry table is created
 	if(!$ND::SymmetryTableCreated)
 	{
-		if(!isObject(ND_SymmetryTable))
-			ND_SymmetryTable();
-
 		if(!$ND::SymmetryTableCreating)
-			ND_SymmetryTable.buildTable();
+			ndCreateSymmetryTable();
 	}
 	else
 		%client.ndSelection.mirrorGhostBricks(%axis);

@@ -27,10 +27,8 @@ exec($ND::ClassPath @ "server/duplicatormode.cs");
 exec($ND::ClassPath @ "server/ghostgroup.cs");
 exec($ND::ClassPath @ "server/highlightbox.cs");
 exec($ND::ClassPath @ "server/highlightset.cs");
-exec($ND::ClassPath @ "server/prefmanager.cs");
 exec($ND::ClassPath @ "server/selection.cs");
 exec($ND::ClassPath @ "server/selectionbox.cs");
-exec($ND::ClassPath @ "server/symmetrytable.cs");
 
 exec($ND::ClassPath @ "server/duplimode/cubeselect.cs");
 exec($ND::ClassPath @ "server/duplimode/cubeselectprogress.cs");
@@ -46,10 +44,12 @@ exec($ND::ScriptPath @ "server/duplicator.cs");
 exec($ND::ScriptPath @ "server/handshake.cs");
 exec($ND::ScriptPath @ "server/images.cs");
 exec($ND::ScriptPath @ "server/manualsymmetry.cs");
+exec($ND::ScriptPath @ "server/prefs.cs");
+exec($ND::ScriptPath @ "server/symmetrytable.cs");
 
 echo(" \n--- Initializing Server ---");
 activatePackage(NewDuplicator_Server);
 schedule(10, 0, activatePackage, NewDuplicator_Server_Final);
 
 $ND::BrickHighlightColor = ndGetClosestColorID("255 255 0");
-ND_PrefManager().registerPrefs();
+ndAutoRegisterPrefs();
