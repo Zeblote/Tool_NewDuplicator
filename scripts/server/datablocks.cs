@@ -199,54 +199,47 @@ datablock ShapeBaseImageData(ND_Image)
 	stateName[4]                    = "CheckFire";
 	stateSpinThread[4]              = "Stop";
 	stateTransitionOnNotLoaded[4]   = "StartSpinning_TDown";
-	stateTransitionOnTriggerUp[4]   = "PostFire";
-
-	stateName[5]                    = "PostFire";
-	stateScript[5]                  = "onPostFire";
-	stateTimeoutValue[5]            = "0.01";
-	stateWaitForTimeout[5]          = true;
-	stateAllowImageChange[5]        = false;
-	stateTransitionOnTimeout[5]     = "Idle";
+	stateTransitionOnTriggerUp[4]   = "Idle";
 
 	//Spinning states (from idle)
-	stateName[6]                    = "StartSpinning";
-	stateSpinThread[6]              = "SpinUp";
-	stateTimeoutValue[6]            = 0.25;
+	stateName[5]                    = "StartSpinning";
+	stateSpinThread[5]              = "SpinUp";
+	stateTimeoutValue[5]            = 0.25;
+	stateTransitionOnTimeout[5]     = "IdleSpinning";
+
+	stateName[6]                    = "IdleSpinning";
+	stateEmitter[6]                 = ND_SpinEmitter;
+	stateSpinThread[6]              = "FullSpeed";
+	stateEmitterNode[6] 		    = "muzzlePoint";
+	stateEmitterTime[6] 		    = 0.4;
+	stateTimeoutValue[6]            = 0.4;
+	stateTransitionOnLoaded[6]      = "StopSpinning";
 	stateTransitionOnTimeout[6]     = "IdleSpinning";
 
-	stateName[7]                    = "IdleSpinning";
-	stateEmitter[7]                 = ND_SpinEmitter;
-	stateSpinThread[7]              = "FullSpeed";
-	stateEmitterNode[7] 		    = "muzzlePoint";
-	stateEmitterTime[7] 		    = 0.4;
-	stateTimeoutValue[7]            = 0.4;
-	stateTransitionOnLoaded[7]      = "StopSpinning";
-	stateTransitionOnTimeout[7]     = "IdleSpinning";
-
-	stateName[8]                    = "StopSpinning";
-	stateSpinThread[8]              = "SpinDown";
-	stateTimeoutValue[8]            = 0.25;
-	stateTransitionOnTimeout[8]     = "Idle";
+	stateName[7]                    = "StopSpinning";
+	stateSpinThread[7]              = "SpinDown";
+	stateTimeoutValue[7]            = 0.25;
+	stateTransitionOnTimeout[7]     = "Idle";
 
 	//Spinning states (from checkfire, trigger is still down)
-	stateName[9]                    = "StartSpinning_TDown";
-	stateSpinThread[9]              = "SpinUp";
-	stateTimeoutValue[9]            = 0.25;
+	stateName[8]                    = "StartSpinning_TDown";
+	stateSpinThread[8]              = "SpinUp";
+	stateTimeoutValue[8]            = 0.25;
+	stateTransitionOnTimeout[8]     = "IdleSpinning_TDown";
+
+	stateName[9]                    = "IdleSpinning_TDown";
+	stateEmitter[9]                 = ND_SpinEmitter;
+	stateSpinThread[9]              = "FullSpeed";
+	stateEmitterNode[9]             = "muzzlePoint_TDown";
+	stateEmitterTime[9]             = 0.4;
+	stateTimeoutValue[9]            = 0.4;
+	stateTransitionOnLoaded[9]      = "StopSpinning_TDown";
 	stateTransitionOnTimeout[9]     = "IdleSpinning_TDown";
 
-	stateName[10]                   = "IdleSpinning_TDown";
-	stateEmitter[10]                = ND_SpinEmitter;
-	stateSpinThread[10]             = "FullSpeed";
-	stateEmitterNode[10]            = "muzzlePoint_TDown";
-	stateEmitterTime[10]            = 0.4;
-	stateTimeoutValue[10]           = 0.4;
-	stateTransitionOnLoaded[10]     = "StopSpinning_TDown";
-	stateTransitionOnTimeout[10]    = "IdleSpinning_TDown";
-
-	stateName[11]                   = "StopSpinning_TDown";
-	stateSpinThread[11]             = "SpinDown";
-	stateTimeoutValue[11]           = 0.25;
-	stateTransitionOnTimeout[11]    = "CheckFire";
+	stateName[10]                   = "StopSpinning_TDown";
+	stateSpinThread[10]             = "SpinDown";
+	stateTimeoutValue[10]           = 0.25;
+	stateTransitionOnTimeout[10]    = "CheckFire";
 };
 
 
@@ -325,8 +318,8 @@ datablock ShapeBaseImageData(ND_Image_Blue : ND_Image)
 
 	//Image states
 	stateEmitter[3]  = ND_WaitEmitter_Blue;
-	stateEmitter[7]  = ND_SpinEmitter_Blue;
-	stateEmitter[10] = ND_SpinEmitter_Blue;
+	stateEmitter[6]  = ND_SpinEmitter_Blue;
+	stateEmitter[9] = ND_SpinEmitter_Blue;
 };
 
 
