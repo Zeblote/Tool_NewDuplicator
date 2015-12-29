@@ -889,10 +889,10 @@ function ND_Selection::updateHighlightBox(%this)
 	{
 		%min = vectorAdd(%this.rootPosition, %this.minSize);
 		%max = vectorAdd(%this.rootPosition, %this.maxSize);
-		%this.highlightBox.resize(%min, %max);
+		%this.highlightBox.setSize(%min, %max);
 	}
 	else
-		%this.highlightBox.resize(%this.getGhostWorldBox());
+		%this.highlightBox.setSize(%this.getGhostWorldBox());
 }
 
 //Remove the highlight box

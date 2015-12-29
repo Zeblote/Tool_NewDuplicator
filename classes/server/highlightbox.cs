@@ -57,7 +57,7 @@ function ND_HighlightBox::getSize(%this)
 }
 
 //Resize the highlight box
-function ND_HighlightBox::resize(%this, %point1, %point2)
+function ND_HighlightBox::setSize(%this, %point1, %point2)
 {
 	if(getWordCount(%point1) == 6)
 	{
@@ -104,23 +104,7 @@ function ND_HighlightBox::resize(%this, %point1, %point2)
 	%this.border_z3.setTransform(%x1 SPC %y2 SPC %center_z SPC %rot_z);
 
 	%maxLen = getMax(getMax(%len_x, %len_y), %len_z);
-
-	if(%maxLen > 1024)
-		%width = 7;
-	else if(%maxLen > 512)
-		%width = 6;
-	else if(%maxLen > 256)
-		%width = 5;
-	else if(%maxLen > 128)
-		%width = 4;
-	else if(%maxLen > 64)
-		%width = 3;
-	else if(%maxLen > 32)
-		%width = 2;
-	else if(%maxLen > 4)
-		%width = 1;
-	else
-		%width = 0.5;
+	%width = (7 / 1024) * %maxLen + 1;
 
 	//Make this slightly smaller than the selection boxes
 	%width -= 0.02;

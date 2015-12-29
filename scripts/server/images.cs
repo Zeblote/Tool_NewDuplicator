@@ -20,8 +20,8 @@ function GameConnection::ndSetImage(%this, %image)
 		if(%this.ndEquipped)
 		{
 			%this.ndIgnoreNextMount = true;
-			%this.player.updateArm(%image);
-			%this.player.mountImage(%image, 0);
+			%this.player.schedule(0, updateArm, %image);
+			%this.player.schedule(0, mountImage, %image, 0);
 		}
 	}
 }
@@ -131,6 +131,8 @@ function Player::ndEquipped(%this)
 		return;
 	}
 
+	%client.ndEquipped = true;
+
 	//Remove temp brick so it doesn't overlap the selection box
 	if(isObject(%this.tempBrick))
 		%this.tempBrick.delete();
@@ -138,8 +140,6 @@ function Player::ndEquipped(%this)
 	//Should resume last used select mode
 	if(!%client.ndModeIndex)
 		%client.ndSetMode(%client.ndLastSelectMode);
-
-	%client.ndEquipped = true;
 }
 
 //Duplicator was unequipped

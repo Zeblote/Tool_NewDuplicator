@@ -122,116 +122,112 @@ function ND_SelectionBox::applyColors(%this)
 //Return current size of selection box
 function ND_SelectionBox::getSize(%this)
 {
-        %x1 = getWord(%this.point1, 0);
-        %y1 = getWord(%this.point1, 1);
-        %z1 = getWord(%this.point1, 2);
+	%x1 = getWord(%this.point1, 0);
+	%y1 = getWord(%this.point1, 1);
+	%z1 = getWord(%this.point1, 2);
 
-        %x2 = getWord(%this.point2, 0);
-        %y2 = getWord(%this.point2, 1);
-        %z2 = getWord(%this.point2, 2);
+	%x2 = getWord(%this.point2, 0);
+	%y2 = getWord(%this.point2, 1);
+	%z2 = getWord(%this.point2, 2);
 
-        %min = getMin(%x1, %x2) SPC getMin(%y1, %y2) SPC getMin(%z1, %z2);
-        %max = getMax(%x1, %x2) SPC getMax(%y1, %y2) SPC getMax(%z1, %z2);
+	%min = getMin(%x1, %x2) SPC getMin(%y1, %y2) SPC getMin(%z1, %z2);
+	%max = getMax(%x1, %x2) SPC getMax(%y1, %y2) SPC getMax(%z1, %z2);
 
-        return %min SPC %max;
+	return %min SPC %max;
 }
 
 //Resize the selection box
 function ND_SelectionBox::setSize(%this, %point1, %point2)
 {
-        if(getWordCount(%point1) == 6)
-        {
-                %point2 = getWords(%point1, 3, 5);
-                %point1 = getWords(%point1, 0, 2);
-        }
+	if(getWordCount(%point1) == 6)
+	{
+		%point2 = getWords(%point1, 3, 5);
+		%point1 = getWords(%point1, 0, 2);
+	}
 
-        %this.point1 = %point1;
-        %this.point2 = %point2;
+	%this.point1 = %point1;
+	%this.point2 = %point2;
 
-        %x1 = getWord(%point1, 0);
-        %y1 = getWord(%point1, 1);
-        %z1 = getWord(%point1, 2);
+	%x1 = getWord(%point1, 0);
+	%y1 = getWord(%point1, 1);
+	%z1 = getWord(%point1, 2);
 
-        %x2 = getWord(%point2, 0);
-        %y2 = getWord(%point2, 1);
-        %z2 = getWord(%point2, 2);
+	%x2 = getWord(%point2, 0);
+	%y2 = getWord(%point2, 1);
+	%z2 = getWord(%point2, 2);
 
-        %len_x = mAbs(%x2 - %x1);
-        %len_y = mAbs(%y2 - %y1);
-        %len_z = mAbs(%z2 - %z1);
+	%len_x = mAbs(%x2 - %x1);
+	%len_y = mAbs(%y2 - %y1);
+	%len_z = mAbs(%z2 - %z1);
 
-        %center_x = (%x1 + %x2) / 2;
-        %center_y = (%y1 + %y2) / 2;
-        %center_z = (%z1 + %z2) / 2;
+	%center_x = (%x1 + %x2) / 2;
+	%center_y = (%y1 + %y2) / 2;
+	%center_z = (%z1 + %z2) / 2;
 
-        %rot_x = "0 1 0 1.57079";
-        %rot_y = "1 0 0 1.57079";
-        %rot_z = "0 0 1 0";
+	%rot_x = "0 1 0 1.57079";
+	%rot_y = "1 0 0 1.57079";
+	%rot_z = "0 0 1 0";
 
-        %this.innerCube.setTransform(%center_x SPC %center_y SPC %center_z);
-        %this.outerCube.setTransform(%center_x SPC %center_y SPC %center_z);
-        %this.shapeName.setTransform(%center_X SPC %center_y SPC %z2);
+	%this.innerCube.setTransform(%center_x SPC %center_y SPC %center_z);
+	%this.outerCube.setTransform(%center_x SPC %center_y SPC %center_z);
+	%this.shapeName.setTransform(%center_X SPC %center_y SPC %z2);
 
-        %this.border_x0.setTransform(%center_x SPC %y1 SPC %z1 SPC %rot_x);
-        %this.border_x1.setTransform(%center_x SPC %y2 SPC %z1 SPC %rot_x);
-        %this.border_x2.setTransform(%center_x SPC %y2 SPC %z2 SPC %rot_x);
-        %this.border_x3.setTransform(%center_x SPC %y1 SPC %z2 SPC %rot_x);
+	%this.border_x0.setTransform(%center_x SPC %y1 SPC %z1 SPC %rot_x);
+	%this.border_x1.setTransform(%center_x SPC %y2 SPC %z1 SPC %rot_x);
+	%this.border_x2.setTransform(%center_x SPC %y2 SPC %z2 SPC %rot_x);
+	%this.border_x3.setTransform(%center_x SPC %y1 SPC %z2 SPC %rot_x);
 
-        %this.border_y0.setTransform(%x1 SPC %center_y SPC %z1 SPC %rot_y);
-        %this.border_y1.setTransform(%x2 SPC %center_y SPC %z1 SPC %rot_y);
-        %this.border_y2.setTransform(%x2 SPC %center_y SPC %z2 SPC %rot_y);
-        %this.border_y3.setTransform(%x1 SPC %center_y SPC %z2 SPC %rot_y);
+	%this.border_y0.setTransform(%x1 SPC %center_y SPC %z1 SPC %rot_y);
+	%this.border_y1.setTransform(%x2 SPC %center_y SPC %z1 SPC %rot_y);
+	%this.border_y2.setTransform(%x2 SPC %center_y SPC %z2 SPC %rot_y);
+	%this.border_y3.setTransform(%x1 SPC %center_y SPC %z2 SPC %rot_y);
 
-        %this.border_z0.setTransform(%x1 SPC %y1 SPC %center_z SPC %rot_z);
-        %this.border_z1.setTransform(%x2 SPC %y1 SPC %center_z SPC %rot_z);
-        %this.border_z2.setTransform(%x2 SPC %y2 SPC %center_z SPC %rot_z);
-        %this.border_z3.setTransform(%x1 SPC %y2 SPC %center_z SPC %rot_z);
+	%this.border_z0.setTransform(%x1 SPC %y1 SPC %center_z SPC %rot_z);
+	%this.border_z1.setTransform(%x2 SPC %y1 SPC %center_z SPC %rot_z);
+	%this.border_z2.setTransform(%x2 SPC %y2 SPC %center_z SPC %rot_z);
+	%this.border_z3.setTransform(%x1 SPC %y2 SPC %center_z SPC %rot_z);
 
-        %this.corner1.setTransform(%x1 SPC %y1 SPC %z1);
-        %this.corner2.setTransform(%x2 SPC %y2 SPC %z2);
+	%this.corner1.setTransform(%x1 SPC %y1 SPC %z1);
+	%this.corner2.setTransform(%x2 SPC %y2 SPC %z2);
 
-        %this.innerCube.setScale(%len_x - 0.02 SPC %len_y - 0.02 SPC %len_z - 0.02);
-        %this.outerCube.setScale(%len_x + 0.02 SPC %len_y + 0.02 SPC %len_z + 0.02);
+	%this.innerCube.setScale(%len_x - 0.02 SPC %len_y - 0.02 SPC %len_z - 0.02);
+	%this.outerCube.setScale(%len_x + 0.02 SPC %len_y + 0.02 SPC %len_z + 0.02);
 
-        %maxLen = getMax(getMax(%len_x, %len_y), %len_z);
+	%maxLen = getMax(getMax(%len_x, %len_y), %len_z);
+	%width = (7 / 1024) * %maxLen + 1;
 
-        if(%maxLen > 1024)
-                %width = 7;
-        else if(%maxLen > 512)
-                %width = 6;
-        else if(%maxLen > 256)
-                %width = 5;
-        else if(%maxLen > 128)
-                %width = 4;
-        else if(%maxLen > 64)
-                %width = 3;
-        else if(%maxLen > 32)
-                %width = 2;
-        else if(%maxLen > 4)
-                %width = 1;
-        else
-                %width = 0.5;
+	if(%this.selectedCorner)
+	{
+		%width1 = %width;
+		%width2 = %width + 0.02;
+	}
+	else
+	{
+		%width1 = %width + 0.02;
+		%width2 = %width;
+	}	
 
-        for(%i = 0; %i < 4; %i++)
-        {
-                %this.border_x[%i].setScale(%width SPC %width SPC %len_x + %width * 0.05);
-                %this.border_y[%i].setScale(%width SPC %width SPC %len_y + %width * 0.05);
-                %this.border_z[%i].setScale(%width SPC %width SPC %len_z + %width * 0.05);
-        }
+	for(%i = 0; %i < 4; %i++)
+	{
+		%this.border_x[%i].setScale(%width SPC %width SPC %len_x + %width * 0.05);
+		%this.border_y[%i].setScale(%width SPC %width SPC %len_y + %width * 0.05);
+		%this.border_z[%i].setScale(%width SPC %width SPC %len_z + %width * 0.05);
+	}
 
-        //The borders touching the two corners are shorter to prevent Z fighting 
-        %this.border_x0.setScale(%width SPC %width SPC %len_x - %width * 0.05);
-        %this.border_y0.setScale(%width SPC %width SPC %len_y - %width * 0.05);
-        %this.border_z0.setScale(%width SPC %width SPC %len_z - %width * 0.05);
-        %this.border_x2.setScale(%width SPC %width SPC %len_x - %width * 0.05);
-        %this.border_y2.setScale(%width SPC %width SPC %len_y - %width * 0.05);
-        %this.border_z2.setScale(%width SPC %width SPC %len_z - %width * 0.05);
+	//The borders touching the two corners are shorter to prevent Z fighting 
+	%this.border_x0.setScale(%width1 SPC %width1 SPC %len_x - %width * 0.05);
+	%this.border_y0.setScale(%width1 SPC %width1 SPC %len_y - %width * 0.05);
+	%this.border_z0.setScale(%width1 SPC %width1 SPC %len_z - %width * 0.05);
+	%this.border_x2.setScale(%width2 SPC %width2 SPC %len_x - %width * 0.05);
+	%this.border_y2.setScale(%width2 SPC %width2 SPC %len_y - %width * 0.05);
+	%this.border_z2.setScale(%width2 SPC %width2 SPC %len_z - %width * 0.05);
 
-        //Corners scale with the border width
-        %cs = 0.35 * %width;
+	//Corners scale with the border width
+	%cs1 = 0.35 * %width1;
+	%cs2 = 0.35 * %width2;
 
-        %this.corner1.setScale(%cs SPC %cs SPC %cs);
-        %this.corner2.setScale(%cs SPC %cs SPC %cs);
+	%this.corner1.setScale(%cs1 SPC %cs1 SPC %cs1);
+	%this.corner2.setScale(%cs2 SPC %cs2 SPC %cs2);
 }
 
 //Select one of the two corners
@@ -244,68 +240,69 @@ function ND_SelectionBox::switchCorner(%this)
 	else
 		serverPlay3d(BrickRotateSound, %this.point1);
 
+	%this.setSize(%this.point1, %this.point2);
 	%this.applyColors();
 }
 
 //Move the selected corner
 function ND_SelectionBox::shiftCorner(%this, %offset, %limit)
 {
-    %oldP1 = %this.point1;
-    %oldP2 = %this.point2;        
-    %limitReached = false;
-    
-    //Size of a plate in TU
-    %unit[0] = 0.5;
-    %unit[1] = 0.5;
-    %unit[2] = 0.2;
-    
-    for(%dim = 0; %dim < 3; %dim++)
-    {
-        //Copy current
-        %point1[%dim] = getWord(%this.point1, %dim);
-        %point2[%dim] = getWord(%this.point2, %dim);
-        
-        //Get the size of the box in the current axis after resizing
-        %ds = getWord(%this.point2, %dim) - getWord(%this.point1, %dim);
-        
-        if(%this.selectedCorner)
-            %ds += getWord(%offset, %dim);
-        else
-            %ds -= getWord(%offset, %dim);
-                
-        //update the point being controlled
-        if(%this.selectedCorner)
-            %point2[%dim] += getWord(%offset, %dim);
-        else
-            %point1[%dim] += getWord(%offset, %dim);
-        
-        //Check limits
-        if(mAbs(%ds) > %limit)
-        {
-            %limitReached = true;
-            
-            if(%this.selectedCorner)
-                %point2[%dim] -= %ds - %limit * (mAbs(%ds) / %ds);
-            else
-                %point1[%dim] += %ds - %limit * (mAbs(%ds) / %ds);
-        }
-    }
-    
-    //Update corner positions
-    %point1 = %point1[0] SPC %point1[1] SPC %point1[2];
-    %point2 = %point2[0] SPC %point2[1] SPC %point2[2];
-    %this.setSize(%point1, %point2);
-    
-    //Play sounds
-    if(%this.selectedCorner)
-        %soundPoint = %this.point2;
-    else
-        %soundPoint = %this.point1;
-    
-    if(%this.point1 !$= %oldP1 || %this.point2 !$= %oldP2)
-        serverPlay3d(BrickMoveSound, %soundPoint);
-    else
-        serverPlay3d(errorSound, %soundPoint);
-    
-    return %limitReached;
+	%oldP1 = %this.point1;
+	%oldP2 = %this.point2;        
+	%limitReached = false;
+	
+	//Size of a plate in TU
+	%unit[0] = 0.5;
+	%unit[1] = 0.5;
+	%unit[2] = 0.2;
+	
+	for(%dim = 0; %dim < 3; %dim++)
+	{
+		//Copy current
+		%point1[%dim] = getWord(%this.point1, %dim);
+		%point2[%dim] = getWord(%this.point2, %dim);
+		
+		//Get the size of the box in the current axis after resizing
+		%ds = getWord(%this.point2, %dim) - getWord(%this.point1, %dim);
+		
+		if(%this.selectedCorner)
+			%ds += getWord(%offset, %dim);
+		else
+			%ds -= getWord(%offset, %dim);
+				
+		//update the point being controlled
+		if(%this.selectedCorner)
+			%point2[%dim] += getWord(%offset, %dim);
+		else
+			%point1[%dim] += getWord(%offset, %dim);
+		
+		//Check limits
+		if(mAbs(%ds) > %limit)
+		{
+			%limitReached = true;
+			
+			if(%this.selectedCorner)
+				%point2[%dim] -= %ds - %limit * (mAbs(%ds) / %ds);
+			else
+				%point1[%dim] += %ds - %limit * (mAbs(%ds) / %ds);
+		}
+	}
+	
+	//Update corner positions
+	%point1 = %point1[0] SPC %point1[1] SPC %point1[2];
+	%point2 = %point2[0] SPC %point2[1] SPC %point2[2];
+	%this.setSize(%point1, %point2);
+	
+	//Play sounds
+	if(%this.selectedCorner)
+		%soundPoint = %this.point2;
+	else
+		%soundPoint = %this.point1;
+	
+	if(%this.point1 !$= %oldP1 || %this.point2 !$= %oldP2)
+		serverPlay3d(BrickMoveSound, %soundPoint);
+	else
+		serverPlay3d(errorSound, %soundPoint);
+	
+	return %limitReached;
 }
