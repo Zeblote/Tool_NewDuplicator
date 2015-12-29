@@ -1,7 +1,7 @@
 // * ######################################################################
 // *
 // *    New Duplicator - Scripts - Server 
-// *    Manual Symmetry
+// *    Symmetry Definitions
 // *
 // *    -------------------------------------------------------------------
 // *    Manual Symmetry definitions for bricks with bad blbs

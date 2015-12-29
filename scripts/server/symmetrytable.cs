@@ -37,7 +37,7 @@ function ndCreateSymmetryTable()
 	ndTickCreateSymmetryTable(0, getDatablockGroupSize());
 }
 
-//Process symmetry for 4 datablocks each tick
+//Process symmetry for 6 datablocks each tick
 function ndTickCreateSymmetryTable(%lastIndex, %max)
 {
 	%processed = 0;
@@ -51,7 +51,7 @@ function ndTickCreateSymmetryTable(%lastIndex, %max)
 			ndTestBrickSymmetry(%db);
 			%processed++;
 
-			if(%processed > 3)
+			if(%processed > 5)
 			{
 				schedule(30, 0, ndTickCreateSymmetryTable, %i + 1, %max);
 				return; 

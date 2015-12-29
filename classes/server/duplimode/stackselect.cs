@@ -8,22 +8,6 @@
 // *
 // * ######################################################################
 
-//Create object to receive callbacks
-ND_ServerGroup.add(
-	new ScriptObject(NDM_StackSelect)
-	{
-		class = "NewDuplicatorMode";
-		index = $NDM::StackSelect;
-		image = "ND_Image";
-		spin = false;
-
-		allowSelecting = true;
-		allowUnMount   = false;
-	}
-);
-
-
-
 //Changing modes
 ///////////////////////////////////////////////////////////////////////////
 

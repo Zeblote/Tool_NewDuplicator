@@ -8,22 +8,6 @@
 // *
 // * ######################################################################
 
-//Create object to receive callbacks
-ND_ServerGroup.add(
-	new ScriptObject(NDM_CubeSelect)
-	{
-		class = "NewDuplicatorMode";
-		index = $NDM::CubeSelect;
-		image = "ND_Image_Cube";
-		spin = false;
-
-		allowSelecting = true;
-		allowUnMount   = false;
-	}
-);
-
-
-
 //Changing modes
 ///////////////////////////////////////////////////////////////////////////
 

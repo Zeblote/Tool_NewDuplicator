@@ -70,6 +70,8 @@ function serverCmdOldDup(%client)
 		%client.player.updateArm(DuplicatorImage);
 		%client.player.mountImage(DuplicatorImage, 0);
 	}
+	else
+		messageClient(%client, '', "\c6The server does not have an old duplicator installed.");
 }
 
 //Command to equip the new duplicator

@@ -8,23 +8,6 @@
 // *
 // * ######################################################################
 
-//Create object to receive callbacks
-ND_ServerGroup.add(
-	new ScriptObject(NDM_CutProgress)
-	{
-		class = "NewDuplicatorMode";
-		index = $NDM::CutProgress;
-		image = "any";
-		spin = true;
-
-
-		allowSelecting = false;
-		allowUnMount   = false;
-	}
-);
-
-
-
 //Changing modes
 ///////////////////////////////////////////////////////////////////////////
 

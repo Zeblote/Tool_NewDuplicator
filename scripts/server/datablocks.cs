@@ -156,7 +156,7 @@ datablock ShapeBaseImageData(ND_Image)
 	emap            = true;
 	mountPoint      = 0;
 	offset          = "0 0 0";
-	eyeOffset       = "0.7 1.2 -0.8";
+	eyeOffset       = "0.7 1.4 -0.9";
 	armReady        = true;
 	showBricks      = true;
 	doColorShift    = true;

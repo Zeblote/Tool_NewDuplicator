@@ -207,14 +207,33 @@ function Player::ndFired(%this)
 
 package NewDuplicator_Server
 {
+	//Automatically start the "ambient" animation on duplicator items
 	function ND_Item::onAdd(%this, %obj)
 	{
 		parent::onAdd(%this, %obj);
-
-		//Automatically start the "ambient" animation on duplicator items
 		%obj.playThread(0, ambient);
 
 		//Fix colorshift bullshit
 		%obj.schedule(100, setNodeColor, "ALL", %this.colorShiftColor);
+	}
+
+	//Prevent accidently unequipping the duplicator
+	function serverCmdUnUseTool(%client)
+	{
+		if(%client.ndLastEquipTime + 1.5 > $Sim::Time)
+			return;
+
+		parent::serverCmdUnUseTool(%client);
+	}
+
+	//Prevent creating ghost bricks in modes that allow un-mount
+	function BrickDeployProjectile::onCollision(%this, %obj, %col, %fade, %pos, %normal)
+	{
+		%client = %obj.client;
+
+		if(isObject(%client) && %client.ndModeIndex)
+			%client.ndMode.onSelectObject(%client, %col, %pos, %normal);
+		else
+			parent::onCollision(%this, %obj, %col, %fade, %pos, %normal);
 	}
 };

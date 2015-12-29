@@ -8,22 +8,6 @@
 // *
 // * ######################################################################
 
-//Create object to receive callbacks
-ND_ServerGroup.add(
-	new ScriptObject(NDM_PlantCopy)
-	{
-		class = "NewDuplicatorMode";
-		index = $NDM::PlantCopy;
-		image = "ND_Image_Blue";
-		spin = false;
-
-		allowSelecting = true;
-		allowUnMount   = true;
-	}
-);
-
-
-
 //Changing modes
 ///////////////////////////////////////////////////////////////////////////
 
