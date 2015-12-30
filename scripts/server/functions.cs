@@ -54,6 +54,28 @@ function ndGetClosestColorID(%rgb)
 	return %best;
 }
 
+//Convert a paint color to a <color:xxxxxx> code
+function ndGetPaintColorCode(%id)
+{
+	%rgb = getColorI(getColorIdTable(%id));
+	%chars = "0123456789abcdef";
+
+	%r = getWord(%rgb, 0);
+	%g = getWord(%rgb, 1);
+	%b = getWord(%rgb, 2);
+
+	%r1 = getSubStr(%chars, (%r / 16) | 0, 1);
+	%r2 = getSubStr(%chars,  %r % 16     , 1);
+
+	%g1 = getSubStr(%chars, (%g / 16) | 0, 1);
+	%g2 = getSubStr(%chars,  %g % 16     , 1);
+
+	%b1 = getSubStr(%chars, (%b / 16) | 0, 1);
+	%b2 = getSubStr(%chars,  %b % 16     , 1);
+
+	return "<color:" @ %r1 @ %r2 @ %g1 @ %g2 @ %b1 @ %b2 @ ">";
+}
+
 
 
 //Trust checks

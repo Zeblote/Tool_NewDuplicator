@@ -28,11 +28,14 @@ exec($ND::ClassPath @ "server/highlightbox.cs");
 exec($ND::ClassPath @ "server/highlightset.cs");
 exec($ND::ClassPath @ "server/selection.cs");
 exec($ND::ClassPath @ "server/selectionbox.cs");
-exec($ND::ClassPath @ "server/undogroup.cs");
+exec($ND::ClassPath @ "server/undogrouppaint.cs");
+exec($ND::ClassPath @ "server/undogroupplant.cs");
 
 exec($ND::ClassPath @ "server/duplimode/cubeselect.cs");
 exec($ND::ClassPath @ "server/duplimode/cubeselectprogress.cs");
 exec($ND::ClassPath @ "server/duplimode/cutprogress.cs");
+exec($ND::ClassPath @ "server/duplimode/fillcolor.cs");
+exec($ND::ClassPath @ "server/duplimode/fillcolorprogress.cs");
 exec($ND::ClassPath @ "server/duplimode/plantcopy.cs");
 exec($ND::ClassPath @ "server/duplimode/plantcopyprogress.cs");
 exec($ND::ClassPath @ "server/duplimode/stackselect.cs");

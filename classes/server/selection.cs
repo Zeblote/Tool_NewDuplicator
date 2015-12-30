@@ -971,7 +971,7 @@ function ND_Selection::tickCutting(%this)
 	%this.cutSuccessCount = %cutSuccessCount;
 	%this.cutFailCount = %cutFailCount;
 
-	//Tell the client how much we selected this tick
+	//Tell the client how much we cut this tick
 	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
 	{
 		%this.client.ndUpdateBottomPrint();
@@ -2224,7 +2224,7 @@ function ND_Selection::finishPlant(%this)
 	deleteVariables("$NP" @ %this @ "_*");
 
 	if(%planted)
-		%this.client.undoStack.push(%this.undoGroup TAB "NEWDUPLICATE");
+		%this.client.undoStack.push(%this.undoGroup TAB "ND_PLANT");
 	else
 		%this.undoGroup.delete();
 
@@ -2238,7 +2238,125 @@ function ND_Selection::cancelPlanting(%this)
 	deleteVariables("$NP" @ %this @ "_*");
 
 	if(%this.plantSuccessCount)
-		%this.client.undoStack.push(%this.undoGroup TAB "NEWDUPLICATE");
+		%this.client.undoStack.push(%this.undoGroup TAB "ND_PLANT");
+	else
+		%this.undoGroup.delete();
+}
+
+
+
+//Fill Colors
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Start filling bricks with a specific color
+function ND_Selection::startFillColor(%this, %mode, %colorID)
+{
+	%this.paintIndex = 0;
+	%this.paintFailCount = 0;
+	%this.paintSuccessCount = 0;
+
+	//Create undo group
+	%this.undoGroup = new ScriptObject(ND_UndoGroupPaint)
+	{
+		paintType = %mode;
+		brickCount = 0;
+	};
+
+	ND_ServerGroup.add(%this.undoGroup);
+
+	%this.tickFillColor(%mode, %colorID);
+}
+
+//Tick filling bricks with a specific color
+function ND_Selection::tickFillColor(%this, %mode, %colorID)
+{
+	cancel(%this.fillColorSchedule);
+
+	%start = %this.paintIndex;
+	%end = %start + $Pref::Server::ND::ProcessPerTick;
+
+	if(%end > %this.brickCount)
+		%end = %this.brickCount;
+
+	%group2 = %this.client.brickGroup.getId();
+	%bl_id = %this.client.bl_id;
+
+	for(%i = %start; %i < %end; %i++)
+	{
+		%brick = $NS[%this, "BR", %i];
+
+		if(isObject(%brick))
+		{
+			if(ndTrustCheckModify(%brick, %group2, %bl_id))
+			{
+				//Add to undo group
+				%index = (%this.undoGroup.brickCount++) -1;
+				%this.undoGroup.brick[%index] = %brick;
+
+				//Color brick
+				switch(%mode)
+				{
+					case 0:
+						%this.undoGroup.value[%index] = %brick.getColorId();
+						%brick.setColor(%colorID);
+
+					case 1:
+						%this.undoGroup.value[%index] = %brick.getColorFxId();
+						%brick.setColorFx(%colorID);
+
+					case 2:
+						%this.undoGroup.value[%index] = %brick.getShapeFxId();
+						%brick.setShapeFx(%colorID);
+				}
+
+				%this.paintSuccessCount++;
+			}
+			else
+				%this.paintFailCount++;
+		}
+	}
+
+	%this.paintIndex = %i;
+
+	//Tell the client how much we painted this tick
+	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
+	{
+		%this.client.ndUpdateBottomPrint();
+		%this.client.ndLastMessageTime = $Sim::Time;
+	}
+
+	if(%i >= %this.brickCount)
+		%this.finishFillColor();
+	else
+		%this.fillColorSchedule = %this.schedule(30, tickFillColor, %mode, %colorID);
+}
+
+//Finish filling color
+function ND_Selection::finishFillColor(%this)
+{
+	%s = %this.paintSuccessCount == 1 ? "" : "s";
+	%msg = "<font:Verdana:20>\c6Painted \c3" @ %this.paintSuccessCount @ "\c6 Brick" @ %s @ "!";
+
+	if(%this.paintFailCount > 0)
+		%msg = %msg @ "\n<font:Verdana:17>\c3" @ %this.paintFailCount @ "\c6 missing trust.";
+
+	commandToClient(%this.client, 'centerPrint', %msg, 8);
+
+	if(%this.paintSuccessCount)
+		%this.client.undoStack.push(%this.undoGroup TAB "ND_PAINT");
+	else
+		%this.undoGroup.delete();
+
+	%this.client.ndSetMode(NDM_FillColor);
+}
+
+//Cancel filling color
+function ND_Selection::cancelFillColor(%this)
+{
+	cancel(%this.fillColorSchedule);
+
+	if(%this.paintSuccessCount)
+		%this.client.undoStack.push(%this.undoGroup TAB "ND_PAINT");
 	else
 		%this.undoGroup.delete();
 }

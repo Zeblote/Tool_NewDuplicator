@@ -49,6 +49,15 @@ function NDM_CubeSelect::onChangeMode(%this, %client, %nextMode)
 		if(isObject(%client.ndSelectionBox))
 			%client.ndSelectionBox.delete();
 	}
+	else if(%nextMode == $NDM::FillColor)
+	{
+		//Start de-highlighting the bricks
+		%client.ndSelection.deHighlight();
+
+		//Remove the selection box
+		if(isObject(%client.ndSelectionBox))
+			%client.ndSelectionBox.delete();
+	}
 }
 
 //Kill this mode

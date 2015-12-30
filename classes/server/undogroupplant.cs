@@ -1,7 +1,7 @@
 // * ######################################################################
 // *
 // *    New Duplicator - Classes - Server
-// *    ND_UndoGroup
+// *    ND_UndoGroupPlant
 // *
 // *    -------------------------------------------------------------------
 // *    Handles undoing planting selections
@@ -56,7 +56,9 @@ function SimSet::ndTickUndo(%this, %count, %client)
 	{
 		%this.delete();
 		%client.ndUndoInProgress = false;
-		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Undo finished.", 4);
+		
+		if(%start != 0)
+			commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Undo finished.", 4);
 
 		return;
 	}

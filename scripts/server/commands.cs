@@ -222,8 +222,9 @@ package NewDuplicator_Server
 		//This really needs a better api.
 		//Wtf were you thinking, badspot?
 		%state = %client.undoStack.pop();
+		%type = getField(%state, 1);
 
-		if(getField(%state, 1) $= "NEWDUPLICATE")
+		if(%type $= "ND_PLANT" || %type $= "ND_PAINT")
 		{
 			(getField(%state, 0)).ndStartUndo(%client);
 
@@ -402,6 +403,64 @@ function serverCmdForcePlant(%client)
 function serverCmdForceP(%client){serverCmdForcePlant(%client);}
 function serverCmdFPlant(%client){serverCmdForcePlant(%client);}
 function serverCmdFP    (%client){serverCmdForcePlant(%client);}
+
+
+
+//Fill color
+///////////////////////////////////////////////////////////////////////////
+
+package NewDuplicator_Server
+{
+	//Enable fill color mode or show the current color
+	function serverCmdUseSprayCan(%client, %index)
+	{
+		%mode = %client.ndModeIndex;
+
+		if(%mode == $NDM::StackSelect || %mode == $NDM::CubeSelect)
+		{
+			if(isObject(%client.ndSelection) && %client.ndSelection.brickCount)
+			{
+				%client.currentColor = %index;
+				%client.currentFxColor = "";
+				%client.ndSetMode(NDM_FillColor);
+			}
+			else
+				parent::serverCmdUseSprayCan(%client, %index);
+		}
+		else if(%mode == $NDM::FillColor || %client.ndModeIndex == $NDM::FillColorProgress)
+		{
+			%client.currentColor = %index;
+			%client.currentFxColor = "";
+			%client.ndUpdateBottomPrint();
+		}
+		else
+			parent::serverCmdUseSprayCan(%client, %index);
+	}
+
+	//Enable fill color mode or show the current color
+	function serverCmdUseFxCan(%client, %index)
+	{
+		%mode = %client.ndModeIndex;
+
+		if(%mode == $NDM::StackSelect || %mode == $NDM::CubeSelect)
+		{
+			if(isObject(%client.ndSelection) && %client.ndSelection.brickCount)
+			{
+				%client.currentFxColor = %index;
+				%client.ndSetMode(NDM_FillColor);
+			}
+			else
+				parent::serverCmdUseFxCan(%client, %index);
+		}
+		else if(%mode == $NDM::FillColor || %client.ndModeIndex == $NDM::FillColorProgress)
+		{
+			%client.currentFxColor = %index;
+			%client.ndUpdateBottomPrint();
+		}
+		else
+			parent::serverCmdUseFxCan(%client, %index);
+	}
+};
 
 
 

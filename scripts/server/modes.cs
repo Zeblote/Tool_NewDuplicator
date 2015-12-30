@@ -53,10 +53,12 @@ $NDM::Disabled            = 0;
 $NDM::CubeSelect          = 1;
 $NDM::CubeSelectProgress  = 2;
 $NDM::CutProgress         = 3;
-$NDM::StackSelect         = 4;
-$NDM::StackSelectProgress = 5;
-$NDM::PlantCopy           = 6;
-$NDM::PlantCopyProgress   = 7;
+$NDM::FillColor           = 4;
+$NDM::FillColorProgress   = 5;
+$NDM::StackSelect         = 6;
+$NDM::StackSelectProgress = 7;
+$NDM::PlantCopy           = 8;
+$NDM::PlantCopyProgress   = 9;
 
 //Create all the pseudo-classes to handle callbacks
 function ndRegisterDuplicatorModes()
@@ -111,6 +113,36 @@ function ndRegisterDuplicatorModes()
 		{
 			class = "NewDuplicatorMode";
 			index = $NDM::CutProgress;
+			image = "any";
+			spin = true;
+
+
+			allowSelecting = false;
+			allowUnMount   = false;
+		}
+	);
+
+	//Fill Color duplicator mode
+	ND_ServerGroup.add(
+		new ScriptObject(NDM_FillColor)
+		{
+			class = "NewDuplicatorMode";
+			index = $NDM::FillColor;
+			image = "any";
+			spin = false;
+
+
+			allowSelecting = false;
+			allowUnMount   = false;
+		}
+	);
+
+	//Fill Color Progress duplicator mode
+	ND_ServerGroup.add(
+		new ScriptObject(NDM_FillColorProgress)
+		{
+			class = "NewDuplicatorMode";
+			index = $NDM::FillColorProgress;
 			image = "any";
 			spin = true;
 
@@ -175,6 +207,21 @@ function ndRegisterDuplicatorModes()
 			allowUnMount   = false;
 		}
 	);
+
+	//If clients already exist, reset their modes
+	for(%i = 0; %i < ClientGroup.getCount(); %i++)
+	{
+		%cl = ClientGroup.getObject(%i);
+
+		%cl.ndPivot     = true;
+		%cl.ndLimited   = true;
+		%cl.ndDirection = true;
+
+		%cl.ndImage          = ND_Image.getId();
+		%cl.ndMode           = NDM_Disabled;
+		%cl.ndModeIndex      = $NDM::Disabled;
+		%cl.ndLastSelectMode = NDM_StackSelect;
+	}
 }
 
 
@@ -298,6 +345,7 @@ package NewDuplicator_Server
 		%this.ndLimited   = true;
 		%this.ndDirection = true;
 
+		%this.ndImage          = ND_Image.getId();
 		%this.ndMode           = NDM_Disabled;
 		%this.ndModeIndex      = $NDM::Disabled;
 		%this.ndLastSelectMode = NDM_StackSelect;
