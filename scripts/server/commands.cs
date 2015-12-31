@@ -193,24 +193,6 @@ package NewDuplicator_Server
 		parent::serverCmdRotateBrick(%client, %direction);
 	}
 
-	//Planting the ghost brick (default: numpad enter)
-	function serverCmdPlantBrick(%client)
-	{
-		if(%client.ndModeIndex)
-			%client.ndMode.onPlantBrick(%client);
-		else
-			parent::serverCmdPlantBrick(%client);
-	}
-
-	//Removing the ghost brick (default: numpad 0)
-	function serverCmdCancelBrick(%client)
-	{
-		if(%client.ndModeIndex)
-			%client.ndMode.onCancelBrick(%client);
-		else
-			parent::serverCmdCancelBrick(%client);
-	}
-
 	//Undo bricks (default: ctrl z)
 	function serverCmdUndoBrick(%client)
 	{
@@ -237,6 +219,27 @@ package NewDuplicator_Server
 
 		%client.undoStack.push(%state);
 		parent::serverCmdUndoBrick(%client);
+	}
+};
+
+package NewDuplicator_Server_Final
+{
+	//Planting the ghost brick (default: numpad enter)
+	function serverCmdPlantBrick(%client)
+	{
+		if(%client.ndModeIndex)
+			%client.ndMode.onPlantBrick(%client);
+		else
+			parent::serverCmdPlantBrick(%client);
+	}
+
+	//Removing the ghost brick (default: numpad 0)
+	function serverCmdCancelBrick(%client)
+	{
+		if(%client.ndModeIndex)
+			%client.ndMode.onCancelBrick(%client);
+		else
+			parent::serverCmdCancelBrick(%client);
 	}
 };
 
