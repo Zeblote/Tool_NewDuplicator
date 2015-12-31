@@ -17,7 +17,7 @@ function NDM_CubeSelect::onStartMode(%this, %client, %lastMode)
 	%client.ndLastSelectMode = %this;
 	%client.ndUpdateBottomPrint();
 
-	if(%lastMode != $NDM::CubeSelectProgress)
+	if(%lastMode != $NDM::CubeSelectProgress && %lastMode != $NDM::FillColor)
 		%client.ndSelectionChanged = true;
 }
 

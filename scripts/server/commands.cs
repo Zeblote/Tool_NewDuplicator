@@ -112,6 +112,7 @@ function serverCmdNewDuplicator(%client, %cmd)
 		
 	%player.updateArm(%image);
 	%player.mountImage(%image, 0);
+	%client.ndEquippedFromItem = false;
 }
 
 //Alternative commands to equip the new duplicator (override old duplicators)

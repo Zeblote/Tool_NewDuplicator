@@ -2298,14 +2298,17 @@ function ND_Selection::tickFillColor(%this, %mode, %colorID)
 				{
 					case 0:
 						%this.undoGroup.value[%index] = %brick.getColorId();
+						$NS[%this, "Color", $NS[%this, "ID", %brick]] = %colorID;
 						%brick.setColor(%colorID);
 
 					case 1:
 						%this.undoGroup.value[%index] = %brick.getColorFxId();
+						$NS[%this, "ColorFx", $NS[%this, "ID", %brick]] = %colorID;
 						%brick.setColorFx(%colorID);
 
 					case 2:
 						%this.undoGroup.value[%index] = %brick.getShapeFxId();
+						$NS[%this, "ShapeFx", $NS[%this, "ID", %brick]] = %colorID;
 						%brick.setShapeFx(%colorID);
 				}
 

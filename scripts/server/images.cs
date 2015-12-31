@@ -36,6 +36,7 @@ function ND_Item::onUse(%this, %player, %slot)
 
 	%player.updateArm(%image);
 	%player.mountImage(%image, 0);
+	%player.client.ndEquippedFromItem = true;
 }
 
 package NewDuplicator_Server
@@ -223,6 +224,12 @@ package NewDuplicator_Server
 		if(%client.ndLastEquipTime + 1.5 > $Sim::Time)
 			return;
 
+		if(%client.ndModeIndex == $NDM::StackSelect || %client.ndModeIndex == $NDM::CubeSelect)
+		{
+			%client.ndToolSchedule = %client.schedule(100, ndUnUseTool);
+			return;
+		}
+
 		parent::serverCmdUnUseTool(%client);
 	}
 
@@ -237,3 +244,22 @@ package NewDuplicator_Server
 			parent::onCollision(%this, %obj, %col, %fade, %pos, %normal);
 	}
 };
+
+//Fix for equipping paint can calling unUseTool
+function GameConnection::ndUnUseTool(%this)
+{
+	%player = %this.player;
+
+	if(%this.isTalking)
+		serverCmdStopTalking(%this);
+
+	if(!isObject(%player))
+		return;
+
+	%player.currTool = -1;
+	%this.currInv = -1;
+	%this.currInvSlot = -1;
+
+	%player.unmountImage(0);
+	%player.playThread(1, "root");
+}

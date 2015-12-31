@@ -15,6 +15,7 @@
 function NDM_FillColor::onStartMode(%this, %client, %lastMode)
 {
 	%client.ndUpdateBottomPrint();
+	cancel(%client.ndToolSchedule);
 }
 
 //Switch away from this mode
@@ -30,6 +31,17 @@ function NDM_FillColor::onChangeMode(%this, %client, %nextMode)
 
 		%client.ndSelectionBox = ND_SelectionBox(%shapeName);
 		%client.ndSelectionBox.setSize(%min, %max);
+	}
+
+	//Hide paint gui
+	if(%nextMode != $NDM::FillColorProgress)
+	{
+		%client.ndLastEquipTime = $Sim::Time;
+
+		if(%client.ndEquippedFromItem)
+			commandToClient(%client, 'setScrollMode', 2);
+		else
+			commandToClient(%client, 'setScrollMode', 3);
 	}
 }
 
