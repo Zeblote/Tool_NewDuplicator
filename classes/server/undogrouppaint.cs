@@ -65,7 +65,7 @@ function ND_UndoGroupPaint::ndTickUndo(%this, %mode, %start, %client)
 		%client.ndUndoInProgress = false;
 
 		if(%start != 0)
-			commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Undo finished.", 4);
+			commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Undo finished.", 2);
 
 		return;
 	}

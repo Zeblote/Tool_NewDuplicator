@@ -17,9 +17,9 @@
 // +Y: Maximum Y point
 // +Z: Maximum Z point
 
-// B[i]: Brick object
-// I[b]: Index of brick in array
-// N[i]: Number of connected bricks
+// B[i  ]: Brick object
+// I[b  ]: Index of brick in array
+// N[i  ]: Number of connected bricks
 // C[i,j]: Index of connected brick
 
 // D[i]: Datablock
@@ -34,8 +34,8 @@
 // SF[i]: Shape Fx id
 
 // NRC[i]: No ray casting
-// NR[i]: No rendering
-// NC[i]: No colliding
+// NR [i]: No rendering
+// NC [i]: No colliding
 
 // LD[i]: Light datablock
 
@@ -53,14 +53,32 @@
 // MD[i]: Vehicle datablock
 
 
-//Mirror error lists $NS[client, type{, ...}]
-// MXC: Count of mirror errors on x
-// MXE[i]: Error datablock
-// MXK[db]: Index of datablock in list
+// EN[i]: Number of events on the brick
 
-// MZC: Count of mirror errors on z
+// EE[i,j]: Whether event is enabled
+// ED[i,j]: Event delay
+// EC[i,j]: Event append client
+
+// EI [i,j]: Event input name
+// EII[i,j]: Event input idx
+// EO [i,j]: Event output name
+// EOI[i,j]: Event output idx
+
+// ET [i,j]: Event target name
+// ETI[i,j]: Event target idx
+// ENT[i,j]: Event brick named target
+
+// EP[i,j,k]: Event output parameter
+
+
+//Mirror error lists $NS[client, type{, ...}]
+// MXC   : Count of mirror errors on x
+// MXE[i]: Error datablock
+// MXK[d]: Index of datablock in list
+
+// MZC  : Count of mirror errors on z
 // MZE[i]: Error datablock
-// MZK[db]: Index of datablock in list
+// MZK[d]: Index of datablock in list
 
 
 
@@ -846,32 +864,32 @@ function ND_Selection::recordBrickData(%this, %i)
 	//Events
 	if(%numEvents = %brick.numEvents)
 	{
-		$NS[%this, "EvNum", %i] = %numEvents;
+		$NS[%this, "EN", %i] = %numEvents;
 
 		for(%j = 0; %j < %numEvents; %j++)
 		{
-			$NS[%this, "EvEnable", %i, %j] = %brick.eventEnabled[%j];
-			$NS[%this, "EvDelay", %i, %j] = %brick.eventDelay[%j];
-			$NS[%this, "EvClient", %i, %j] = %brick.eventAppendClient[%j];
+			$NS[%this, "EE", %i, %j] = %brick.eventEnabled[%j];
+			$NS[%this, "ED", %i, %j] = %brick.eventDelay[%j];
+			$NS[%this, "EC", %i, %j] = %brick.eventAppendClient[%j];
 
-			$NS[%this, "EvInput", %i, %j] = %brick.eventInput[%j];
-			$NS[%this, "EvInputIdx", %i, %j] = %brick.eventInputIdx[%j];
+			$NS[%this, "EI", %i, %j] = %brick.eventInput[%j];
+			$NS[%this, "EII", %i, %j] = %brick.eventInputIdx[%j];
 
-			$NS[%this, "EvOutput", %i, %j] = %brick.eventOutput[%j];
-			$NS[%this, "EvOutputIdx", %i, %j] = %brick.eventOutputIdx[%j];
+			$NS[%this, "EO", %i, %j] = %brick.eventOutput[%j];
+			$NS[%this, "EOI", %i, %j] = %brick.eventOutputIdx[%j];
 
 			%target = %brick.eventTargetIdx[%j];
 
 			if(%target == -1)
-				$NS[%this, "EvNT", %i, %j] = %brick.eventNT[%j];
+				$NS[%this, "ENT", %i, %j] = %brick.eventNT[%j];
 
-			$NS[%this, "EvTarget", %i, %j] = %brick.eventTarget[%j];
-			$NS[%this, "EvTargetIdx", %i, %j] = %target;
+			$NS[%this, "ET", %i, %j] = %brick.eventTarget[%j];
+			$NS[%this, "ETI", %i, %j] = %target;
 
-			$NS[%this, "EvPar", %i, %j, 0] = %brick.eventOutputParameter[%j, 1];
-			$NS[%this, "EvPar", %i, %j, 1] = %brick.eventOutputParameter[%j, 2];
-			$NS[%this, "EvPar", %i, %j, 2] = %brick.eventOutputParameter[%j, 3];
-			$NS[%this, "EvPar", %i, %j, 3] = %brick.eventOutputParameter[%j, 4];
+			$NS[%this, "EP", %i, %j, 0] = %brick.eventOutputParameter[%j, 1];
+			$NS[%this, "EP", %i, %j, 1] = %brick.eventOutputParameter[%j, 2];
+			$NS[%this, "EP", %i, %j, 2] = %brick.eventOutputParameter[%j, 3];
+			$NS[%this, "EP", %i, %j, 3] = %brick.eventOutputParameter[%j, 4];
 		}
 	}
 
@@ -2058,24 +2076,24 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	%brick.setShapeFx($NS[%this, "SF", %i]);
 
 	//Apply events
-	if(%numEvents = $NS[%this, "EvNum", %i])
+	if(%numEvents = $NS[%this, "EN", %i])
 	{
 		%brick.numEvents = %numEvents;
 		%brick.implicitCancelEvents = 0;
 
 		for(%j = 0; %j < %numEvents; %j++)
 		{
-			%brick.eventEnabled[%j] = $NS[%this, "EvEnable", %i, %j];
-			%brick.eventDelay[%j] = $NS[%this, "EvDelay", %i, %j];
-			%brick.eventAppendClient[%j] = $NS[%this, "EvClient", %i, %j];
+			%brick.eventEnabled[%j] = $NS[%this, "EE", %i, %j];
+			%brick.eventDelay[%j] = $NS[%this, "ED", %i, %j];
+			%brick.eventAppendClient[%j] = $NS[%this, "EC", %i, %j];
 
-			%inputIdx = $NS[%this, "EvInputIdx", %i, %j];
+			%inputIdx = $NS[%this, "EII", %i, %j];
 
-			%brick.eventInput[%j] = $NS[%this, "EvInput", %i, %j];
+			%brick.eventInput[%j] = $NS[%this, "EI", %i, %j];
 			%brick.eventInputIdx[%j] = %inputIdx;
 
-			%output = $NS[%this, "EvOutput", %i, %j];
-			%outputIdx = $NS[%this, "EvOutputIdx", %i, %j];
+			%output = $NS[%this, "EO", %i, %j];
+			%outputIdx = $NS[%this, "EOI", %i, %j];
 
 			//Rotate fireRelay events
 			switch$(%output)
@@ -2121,11 +2139,11 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 			%brick.eventOutput[%j] = %output;
 			%brick.eventOutputIdx[%j] = %outputIdx;
 
-			%target = $NS[%this, "EvTarget", %i, %j];
-			%targetIdx = $NS[%this, "EvTargetIdx", %i, %j];
+			%target = $NS[%this, "ET", %i, %j];
+			%targetIdx = $NS[%this, "ETI", %i, %j];
 
 			if(%targetIdx == -1)
-				%brick.eventNT[%j] = $NS[%this, "EvNT", %i, %j];
+				%brick.eventNT[%j] = $NS[%this, "ENT", %i, %j];
 			
 			%brick.eventTarget[%j] = %target;
 			%brick.eventTargetIdx[%j] = %targetIdx;
@@ -2141,7 +2159,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 
 			for(%k = 0; %k < %paramCount; %k++)
 			{
-				%param = $NS[%this, "EvPar", %i, %j, %k];
+				%param = $NS[%this, "EP", %i, %j, %k];
 
 				if(getWord(getField(%paramList, %k), 0) $= "vector")
 				{
