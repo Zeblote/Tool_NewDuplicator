@@ -211,8 +211,8 @@ datablock ShapeBaseImageData(ND_Image)
 	stateEmitter[6]                 = ND_SpinEmitter;
 	stateSpinThread[6]              = "FullSpeed";
 	stateEmitterNode[6] 		    = "muzzlePoint";
-	stateEmitterTime[6] 		    = 0.4;
-	stateTimeoutValue[6]            = 0.4;
+	stateEmitterTime[6] 		    = 0.35;
+	stateTimeoutValue[6]            = 0.35;
 	stateTransitionOnLoaded[6]      = "StopSpinning";
 	stateTransitionOnTimeout[6]     = "IdleSpinning";
 
