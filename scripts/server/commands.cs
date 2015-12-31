@@ -347,8 +347,8 @@ function GameConnection::ndMirror(%client, %axis)
 //List potential mirror errors in last plant
 function serverCmdMirErrors(%client)
 {
-	%xerr = $NS[%client, "MirErrorsX"];
-	%zerr = $NS[%client, "MirErrorsZ"];
+	%xerr = $NS[%client, "MXC"];
+	%zerr = $NS[%client, "MZC"];
 
 	if(%xerr)
 	{
@@ -357,7 +357,7 @@ function serverCmdMirErrors(%client)
 
 		for(%i = 0; %i < %xerr; %i++)
 		{
-			%db = $NS[%client, "MirErrorX", %i];
+			%db = $NS[%client, "MXE", %i];
 			messageClient(%client, '', "\c7 -" @ %i + 1 @ "- \c6" @ %db.category @ "/" @ %db.subCategory @ "/" @ %db.uiName);
 		}
 	}
@@ -369,7 +369,7 @@ function serverCmdMirErrors(%client)
 
 		for(%i = 0; %i < %zerr; %i++)
 		{
-			%db = $NS[%client, "MirErrorZ", %i];
+			%db = $NS[%client, "MZE", %i];
 			messageClient(%client, '', "\c7 -" @ %i + 1 @ "- \c6" @ %db.category @ "/" @ %db.subCategory @ "/" @ %db.uiName);
 		}		
 	}

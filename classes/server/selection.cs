@@ -4,9 +4,65 @@
 // *    ND_Selection
 // *
 // *    -------------------------------------------------------------------
-// *    Selects, ghosts and plants bricks
+// *    Selects, paints, ghosts and plants bricks
 // *
 // * ######################################################################
+
+//Selection data arrays $NS[obj, type{, ...}]
+// -X: Minimum X point
+// -Y: Minimum Y point
+// -Z: Minimum Z point
+
+// +X: Maximum X point
+// +Y: Maximum Y point
+// +Z: Maximum Z point
+
+// B[i]: Brick object
+// I[b]: Index of brick in array
+// N[i]: Number of connected bricks
+// C[i,j]: Index of connected brick
+
+// D[i]: Datablock
+// P[i]: Position
+// R[i]: Rotation
+
+// NT[i]: Brick name
+// PR[i]: Print
+
+// CO[i]: Color id
+// CF[i]: Color Fx id
+// SF[i]: Shape Fx id
+
+// NRC[i]: No ray casting
+// NR[i]: No rendering
+// NC[i]: No colliding
+
+// LD[i]: Light datablock
+
+// ED[i]: Emitter datablock
+// ER[i]: Emitter rotation
+
+// ID[i]: Item datablock
+// IP[i]: Item position
+// IR[i]: Item rotation
+// IT[i]: Item respawn time
+
+// VD[i]: Vehicle datablock
+// VC[i]: Vehicle color
+
+// MD[i]: Vehicle datablock
+
+
+//Mirror error lists $NS[client, type{, ...}]
+// MXC: Count of mirror errors on x
+// MXE[i]: Error datablock
+// MXK[db]: Index of datablock in list
+
+// MZC: Count of mirror errors on z
+// MZE[i]: Error datablock
+// MZK[db]: Index of datablock in list
+
+
 
 //General
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,8 +137,8 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 	%queueCount = 1;
 	%brickCount = 1;
 
-	$NS[%this, "BR", 0] = %brick;
-	$NS[%this, "ID", %brick] = 0;
+	$NS[%this, "B", 0] = %brick;
+	$NS[%this, "I", %brick] = 0;
 
 	%this.recordBrickData(0);
 	%highlightSet.addBrick(%brick);
@@ -98,7 +154,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 	if(%direction == 1)
 	{
 		//Set lower height limit
-		%heightLimit = $NS[%this, "MinZ"] - 0.01;
+		%heightLimit = $NS[%this, "-Z"] - 0.01;
 		%upCount = %brick.getNumUpBricks();
 
 		for(%i = 0; %i < %upCount; %i++)
@@ -106,7 +162,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 			%nextBrick = %brick.getUpBrick(%i);
 
 			//If the brick is not in the list yet, add it to the queue to give it an id
-			%nId = $NS[%this, "ID", %nextBrick];
+			%nId = $NS[%this, "I", %nextBrick];
 
 			if(%nId $= "")
 			{
@@ -120,21 +176,21 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 					continue;
 				}
 
-				$NS[%this, "BR", %queueCount] = %nextBrick;
-				$NS[%this, "ID", %nextBrick] = %queueCount;
+				$NS[%this, "B", %queueCount] = %nextBrick;
+				$NS[%this, "I", %nextBrick] = %queueCount;
 				%nId = %queueCount;
 
 				%queueCount++;
 			}
 
-			$NS[%this, "Conn", 0, %conns] = %nId;
+			$NS[%this, "C", 0, %conns] = %nId;
 			%conns++;
 		}
 	}
 	else
 	{
 		//Set upper height limit
-		%heightLimit = $NS[%this, "MaxZ"] + 0.01;
+		%heightLimit = $NS[%this, "+Z"] + 0.01;
 		%downCount = %brick.getNumDownBricks();
 
 		for(%i = 0; %i < %downCount; %i++)
@@ -142,7 +198,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 			%nextBrick = %brick.getDownBrick(%i);
 
 			//If the brick is not in the list yet, add it to the queue to give it an id
-			%nId = $NS[%this, "ID", %nextBrick];
+			%nId = $NS[%this, "I", %nextBrick];
 
 			if(%nId $= "")
 			{
@@ -156,20 +212,20 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 					continue;
 				}
 
-				$NS[%this, "BR", %queueCount] = %nextBrick;
-				$NS[%this, "ID", %nextBrick] = %queueCount;
+				$NS[%this, "B", %queueCount] = %nextBrick;
+				$NS[%this, "I", %nextBrick] = %queueCount;
 				%nId = %queueCount;
 				
 				%queueCount++;
 			}
 
-			$NS[%this, "Conn", 0, %conns] = %nId;
+			$NS[%this, "C", 0, %conns] = %nId;
 			%conns++;
 		}
 	}
 
 	//Save number of connections
-	$NS[%this, "Conns", 0] = %conns;
+	$NS[%this, "N", 0] = %conns;
 
 	%this.trustFailCount += %trustFailCount;
 	%this.highlightSet = %highlightSet;
@@ -245,7 +301,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 				continue;
 
 			//If the brick is not in the selection yet, add it to the queue to give it an i
-			%nId = $NS[%this, "ID", %nextBrick];
+			%nId = $NS[%this, "I", %nextBrick];
 
 			if(%nId $= "")
 			{
@@ -259,13 +315,13 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 					continue;
 				}
 
-				$NS[%this, "BR", %queueCount] = %nextBrick;
-				$NS[%this, "ID", %nextBrick] = %queueCount;
+				$NS[%this, "B", %queueCount] = %nextBrick;
+				$NS[%this, "I", %nextBrick] = %queueCount;
 				%nId = %queueCount;				
 				%queueCount++;
 			}
 
-			$NS[%this, "Conn", %i, %conns] = %nId;
+			$NS[%this, "C", %i, %conns] = %nId;
 			%conns++;
 		}
 
@@ -281,7 +337,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 				continue;
 
 			//If the brick is not in the selection yet, add it to the queue to give it an id
-			%nId = $NS[%this, "ID", %nextBrick];
+			%nId = $NS[%this, "I", %nextBrick];
 
 			if(%nId $= "")
 			{
@@ -295,17 +351,17 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 					continue;
 				}
 
-				$NS[%this, "BR", %queueCount] = %nextBrick;
-				$NS[%this, "ID", %nextBrick] = %queueCount;
+				$NS[%this, "B", %queueCount] = %nextBrick;
+				$NS[%this, "I", %nextBrick] = %queueCount;
 				%nId = %queueCount;				
 				%queueCount++;
 			}
 
-			$NS[%this, "Conn", %i, %conns] = %nId;
+			$NS[%this, "C", %i, %conns] = %nId;
 			%conns++;
 		}
 
-		$NS[%this, "Conns", %i] = %conns;
+		$NS[%this, "N", %i] = %conns;
 	}
 
 	%this.trustFailCount += %trustFailCount;
@@ -464,8 +520,8 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 	initContainerBoxSearch(%pos, %size, $TypeMasks::FxBrickAlwaysObjectType);
 
 	%i = %this.queueCount;
-	%_id = %this @ "_ID"; //Maximum optimization for loop
-	%_br = %this @ "_BR";
+	%_id = %this @ "_I"; //Maximum optimization for loop
+	%_br = %this @ "_B";
 
 	//Variables for trust checks
 	%admin = %this.client.isAdmin;
@@ -533,7 +589,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 	if(%limitReached)
 	{
 		%this.brickLimitReached = true;
-		%this.rootPosition = $NS[%this, "BR", 0].getPosition();
+		%this.rootPosition = $NS[%this, "B", 0].getPosition();
 		%this.cubeSelectSchedule = %this.schedule(30, tickCubeSelectionProcess);
 
 		return;
@@ -555,7 +611,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 				//All chunks have been searched, now process connections
 				if(%this.queueCount > 0)
 				{
-					%this.rootPosition = $NS[%this, "BR", 0].getPosition();
+					%this.rootPosition = $NS[%this, "B", 0].getPosition();
 					%this.cubeSelectSchedule = %this.schedule(30, tickCubeSelectionProcess);
 				}
 				else
@@ -621,9 +677,9 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 			%conn = %brick.getUpBrick(%j);
 
 			//If the brick is in the selection, save the connection
-			if((%nId = $NS[%this, "ID", %conn]) !$= "")
+			if((%nId = $NS[%this, "I", %conn]) !$= "")
 			{
-				$NS[%this, "Conn", %i, %conns] = %nId;
+				$NS[%this, "C", %i, %conns] = %nId;
 				%conns++;
 			}
 		}
@@ -636,14 +692,14 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 			%conn = %brick.getDownBrick(%j);
 
 			//If the brick is in the selection, save the connection
-			if((%nId = $NS[%this, "ID", %conn]) !$= "")
+			if((%nId = $NS[%this, "I", %conn]) !$= "")
 			{
-				$NS[%this, "Conn", %i, %conns] = %nId;
+				$NS[%this, "C", %i, %conns] = %nId;
 				%conns++;
 			}
 		}
 
-		$NS[%this, "Conns", %i] = %conns;
+		$NS[%this, "N", %i] = %conns;
 	}
 
 	//Save how far we got
@@ -706,7 +762,7 @@ function ND_Selection::cancelCubeSelection(%this)
 function ND_Selection::recordBrickData(%this, %i)
 {
 	//Return false if brick no longer exists
-	if(!isObject(%brick = $NS[%this, "BR", %i]))
+	if(!isObject(%brick = $NS[%this, "B", %i]))
 		return false;
 
 	///////////////////////////////////////////////////////////
@@ -714,78 +770,78 @@ function ND_Selection::recordBrickData(%this, %i)
 
 	//Datablock
 	%datablock = %brick.getDatablock();
-	$NS[%this, "Data", %i] = %datablock;
+	$NS[%this, "D", %i] = %datablock;
 
 	//Offset from base brick
-	$NS[%this, "Pos", %i] = vectorSub(%brick.getPosition(), %this.rootPosition);
+	$NS[%this, "P", %i] = vectorSub(%brick.getPosition(), %this.rootPosition);
 
 	//Rotation
-	$NS[%this, "Rot", %i] = %brick.angleID;
+	$NS[%this, "R", %i] = %brick.angleID;
 
 	//Colors
 	if(%brick.ndHighlightSet)
 	{
-		$NS[%this, "Color", %i] = %brick.ndColor;
+		$NS[%this, "CO", %i] = %brick.ndColor;
 
 		if(%brick.ndColorFx)
-			$NS[%this, "ColorFx", %i] = %brick.ndColorFx;
+			$NS[%this, "CF", %i] = %brick.ndColorFx;
 	}
 	else
 	{
-		$NS[%this, "Color", %i] = %brick.colorID;
+		$NS[%this, "CO", %i] = %brick.colorID;
 
 		if(%brick.colorFxID)
-			$NS[%this, "ColorFx", %i] = %brick.colorFxID;
+			$NS[%this, "CF", %i] = %brick.colorFxID;
 	}
 
 	///////////////////////////////////////////////////////////
 	//Optional variables only required for few bricks
 
 	if(%tmp = %brick.shapeFxID)
-		$NS[%this, "ShapeFx", %i] = %tmp;
+		$NS[%this, "SF", %i] = %tmp;
 
 	//Wrench settings
 	if((%tmp = %brick.getName()) !$= "")
-		$NS[%this, "Name", %i] = getSubStr(%tmp, 1, 999);
+		$NS[%this, "NT", %i] = getSubStr(%tmp, 1, 254);
 
 	if(%tmp = %brick.light | 0)
-		$NS[%this, "Light", %i] = %tmp.getDatablock();
+		$NS[%this, "LD", %i] = %tmp.getDatablock();
 
 	if(%tmp = %brick.emitter | 0)
 	{
-		$NS[%this, "Emitter", %i] = %tmp.getEmitterDatablock();
-		$NS[%this, "EmitDir", %i] = %brick.emitterDirection;
+		$NS[%this, "ED", %i] = %tmp.getEmitterDatablock();
+		$NS[%this, "ER", %i] = %brick.emitterDirection;
 	}
 
 	if(%tmp = %brick.item | 0)
 	{
-		$NS[%this, "Item", %i] = %tmp.getDatablock();
-		$NS[%this, "ItemPos", %i] = %brick.itemPosition;
-		$NS[%this, "ItemDir", %i] = %brick.itemDirection;
-		$NS[%this, "ItemTime", %i] = %brick.itemRespawnTime;
+		$NS[%this, "ID", %i] = %tmp.getDatablock();
+		$NS[%this, "IP", %i] = %brick.itemPosition;
+		$NS[%this, "IR", %i] = %brick.itemDirection;
+		$NS[%this, "IT", %i] = %brick.itemRespawnTime;
 	}
 
 	if(%tmp = %brick.vehicleDataBlock)
 	{
-		$NS[%this, "Vehicle", %i] = %tmp;
-		$NS[%this, "VehColor", %i] = %brick.reColorVehicle;
+		$NS[%this, "VD", %i] = %tmp;
+		$NS[%this, "VC", %i] = %brick.reColorVehicle;
 	}
 
 	if(%tmp = %brick.AudioEmitter | 0)
-		$NS[%this, "Music", %i] = %tmp.profile.getID();
+		$NS[%this, "MD", %i] = %tmp.profile.getID();
 
 	if(!%brick.isRaycasting())
-		$NS[%this, "NoRay", %i] = true;
+		$NS[%this, "NRC", %i] = true;
 
 	if(!%brick.isColliding())	
-		$NS[%this, "NoCol", %i] = true;
+		$NS[%this, "NC", %i] = true;
 
 	if(!%brick.isRendering())
-		$NS[%this, "NoRender", %i] = true;
+		$NS[%this, "NR", %i] = true;
 
 	//Prints
 	if(%datablock.hasPrint)
-		$NS[%this, "Print", %i] = %brick.printID;
+		$NS[%this, "PR", %i] = %brick.printID;
 
 	//Events
 	if(%numEvents = %brick.numEvents)
@@ -830,32 +886,32 @@ function ND_Selection::recordBrickData(%this, %i)
 
 	if(%i)
 	{
-		if(%minX < $NS[%this, "MinX"])
-			$NS[%this, "MinX"] = %minX;
+		if(%minX < $NS[%this, "-X"])
+			$NS[%this, "-X"] = %minX;
 
-		if(%minY < $NS[%this, "MinY"])
-			$NS[%this, "MinY"] = %minY;
+		if(%minY < $NS[%this, "-Y"])
+			$NS[%this, "-Y"] = %minY;
 
-		if(%minZ < $NS[%this, "MinZ"])
-			$NS[%this, "MinZ"] = %minZ;
+		if(%minZ < $NS[%this, "-Z"])
+			$NS[%this, "-Z"] = %minZ;
 
-		if(%maxX > $NS[%this, "MaxX"])
-			$NS[%this, "MaxX"] = %maxX;
+		if(%maxX > $NS[%this, "+X"])
+			$NS[%this, "+X"] = %maxX;
 
-		if(%maxY > $NS[%this, "MaxY"])
-			$NS[%this, "MaxY"] = %maxY;
+		if(%maxY > $NS[%this, "+Y"])
+			$NS[%this, "+Y"] = %maxY;
 
-		if(%maxZ > $NS[%this, "MaxZ"])
-			$NS[%this, "MaxZ"] = %maxZ;
+		if(%maxZ > $NS[%this, "+Z"])
+			$NS[%this, "+Z"] = %maxZ;
 	}
 	else
 	{
-		$NS[%this, "MinX"] = %minX;
-		$NS[%this, "MinY"] = %minY;
-		$NS[%this, "MinZ"] = %minZ;
-		$NS[%this, "MaxX"] = %maxX;
-		$NS[%this, "MaxY"] = %maxY;
-		$NS[%this, "MaxZ"] = %maxZ;			
+		$NS[%this, "-X"] = %minX;
+		$NS[%this, "-Y"] = %minY;
+		$NS[%this, "-Z"] = %minZ;
+		$NS[%this, "+X"] = %maxX;
+		$NS[%this, "+Y"] = %maxY;
+		$NS[%this, "+Z"] = %maxZ;			
 	}
 
 	return %brick;
@@ -869,12 +925,12 @@ function ND_Selection::recordBrickData(%this, %i)
 //Set the size variables after selecting bricks
 function ND_Selection::updateSize(%this)
 {
-	%this.minSize = vectorSub($NS[%this, "MinX"] SPC $NS[%this, "MinY"] SPC $NS[%this, "MinZ"], %this.rootPosition);
-	%this.maxSize = vectorSub($NS[%this, "MaxX"] SPC $NS[%this, "MaxY"] SPC $NS[%this, "MaxZ"], %this.rootPosition);
+	%this.minSize = vectorSub($NS[%this, "-X"] SPC $NS[%this, "-Y"] SPC $NS[%this, "-Z"], %this.rootPosition);
+	%this.maxSize = vectorSub($NS[%this, "+X"] SPC $NS[%this, "+Y"] SPC $NS[%this, "+Z"], %this.rootPosition);
 
-	%this.brickSizeX = mFloor(($NS[%this, "MaxX"] - $NS[%this, "MinX"]) * 2);
-	%this.brickSizeY = mFloor(($NS[%this, "MaxY"] - $NS[%this, "MinY"]) * 2);
-	%this.brickSizeZ = mFloor(($NS[%this, "MaxZ"] - $NS[%this, "MinZ"]) * 5);
+	%this.brickSizeX = mFloor(($NS[%this, "+X"] - $NS[%this, "-X"]) * 2);
+	%this.brickSizeY = mFloor(($NS[%this, "+Y"] - $NS[%this, "-Y"]) * 2);
+	%this.brickSizeZ = mFloor(($NS[%this, "+Z"] - $NS[%this, "-Z"]) * 5);
 
 	%this.rootToCenter = vectorAdd(%this.minSize, vectorScale(vectorSub(%this.maxSize, %this.minSize), 0.5));
 }
@@ -950,7 +1006,7 @@ function ND_Selection::tickCutting(%this)
 	//Cut bricks
 	for(%i = %start; %i < %end; %i++)
 	{
-		%brick = $NS[%this, "BR", %i];
+		%brick = $NS[%this, "B", %i];
 
 		if(!isObject(%brick))
 			continue;
@@ -1053,10 +1109,10 @@ function ND_Selection::spawnGhostBricks(%this, %position, %angleID)
 		%i = mFloor(%f);
 
 		//Offset position
-		%bPos = vectorAdd(ndRotateVector($NS[%this, "Pos", %i], %angleID), %position);
+		%bPos = vectorAdd(ndRotateVector($NS[%this, "P", %i], %angleID), %position);
 
 		//Rotate local angle id and get correct rotation value
-		%bAngle = ($NS[%this, "Rot", %i] + %angleID ) % 4;
+		%bAngle = ($NS[%this, "R", %i] + %angleID ) % 4;
 
 		switch(%bAngle)
 		{
@@ -1069,15 +1125,15 @@ function ND_Selection::spawnGhostBricks(%this, %position, %angleID)
 		//Spawn ghost brick
 		%brick = new FxDTSBrick()
 		{
-			datablock = $NS[%this, "Data", %i];
+			datablock = $NS[%this, "D", %i];
 			isPlanted = false;
 
 			position = %bPos;
 			rotation = %bRot;
 			angleID = %bAngle;
 
-			colorID = $NS[%this, "Color", %i];
-			printID = $NS[%this, "Print", %i];
+			colorID = $NS[%this, "CO", %i];
+			printID = $NS[%this, "PR", %i];
 
 			//Used in shiftGhostBricks
 			selectionIndex = %i;
@@ -1269,13 +1325,13 @@ function ND_Selection::updateGhostBricks(%this, %start, %count, %wait)
 		%j = %brick.selectionIndex;
 
 		//Offset position
-		%bPos = $NS[%this, "Pos", %j];
+		%bPos = $NS[%this, "P", %j];
 
 		//Rotated local angle id
-		%bAngle = $NS[%this, "Rot", %j];
+		%bAngle = $NS[%this, "R", %j];
 
 		//Apply mirror effects (ugh)
-		%datablock = $NS[%this, "Data", %j];
+		%datablock = $NS[%this, "D", %j];
 
 		if(%mirrX)
 		{
@@ -1501,17 +1557,17 @@ function ND_Selection::startPlant(%this, %position, %angleID, %forcePlant)
 	//Reset mirror error list
 	%client = %this.client;
 
-	%countX = $NS[%client, "MirErrorsX"];
-	%countZ = $NS[%client, "MirErrorsZ"];
+	%countX = $NS[%client, "MXC"];
+	%countZ = $NS[%client, "MZC"];
 
 	for(%i = 0; %i < %countX; %i++)
-		$NS[%client, "MirKnownX", $NS[%client, "MirErrorX", %i]] = "";
+		$NS[%client, "MXK", $NS[%client, "MXE", %i]] = "";
 
 	for(%i = 0; %i < %countZ; %i++)
-		$NS[%client, "MirKnownZ", $NS[%client, "MirErrorZ", %i]] = "";
+		$NS[%client, "MZK", $NS[%client, "MZE", %i]] = "";
 
-	$NS[%client, "MirErrorsZ"] = 0;
-	$NS[%client, "MirErrorsX"] = 0;
+	$NS[%client, "MZC"] = 0;
+	$NS[%client, "MXC"] = 0;
 
 	//Make list of spawned clients to scope bricks
 	%this.numClients = 0;
@@ -1569,10 +1625,10 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 
 			$NP[%this, %i] = true;
 
-			%conns = $NS[%this, "Conns", %i];
+			%conns = $NS[%this, "N", %i];
 			for(%j = 0; %j < %conns; %j++)
 			{
-				%id = $NS[%this, "Conn", %i, %j];
+				%id = $NS[%this, "C", %i, %j];
 
 				if(!$NP[%this, %id])
 				{
@@ -1674,10 +1730,10 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 
 			$NP[%this, %bId] = true;
 
-			%conns = $NS[%this, "Conns", %bId];
+			%conns = $NS[%this, "N", %bId];
 			for(%j = 0; %j < %conns; %j++)
 			{
-				%id = $NS[%this, "Conn", %bId, %j];
+				%id = $NS[%this, "C", %bId, %j];
 
 				if(!$NP[%this, %id])
 				{
@@ -1730,13 +1786,13 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %client, %bl_id)
 {
 	//Offset position
-	%bPos = $NS[%this, "Pos", %i];
+	%bPos = $NS[%this, "P", %i];
 
 	//Local angle id
-	%bAngle = $NS[%this, "Rot", %i];
+	%bAngle = $NS[%this, "R", %i];
 
 	//Apply mirror effects (ugh)
-	%datablock = $NS[%this, "Data", %i];
+	%datablock = $NS[%this, "D", %i];
 
 	%mirrX = %this.ghostMirrorX;
 	%mirrY = %this.ghostMirrorY;
@@ -1764,13 +1820,13 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 				else
 				{
 					//Add datablock to list of mirror problems
-					if(!$NS[%client, "MirKnownX", %datablock])
+					if(!$NS[%client, "MXK", %datablock])
 					{
-						%id = $NS[%client, "MirErrorsX"];
-						$NS[%client, "MirErrorsX"]++;
+						%id = $NS[%client, "MXC"];
+						$NS[%client, "MXC"]++;
 
-						$NS[%client, "MirErrorX", %id]= %datablock;
-						$NS[%client, "MirKnownX", %datablock] = true;
+						$NS[%client, "MXE", %id] = %datablock;
+						$NS[%client, "MXK", %datablock] = true;
 					}
 				}
 
@@ -1823,13 +1879,13 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 				else
 				{
 					//Add datablock to list of mirror problems
-					if(!$NS[%client, "MirKnownX", %datablock])
+					if(!$NS[%client, "MXK", %datablock])
 					{
-						%id = $NS[%client, "MirErrorsX"];
-						$NS[%client, "MirErrorsX"]++;
+						%id = $NS[%client, "MXC"];
+						$NS[%client, "MXC"]++;
 
-						$NS[%client, "MirErrorX", %id]= %datablock;
-						$NS[%client, "MirKnownX", %datablock] = true;
+						$NS[%client, "MXE", %id]= %datablock;
+						$NS[%client, "MXK", %datablock] = true;
 					}
 				}
 
@@ -1877,13 +1933,13 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 			else
 			{
 				//Add datablock to list of mirror problems
-				if(!$NS[%client, "MirKnownZ", %datablock])
+				if(!$NS[%client, "MZK", %datablock])
 				{
-					%id = $NS[%client, "MirErrorsZ"];
-					$NS[%client, "MirErrorsZ"]++;
+					%id = $NS[%client, "MZC"];
+					$NS[%client, "MZC"]++;
 
-					$NS[%client, "MirErrorZ", %id]= %datablock;
-					$NS[%client, "MirKnownZ", %datablock] = true;
+					$NS[%client, "MZE", %id]= %datablock;
+					$NS[%client, "MZK", %datablock] = true;
 				}
 			}
 		}
@@ -1912,10 +1968,10 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		rotation = %bRot;
 		angleID = %bAngle;
 
-		colorID = $NS[%this, "Color", %i];
-		colorFxID = $NS[%this, "ColorFx", %i];
+		colorID = $NS[%this, "CO", %i];
+		colorFxID = $NS[%this, "CF", %i];
 
-		printID = $NS[%this, "Print", %i];
+		printID = $NS[%this, "PR", %i];
 	};
 
 	//Add to brickgroup
@@ -1999,7 +2055,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 
 	//Workaround - water cubes change this in onPlant
 	//so we have to set it manually after planting.
-	%brick.setShapeFx($NS[%this, "ShapeFx", %i]);
+	%brick.setShapeFx($NS[%this, "SF", %i]);
 
 	//Apply events
 	if(%numEvents = $NS[%this, "EvNum", %i])
@@ -2115,19 +2171,19 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	}
 
 	//Apply wrench settings
-	%brick.setRendering(!$NS[%this, "NoRender", %i]);
-	%brick.setRaycasting(!$NS[%this, "NoRay", %i]);
-	%brick.setColliding(!$NS[%this, "NoCol", %i]);
+	%brick.setRendering(!$NS[%this, "NR", %i]);
+	%brick.setRaycasting(!$NS[%this, "NRC", %i]);
+	%brick.setColliding(!$NS[%this, "NC", %i]);
 
-	if((%tmp = $NS[%this, "Name", %i]) !$= "")
+	if((%tmp = $NS[%this, "NT", %i]) !$= "")
 		%brick.setNTObjectName(%tmp);
 
-	if(%tmp = $NS[%this, "Light", %i])
+	if(%tmp = $NS[%this, "LD", %i])
 		%brick.setLight(%tmp);
 
-	if(%tmp = $NS[%this, "Emitter", %i])
+	if(%tmp = $NS[%this, "ED", %i])
 	{
-		%dir = $NS[%this, "EmitDir", %i];
+		%dir = $NS[%this, "ER", %i];
 
 		//Apply mirror effects
 		if(%dir > 1)
@@ -2145,10 +2201,10 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		%brick.setEmitter(%tmp);
 	}
 
-	if(%tmp = $NS[%this, "Item", %i])
+	if(%tmp = $NS[%this, "ID", %i])
 	{
-		%pos = $NS[%this, "ItemPos", %i];
-		%dir = $NS[%this, "ItemDir", %i];
+		%pos = $NS[%this, "IP", %i];
+		%dir = $NS[%this, "IR", %i];
 
 		//Apply mirror effects
 		if(%pos > 1)
@@ -2175,17 +2231,17 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 
 		%brick.itemPosition = %pos;
 		%brick.itemDirection = %dir;
-		%brick.itemRespawnTime = $NS[%this, "ItemTime", %i];
+		%brick.itemRespawnTime = $NS[%this, "IT", %i];
 		%brick.setItem(%tmp);
 	}
 
-	if(%tmp = $NS[%this, "Vehicle", %i])
+	if(%tmp = $NS[%this, "VD", %i])
 	{
-		%brick.reColorVehicle = $NS[%this, "VehColor", %i];
+		%brick.reColorVehicle = $NS[%this, "VC", %i];
 		%brick.setVehicle(%tmp);
 	}
 
-	if(%tmp = $NS[%this, "Music", %i])
+	if(%tmp = $NS[%this, "MD", %i])
 		%brick.setSound(%tmp);
 
 	return %brick;
@@ -2195,7 +2251,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 function ND_Selection::finishPlant(%this)
 {
 	//Report mirror errors
-	if($NS[%this.client, "MirErrorsX"] > 0 || $NS[%this.client, "MirErrorsZ"] > 0)
+	if($NS[%this.client, "MXE"] > 0 || $NS[%this.client, "MZE"] > 0)
 		messageClient(%this.client, '', "\c6Some bricks were probably mirrored incorrectly. Say \c3/mirErrors\c6 to find out more.");
 
 	%count = %this.brickCount;
@@ -2283,7 +2339,7 @@ function ND_Selection::tickFillColor(%this, %mode, %colorID)
 
 	for(%i = %start; %i < %end; %i++)
 	{
-		%brick = $NS[%this, "BR", %i];
+		%brick = $NS[%this, "B", %i];
 
 		if(isObject(%brick))
 		{
@@ -2298,17 +2354,17 @@ function ND_Selection::tickFillColor(%this, %mode, %colorID)
 				{
 					case 0:
 						%this.undoGroup.value[%index] = %brick.getColorId();
-						$NS[%this, "Color", $NS[%this, "ID", %brick]] = %colorID;
+						$NS[%this, "CO", $NS[%this, "I", %brick]] = %colorID;
 						%brick.setColor(%colorID);
 
 					case 1:
 						%this.undoGroup.value[%index] = %brick.getColorFxId();
-						$NS[%this, "ColorFx", $NS[%this, "ID", %brick]] = %colorID;
+						$NS[%this, "CF", $NS[%this, "I", %brick]] = %colorID;
 						%brick.setColorFx(%colorID);
 
 					case 2:
 						%this.undoGroup.value[%index] = %brick.getShapeFxId();
-						$NS[%this, "ShapeFx", $NS[%this, "ID", %brick]] = %colorID;
+						$NS[%this, "SF", $NS[%this, "I", %brick]] = %colorID;
 						%brick.setShapeFx(%colorID);
 				}
 
