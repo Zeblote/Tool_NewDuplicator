@@ -322,16 +322,14 @@ function serverCmdMirY(%client){serverCmdMirrorY(%client);}
 function serverCmdMirZ(%client){serverCmdMirrorZ(%client);}
 function serverCmdMir(%client, %a){serverCmdMirror(%client, %a);}
 
+function serverCmdMX(%client){serverCmdMirrorX(%client);}
+function serverCmdMY(%client){serverCmdMirrorY(%client);}
+function serverCmdMZ(%client){serverCmdMirrorZ(%client);}
+function serverCmdM(%client, %a){serverCmdMirror(%client, %a);}
+
 //Attempt to mirror selection on axis
 function GameConnection::ndMirror(%client, %axis)
 {
-	//Check mode
-	if(!isObject(%client.ndSelection) || %client.ndModeIndex != $NDM::PlantCopy)
-	{
-		messageClient(%client, '', "\c6The mirror command can only be used in plant mode.");
-		return;
-	}
-
 	//Make sure symmetry table is created
 	if(!$ND::SymmetryTableCreated)
 	{
@@ -339,9 +337,25 @@ function GameConnection::ndMirror(%client, %axis)
 			ndCreateSymmetryTable();
 
 		messageClient(%client, '', "\c6Please wait for the symmetry table to finish, then mirror again.");
+		return;
 	}
-	else
+
+	//If we're in plant mode, mirror the selection
+	if(isObject(%client.ndSelection) && %client.ndModeIndex == $NDM::PlantCopy)
+	{
 		%client.ndSelection.mirrorGhostBricks(%axis);
+		return;
+	}
+
+	//If we have a ghost brick, mirror that instead
+	if(isObject(%client.player) && isObject(%client.player.tempBrick))
+	{
+		%client.player.tempBrick.ndMirrorGhost(%client, %axis);
+		return;
+	}
+	
+	//We didn't mirror anything
+	messageClient(%client, '', "\c6The mirror command can only be used in plant mode or with a ghost brick.");
 }
 
 //List potential mirror errors in last plant

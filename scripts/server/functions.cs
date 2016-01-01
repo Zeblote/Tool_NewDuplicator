@@ -151,3 +151,152 @@ function ndTrustCheckModify(%obj, %group2, %bl_id)
 
 	return false;
 }
+
+
+
+//General stuff
+///////////////////////////////////////////////////////////////////////////
+
+//Applies mirror effect to a single ghost brick
+function FxDtsBrick::ndMirrorGhost(%brick, %client, %axis)
+{
+	//Offset position
+	%bPos = %brick.position;
+
+	//Rotated local angle id
+	%bAngle = %brick.angleID;
+
+	//Apply mirror effects (ugh)
+	%datablock = %brick.getDatablock();
+
+	if(%axis == 0)
+	{
+		//Handle symmetries
+		switch($ND::Symmetry[%datablock])
+		{
+			//Asymmetric
+			case 0:
+				if(%db = $ND::SymmetryXDatablock[%datablock])
+				{
+					%datablock = %db;
+					%bAngle = (%bAngle + $ND::SymmetryXOffset[%datablock]) % 4;
+
+					//Pair is made on X, so apply mirror logic for X afterwards
+					if(%bAngle % 2 == 1)
+						%bAngle = (%bAngle + 2) % 4;
+				}
+				else
+				{
+					messageClient(%client, '', "\c6Sorry, your ghost brick is asymmetric and cannot be mirrored.");
+					return;
+				}
+
+			//Do nothing for fully symmetric
+
+			//X symmetric - rotate 180 degrees if brick is angled 90 or 270 degrees
+			case 2:
+				if(%bAngle % 2 == 1)
+					%bAngle = (%bAngle + 2) % 4;
+
+			//Y symmetric - rotate 180 degrees if brick is angled 0 or 180 degrees
+			case 3:
+				if(%bAngle % 2 == 0)
+					%bAngle = (%bAngle + 2) % 4;
+
+			//X+Y symmetric - rotate 90 degrees
+			case 4:
+				if(%bAngle % 2 == 0)
+					%bAngle = (%bAngle + 1) % 4;
+				else						
+					%bAngle = (%bAngle + 3) % 4;
+
+			//X-Y symmetric - rotate -90 degrees
+			case 5:
+				if(%bAngle % 2 == 0)
+					%bAngle = (%bAngle + 3) % 4;
+				else						
+					%bAngle = (%bAngle + 1) % 4;
+		}
+	}
+	else if(%axis == 1)
+	{
+		//Handle symmetries
+		switch($ND::Symmetry[%datablock])
+		{
+			//Asymmetric
+			case 0:
+				if(%db = $ND::SymmetryXDatablock[%datablock])
+				{
+					%datablock = %db;
+					%bAngle = (%bAngle + $ND::SymmetryXOffset[%datablock]) % 4;
+
+					//Pair is made on X, so apply mirror logic for X afterwards
+					if(%bAngle % 2 == 0)
+						%bAngle = (%bAngle + 2) % 4;
+				}
+				else
+				{
+					messageClient(%client, '', "\c6Sorry, your ghost brick is asymmetric and cannot be mirrored.");
+					return;
+				}
+
+			//Do nothing for fully symmetric
+
+			//X symmetric - rotate 180 degrees if brick is angled 90 or 270 degrees
+			case 2:
+				if(%bAngle % 2 == 0)
+					%bAngle = (%bAngle + 2) % 4;
+
+			//Y symmetric - rotate 180 degrees if brick is angled 0 or 180 degrees
+			case 3:
+				if(%bAngle % 2 == 1)
+					%bAngle = (%bAngle + 2) % 4;
+
+			//X+Y symmetric - rotate 90 degrees
+			case 4:
+				if(%bAngle % 2 == 1)
+					%bAngle = (%bAngle + 1) % 4;
+				else						
+					%bAngle = (%bAngle + 3) % 4;
+
+			//X-Y symmetric - rotate -90 degrees
+			case 5:
+				if(%bAngle % 2 == 1)
+					%bAngle = (%bAngle + 3) % 4;
+				else						
+					%bAngle = (%bAngle + 1) % 4;
+		}
+	}
+	else
+	{
+		//Change datablock if asymmetric
+		if(!$ND::SymmetryZ[%datablock])
+		{
+			if(%db = $ND::SymmetryZDatablock[%datablock])
+			{
+				%datablock = %db;
+				%bAngle = (%bAngle + $ND::SymmetryZOffset[%datablock]) % 4;
+			}
+			else
+			{
+				messageClient(%client, '', "\c6Sorry, your ghost brick is not vertically symmetric and cannot be mirrored.");
+				return;
+			}
+		}
+	}
+
+	//Apply datablock
+	if(%brick.getDatablock() != %datablock)
+		%brick.setDatablock(%datablock);
+
+	switch(%bAngle)
+	{
+		case 0: %bRot = "1 0 0 0";
+		case 1: %bRot = "0 0 1 1.5708";
+		case 2: %bRot = "0 0 1 3.14150";
+		case 3: %bRot = "0 0 -1 1.5708";
+	}
+
+	//Apply transform
+	%brick.setTransform(%bPos SPC %bRot);
+}
