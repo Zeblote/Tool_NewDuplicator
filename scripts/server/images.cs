@@ -168,9 +168,7 @@ function Player::ndFired(%this)
 	if(!isObject(%client) || !%client.ndModeIndex || !%client.ndMode.allowSelecting)
 		return;
 
-	%minigame = getMinigameFromObject(%client);
-
-	if(isObject(%minigame) && !%minigame.enablebuilding)
+	if(isObject(%client.minigame) && !%client.minigame.enablebuilding)
 	{
 		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Oops! Building is disabled.", 5);
 		return;

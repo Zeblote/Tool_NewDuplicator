@@ -85,9 +85,7 @@ function serverCmdNewDuplicator(%client, %cmd)
 	}
 
 	//Check minigame
-	%minigame = getMinigameFromObject(%client);
-
-	if(isObject(%minigame) && !%minigame.enablebuilding)
+	if(isObject(%client.minigame) && !%client.minigame.enablebuilding)
 	{
 		messageClient(%client, '', "\c6You cannot use the new duplicator while building is disabled in your minigame.");
 		return;
