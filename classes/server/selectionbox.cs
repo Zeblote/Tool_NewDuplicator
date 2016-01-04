@@ -23,11 +23,21 @@ function ND_SelectionBox(%shapeName)
 	%this.corner2 = new StaticShape(){datablock = ND_SelectionCubeOuter;};
 	%this.selectedCorner = true;
 
+	%this.innerCube.setScopeAlways();
+	%this.outerCube.setScopeAlways();
+	%this.shapeName.setScopeAlways();
+	%this.corner1.setScopeAlways();
+	%this.corner2.setScopeAlways();
+
 	for(%i = 0; %i < 4; %i++)
 	{
 		%this.border_x[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
 		%this.border_y[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
 		%this.border_z[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
+
+		%this.border_x[%i].setScopeAlways();
+		%this.border_y[%i].setScopeAlways();
+		%this.border_z[%i].setScopeAlways();
 	}
 
 	%this.shapeName.setShapeName(%shapeName);

@@ -20,6 +20,10 @@ function ND_HighlightBox()
 		%this.border_x[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
 		%this.border_y[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
 		%this.border_z[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
+
+		%this.border_x[%i].setScopeAlways();
+		%this.border_y[%i].setScopeAlways();
+		%this.border_z[%i].setScopeAlways();
 	}
 
 	%this.color = "1 0.84 0 0.99";
