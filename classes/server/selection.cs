@@ -57,12 +57,12 @@
 
 // EE[i,j]: Whether event is enabled
 // ED[i,j]: Event delay
-// EC[i,j]: Event append client
 
 // EI [i,j]: Event input name
 // EII[i,j]: Event input idx
 // EO [i,j]: Event output name
 // EOI[i,j]: Event output idx
+// EOC[i,j]: Event output append client
 
 // ET [i,j]: Event target name
 // ETI[i,j]: Event target idx
@@ -870,13 +870,13 @@ function ND_Selection::recordBrickData(%this, %i)
 		{
 			$NS[%this, "EE", %i, %j] = %brick.eventEnabled[%j];
 			$NS[%this, "ED", %i, %j] = %brick.eventDelay[%j];
-			$NS[%this, "EC", %i, %j] = %brick.eventAppendClient[%j];
 
 			$NS[%this, "EI", %i, %j] = %brick.eventInput[%j];
 			$NS[%this, "EII", %i, %j] = %brick.eventInputIdx[%j];
 
 			$NS[%this, "EO", %i, %j] = %brick.eventOutput[%j];
 			$NS[%this, "EOI", %i, %j] = %brick.eventOutputIdx[%j];
+			$NS[%this, "EOC", %i, %j] = %brick.eventOutputAppendClient[%j];
 
 			%target = %brick.eventTargetIdx[%j];
 
@@ -2085,7 +2085,6 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		{
 			%brick.eventEnabled[%j] = $NS[%this, "EE", %i, %j];
 			%brick.eventDelay[%j] = $NS[%this, "ED", %i, %j];
-			%brick.eventAppendClient[%j] = $NS[%this, "EC", %i, %j];
 
 			%inputIdx = $NS[%this, "EII", %i, %j];
 
@@ -2094,6 +2093,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 
 			%output = $NS[%this, "EO", %i, %j];
 			%outputIdx = $NS[%this, "EOI", %i, %j];
+			%brick.eventOutputAppendClient[%j] = $NS[%this, "EOC", %i, %j];
 
 			//Rotate fireRelay events
 			switch$(%output)
