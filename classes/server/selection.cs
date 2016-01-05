@@ -134,11 +134,11 @@ function ND_Selection::onRemove(%this)
 //Begin stack selection
 function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 {
-	//Create a highlight set
-	if(isObject(%this.highlightSet))
-		%this.highlightSet.deHighlight();
+	//Ensure there is no highlight group
+	%this.deHighlight();
 
-	%highlightSet = ND_HighlightSet();
+	//Create new highlight group
+	%highlightGroup = ndNewHighlightGroup();
 
 	%this.brickLimitReached = false;
 	%this.trustFailCount = 0;
@@ -159,7 +159,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 	$NS[%this, "I", %brick] = 0;
 
 	%this.recordBrickData(0);
-	%highlightSet.addBrick(%brick);
+	ndHighlightBrick(%highlightGroup, %brick);
 
 	//Variables for trust checks
 	%admin = %this.client.isAdmin;
@@ -246,7 +246,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 	$NS[%this, "N", 0] = %conns;
 
 	%this.trustFailCount += %trustFailCount;
-	%this.highlightSet = %highlightSet;
+	%this.highlightGroup = %highlightGroup;
 	%this.queueCount = %queueCount;
 	%this.brickCount = %brickCount;
 
@@ -265,7 +265,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 {
 	cancel(%this.stackSelectSchedule);
 
-	%highlightSet = %this.highlightSet;
+	%highlightGroup = %this.highlightGroup;
 	%queueCount = %this.queueCount;
 
 	//Continue processing where we left off last tick
@@ -304,7 +304,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 			return;
 		}
 
-		ND_HighlightSet::addBrick(%highlightSet, %brick);
+		ndHighlightBrick(%highlightGroup, %brick);
 
 		//Queue all up bricks
 		%upCount = %brick.getNumUpBricks();
@@ -411,7 +411,7 @@ function ND_Selection::finishStackSelection(%this)
 	%this.updateHighlightBox();
 
 	//De-highlight the bricks after a few seconds
-	%this.highlightSet.deHighlightDelayed($Pref::Server::ND::HighlightDelay * 1000);
+	ndDeHighlightDelayed(%this.highlightGroup, $Pref::Server::ND::HighlightDelay * 1000);
 
 	if($Pref::Server::ND::PlayMenuSounds)
 		messageClient(%this.client, 'MsgUploadEnd', "");
@@ -445,11 +445,8 @@ function ND_Selection::cancelStackSelection(%this)
 //Begin cube selection
 function ND_Selection::startCubeSelection(%this, %box, %limited)
 {
-	//Create a highlight set
-	if(isObject(%this.highlightSet))
-		%this.highlightSet.deHighlight();
-
-	%highlightSet = ND_HighlightSet();
+	//Ensure there is no highlight group
+	%this.deHighlight();
 
 	//Save the chunk sizes
 	%this.chunkX1 = getWord(%box, 0);
@@ -471,7 +468,6 @@ function ND_Selection::startCubeSelection(%this, %box, %limited)
 	%this.currChunkZ = 0;
 	%this.currChunk = 0;
 
-	%this.highlightSet = %highlightSet;
 	%this.queueCount = 0;
 	%this.brickCount = 0;
 
@@ -629,6 +625,10 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 				//All chunks have been searched, now process connections
 				if(%this.queueCount > 0)
 				{
+					//Create highlight group
+					%this.highlightGroup = ndNewHighlightGroup();
+
+					//Start processing bricks
 					%this.rootPosition = $NS[%this, "B", 0].getPosition();
 					%this.cubeSelectSchedule = %this.schedule(30, tickCubeSelectionProcess);
 				}
@@ -660,7 +660,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 function ND_Selection::tickCubeSelectionProcess(%this)
 {
 	cancel(%this.cubeSelectSchedule);
-	%highlightSet = %this.highlightSet;
+	%highlightGroup = %this.highlightGroup;
 
 	//Get bounds for this tick
 	%start = %this.brickCount;
@@ -684,7 +684,7 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 			return;
 		}
 
-		ND_HighlightSet::addBrick(%highlightSet, %brick);
+		ndHighlightBrick(%highlightGroup, %brick);
 
 		//Save all up bricks
 		%upCount = %brick.getNumUpBricks();
@@ -743,7 +743,7 @@ function ND_Selection::finishCubeSelection(%this)
 	%this.updateHighlightBox();
 
 	//De-highlight the bricks after a few seconds
-	%this.highlightSet.deHighlightDelayed($Pref::Server::ND::HighlightDelay * 8000);
+	ndDeHighlightDelayed(%this.highlightGroup, $Pref::Server::ND::HighlightDelay * 1000);
 
 	if($Pref::Server::ND::PlayMenuSounds)
 		messageClient(%this.client, 'MsgUploadEnd', "");
@@ -797,12 +797,12 @@ function ND_Selection::recordBrickData(%this, %i)
 	$NS[%this, "R", %i] = %brick.angleID;
 
 	//Colors
-	if(%brick.ndHighlightSet)
+	if($NDHN[%brick])
 	{
-		$NS[%this, "CO", %i] = %brick.ndColor;
+		$NS[%this, "CO", %i] = $NDHC[%brick];
 
-		if(%brick.ndColorFx)
-			$NS[%this, "CF", %i] = %brick.ndColorFx;
+		if($NDHC[%brick] == $ND::BrickHighlightColor)
+			$NS[%this, "CF", %i] = $NDHF[%brick];
 	}
 	else
 	{
@@ -979,8 +979,11 @@ function ND_Selection::deleteHighlightBox(%this)
 //Start clearing the highlight set
 function ND_Selection::deHighlight(%this)
 {
-	if(isObject(%this.highlightSet))
-		%this.highlightSet.deHighlight();
+	if(%this.highlightGroup)
+	{
+		ndStartDeHighlight(%this.highlightGroup);
+		%this.highlightGroup = 0;
+	}
 }
 
 
@@ -2363,27 +2366,41 @@ function ND_Selection::tickFillColor(%this, %mode, %colorID)
 		{
 			if(ndTrustCheckModify(%brick, %group2, %bl_id))
 			{
-				//Add to undo group
-				%index = (%this.undoGroup.brickCount++) -1;
-				%this.undoGroup.brick[%index] = %brick;
-
 				//Color brick
 				switch(%mode)
 				{
 					case 0:
-						%this.undoGroup.value[%index] = %brick.getColorId();
+						//Check whether brick is highlighted
+						if($NDHN[%brick])
+						{
+							//If we're highlighted, change the original color instead
+							$NDHC[%brick] = %colorID;
+
+							//Update color fx indicator
+							if($NDHC[%brick] == $ND::BrickHighlightColor)
+								%brick.setColorFx(3);
+							else
+								%brick.setColorFx(0);
+						}
+						else		
+							%brick.setColor(%colorID);
+
 						$NS[%this, "CO", $NS[%this, "I", %brick]] = %colorID;
-						%brick.setColor(%colorID);
 
 					case 1:
-						%this.undoGroup.value[%index] = %brick.getColorFxId();
+						//Check whether brick is highlighted
+						if($NDHN[%brick])
+							//If we're highlighted, change the original color instead
+							$NDHF[%brick] = %colorID;
+						else		
+							%brick.setColorFx(%colorID);
+
 						$NS[%this, "CF", $NS[%this, "I", %brick]] = %colorID;
-						%brick.setColorFx(%colorID);
 
 					case 2:
-						%this.undoGroup.value[%index] = %brick.getShapeFxId();
-						$NS[%this, "SF", $NS[%this, "I", %brick]] = %colorID;
 						%brick.setShapeFx(%colorID);
+
+						$NS[%this, "SF", $NS[%this, "I", %brick]] = %colorID;
 				}
 
 				%this.paintSuccessCount++;
