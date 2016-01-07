@@ -151,6 +151,39 @@ function NDM_StackSelect::onPrevSeat(%this, %client)
 		%client.play2d(%client.ndLimited ? lightOnSound : lightOffSound);
 }
 
+//Shift Brick
+function NDM_StackSelect::onShiftBrick(%this, %client, %x, %y, %z)
+{
+	if(!isObject(%client.ndSelection) || !%client.ndSelection.brickCount)
+		return;
+
+	//Change to plant mode and apply the shift
+	%client.ndSetMode(NDM_PlantCopy);
+	NDM_PlantCopy.onShiftBrick(%client, %x, %y, %z);
+}
+
+//Super Shift Brick
+function NDM_StackSelect::onSuperShiftBrick(%this, %client, %x, %y, %z)
+{
+	if(!isObject(%client.ndSelection) || !%client.ndSelection.brickCount)
+		return;
+
+	//Change to plant mode and apply the shift
+	%client.ndSetMode(NDM_PlantCopy);
+	NDM_PlantCopy.onSuperShiftBrick(%client, %x, %y, %z);
+}
+
+//Rotate Brick
+function NDM_StackSelect::onRotateBrick(%this, %client, %dir)
+{
+	if(!isObject(%client.ndSelection) || !%client.ndSelection.brickCount)
+		return;
+
+	//Change to plant mode and apply the shift
+	%client.ndSetMode(NDM_PlantCopy);
+	NDM_PlantCopy.onRotateBrick(%client, %dir);
+}
+
 //Plant Brick
 function NDM_StackSelect::onPlantBrick(%this, %client)
 {
