@@ -1504,10 +1504,17 @@ function ND_Selection::getGhostCenter(%this)
 	if(!isObject(%this.ghostGroup))
 		return "0 0 0";
 
-	%pos = %this.ghostGroup.getObject(0).getPosition();
-	%offset = ndRotateVector(%this.rootToCenter, %this.ghostAngleID);
+	%offset = %this.rootToCenter;
 
-	return vectorAdd(%pos, %offset);
+	if(%this.ghostMirrorX)
+		%offset = -getWord(%offset, 0) SPC getWord(%offset, 1) SPC getWord(%offset, 2);
+	else if(%this.ghostMirrorY)
+		%offset = getWord(%offset, 0) SPC -getWord(%offset, 1) SPC getWord(%offset, 2);
+
+	if(%this.ghostMirrorZ)
+		%offset = getWord(%offset, 0) SPC getWord(%offset, 1) SPC -getWord(%offset, 2);
+
+	return vectorAdd(%this.ghostPosition, ndRotateVector(%offset, %this.ghostAngleID));
 }
 
 //World box for ghosted selection
