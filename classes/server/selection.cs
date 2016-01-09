@@ -1194,7 +1194,7 @@ function ND_Selection::shiftGhostBricks(%this, %offset)
 	%this.updateHighlightBox();
 
 	//Update ghost bricks
-	%this.updateGhostBricks(0, $Pref::Server::ND::InstantGhostBricks, 450);
+	%this.updateGhostBricks(0, $Pref::Server::ND::InstantGhostBricks, 230);
 }
 
 //Rotate ghost bricks left/right
@@ -1256,7 +1256,7 @@ function ND_Selection::rotateGhostBricks(%this, %direction, %useSelectionCenter)
 	%this.updateHighlightBox();
 
 	//Update ghost bricks
-	%this.updateGhostBricks(0, $Pref::Server::ND::InstantGhostBricks, 450);
+	%this.updateGhostBricks(0, $Pref::Server::ND::InstantGhostBricks, 230);
 }
 
 //Mirror ghost bricks on x,y,z axis
@@ -1314,7 +1314,7 @@ function ND_Selection::mirrorGhostBricks(%this, %axis)
 	%this.updateHighlightBox();
 
 	//Update ghost bricks
-	%this.updateGhostBricks(0, $Pref::Server::ND::InstantGhostBricks, 450);
+	%this.updateGhostBricks(0, $Pref::Server::ND::InstantGhostBricks, 230);
 }
 
 //Update some of the ghost bricks to the latest position/rotation
