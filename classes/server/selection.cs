@@ -2344,6 +2344,7 @@ function ND_Selection::startFillColor(%this, %mode, %colorID)
 	{
 		paintType = %mode;
 		brickCount = 0;
+		client = %this.client;
 	};
 
 	ND_ServerGroup.add(%this.undoGroup);
@@ -2365,11 +2366,17 @@ function ND_Selection::tickFillColor(%this, %mode, %colorID)
 	%group2 = %this.client.brickGroup.getId();
 	%bl_id = %this.client.bl_id;
 
+	%paintCount = %this.paintSuccessCount;
+	%failCount = %this.paintFailCount;
+
+	%undoCount = %this.undoGroup.brickCount;
+
+	%clientId = %this.client;
+	%undoId = %this.undoGroup;
+
 	for(%i = %start; %i < %end; %i++)
 	{
-		%brick = $NS[%this, "B", %i];
-
-		if(isObject(%brick))
+		if(isObject(%brick = $NS[%this, "B", %i]))
 		{
 			if(ndTrustCheckModify(%brick, %group2, %bl_id))
 			{
@@ -2380,6 +2387,13 @@ function ND_Selection::tickFillColor(%this, %mode, %colorID)
 						//Check whether brick is highlighted
 						if($NDHN[%brick])
 						{
+							//Don't change to same value
+							if($NDHC[%brick] == %colorID)
+								continue;
+
+							//Write previous value to undo array
+							$NU[%clientId, %undoId, "V", %paintCount] = $NDHC[%brick];
+
 							//If we're highlighted, change the original color instead
 							$NDHC[%brick] = %colorID;
 
@@ -2389,35 +2403,77 @@ function ND_Selection::tickFillColor(%this, %mode, %colorID)
 							else
 								%brick.setColorFx(0);
 						}
-						else		
-							%brick.setColor(%colorID);
+						else
+						{
+							//Don't change to same value
+							if(%brick.colorID == %colorID)
+								continue;
 
+							//Write previous value to undo array
+							$NU[%clientId, %undoId, "V", %paintCount] = %brick.colorID;
+
+							%brick.setColor(%colorID);
+						}
+
+						//Update selection data
 						$NS[%this, "CO", $NS[%this, "I", %brick]] = %colorID;
 
 					case 1:
 						//Check whether brick is highlighted
 						if($NDHN[%brick])
+						{
+							//Don't change to same value
+							if($NDHF[%brick] == %colorID)
+								continue;
+
+							//Write previous value to undo array
+							$NU[%clientId, %undoId, "V", %paintCount] = $NDHF[%brick];
+
 							//If we're highlighted, change the original color instead
 							$NDHF[%brick] = %colorID;
-						else		
-							%brick.setColorFx(%colorID);
+						}
+						else
+						{
+							//Don't change to same value
+							if(%brick.colorFxID == %colorID)
+								continue;
 
+							//Write previous value to undo array
+							$NU[%clientId, %undoId, "V", %paintCount] = %brick.colorFxID;
+
+							%brick.setColorFx(%colorID);
+						}
+
+						//Update selection data
 						$NS[%this, "CF", $NS[%this, "I", %brick]] = %colorID;
 
 					case 2:
+						//Don't change to same value
+						if(%brick.shapeFxID == %colorID)
+							continue;
+
+						//Write previous value to undo array
+						$NU[%clientId, %undoId, "V", %paintCount] = %brick.shapeFxID;
+
 						%brick.setShapeFx(%colorID);
 
+						//Update selection data
 						$NS[%this, "SF", $NS[%this, "I", %brick]] = %colorID;
 				}
 
-				%this.paintSuccessCount++;
+				$NU[%clientId, %undoId, "B", %paintCount] = %brick;
+				%paintCount++;
 			}
 			else
-				%this.paintFailCount++;
+				%failCount++;
 		}
 	}
 
 	%this.paintIndex = %i;
+	%this.paintSuccessCount = %paintCount;
+	%this.paintFailCount = %failCount;
+
+	%this.undoGroup.brickCount = %paintCount;
 
 	//Tell the client how much we painted this tick
 	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
@@ -2443,7 +2499,7 @@ function ND_Selection::finishFillColor(%this)
 
 	commandToClient(%this.client, 'centerPrint', %msg, 8);
 
-	if(%this.paintSuccessCount)
+	if(%this.undoGroup.brickCount)
 		%this.client.undoStack.push(%this.undoGroup TAB "ND_PAINT");
 	else
 		%this.undoGroup.delete();
@@ -2456,7 +2512,7 @@ function ND_Selection::cancelFillColor(%this)
 {
 	cancel(%this.fillColorSchedule);
 
-	if(%this.paintSuccessCount)
+	if(%this.undoGroup.brickCount)
 		%this.client.undoStack.push(%this.undoGroup TAB "ND_PAINT");
 	else
 		%this.undoGroup.delete();

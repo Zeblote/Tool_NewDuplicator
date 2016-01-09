@@ -51,6 +51,7 @@ exec($ND::ScriptPath @ "server/modes.cs");
 exec($ND::ScriptPath @ "server/prefs.cs");
 exec($ND::ScriptPath @ "server/symmetrydefinitions.cs");
 exec($ND::ScriptPath @ "server/symmetrytable.cs");
+exec($ND::ScriptPath @ "server/undo.cs");
 
 echo(" \n--- Initializing Server ---");
 activatePackage(NewDuplicator_Server);

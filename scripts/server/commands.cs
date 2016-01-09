@@ -205,7 +205,9 @@ package NewDuplicator_Server
 		%state = %client.undoStack.pop();
 		%type = getField(%state, 1);
 
-		if(%type $= "ND_PLANT" || %type $= "ND_PAINT")
+		if(%type $= "ND_PLANT"
+		|| %type $= "ND_PAINT"
+		|| %type $= "ND_WRENCH")
 		{
 			(getField(%state, 0)).ndStartUndo(%client);
 
@@ -412,7 +414,7 @@ function serverCmdForcePlant(%client)
 		return;
 	}
 
-	%client.ndMode.conditionalPlant(%client, true);
+	NDM_PlantCopy.conditionalPlant(%client, true);
 }
 
 //Alternative short commands

@@ -8,6 +8,13 @@
 // *
 // * ######################################################################
 
+//Delete this undo group
+function ND_UndoGroupPaint::onRemove(%this)
+{
+	if(%this.brickCount)
+		deleteVariables("$NU" @ %this.client @ "_" @ %this @ "_*");
+}
+
 //Start undo paint
 function ND_UndoGroupPaint::ndStartUndo(%this, %client)
 {
@@ -26,26 +33,38 @@ function ND_UndoGroupPaint::ndTickUndo(%this, %mode, %start, %client)
 
 	for(%i = %start; %i < %end; %i++)
 	{
-		%brick = %this.brick[%i];
+		%brick = $NU[%client, %this, "B", %i];
 
 		if(isObject(%brick))
 		{
-			//De-highlight brick
-			if(%brick.ndHighlightSet)
-			{
-				if(%brick.ndColor == $ND::BrickHighlightColor)
-					%brick.setColorFx(%brick.ndColorFx);
-				else
-					%brick.setColor(%brick.ndColor);
-
-				%brick.ndHighlightSet = false;
-			}
+			%colorID = $NU[%client, %this, "V", %i];
 
 			switch(%mode)
 			{
-				case 0: %brick.setColor(%this.value[%i]);
-				case 1: %brick.setColorFx(%this.value[%i]);
-				case 2: %brick.setShapeFx(%this.value[%i]);
+				case 0:
+					//Check whether brick is highlighted
+					if($NDHN[%brick])
+					{
+						$NDHC[%brick] = %colorID;
+
+						//Update color fx indicator
+						if($NDHC[%brick] == $ND::BrickHighlightColor)
+							%brick.setColorFx(3);
+						else
+							%brick.setColorFx(0);
+					}
+					else
+						%brick.setColor(%colorID);
+
+				case 1:
+					//Check whether brick is highlighted
+					if($NDHN[%brick])
+						$NDHF[%brick] = %colorID;
+					else
+						%brick.setColorFx(%colorID);
+
+				case 2:
+					%brick.setShapeFx(%colorID);
 			}
 		}
 	}

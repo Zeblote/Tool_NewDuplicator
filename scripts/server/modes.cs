@@ -382,6 +382,38 @@ package NewDuplicator_Server
 			}
 		}
 
+		//Delete undo groups
+		deleteVariables("$NU" @ %this @ "_*");
+
+		%stack = %this.undoStack;
+		%max = %stack.head;
+
+		if(%max < %stack.tail)
+			%max += %stack.size;
+
+		for(%i = %stack.tail; %i < %max; %i++)
+		{
+			%val = %stack.val[%i % %start.size];
+
+			if(getFieldCount(%val) == 2)
+			{
+				%str = getField(%val, 1);
+
+				if(%str $= "ND_PLANT"
+				|| %str $= "ND_PAINT"
+				|| %str $= "ND_WRENCH")
+				{
+					%group = getField(%val, 0);
+
+					if(isObject(%group))
+					{
+						%group.brickCount = 0;
+						%group.delete();
+					}
+				}
+			}
+		}
+
 		parent::onClientLeaveGame(%this);
 	}
 

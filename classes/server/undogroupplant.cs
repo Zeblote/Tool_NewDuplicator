@@ -48,7 +48,7 @@ function SimSet::ndTickUndo(%this, %count, %client)
 	{
 		%client.ndLastMessageTime = $Sim::Time;
 
-		%percent = mCeil(100 - (%end * 100 / %this.brickCount));
+		%percent = mFloor(100 - (%end * 100 / %this.brickCount));
 		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Undo in progress...\n<font:Verdana:17>\c3" @ %percent @ "%\c6 finished.", 10);
 	}
 
