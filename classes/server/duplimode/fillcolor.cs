@@ -60,11 +60,31 @@ function NDM_FillColor::onKillMode(%this, %client)
 //Plant Brick
 function NDM_FillColor::onPlantBrick(%this, %client)
 {
+	//Admin limit
+	if($Pref::Server::ND::PaintAdminOnly && !%client.isAdmin)
+	{
+		messageClient(%client, '', "\c6Paint Mode is admin only. Ask an admin for help.");
+		return;
+	}
+
+	//Normal colors
+	if(%client.currentFxColor $= "")
+	{
+		%client.ndSetMode(NDM_FillColorProgress);
+		%client.ndSelection.startFillColor(0, %client.currentColor);
+		return;
+	}
+
+	//Admin limit
+	if($Pref::Server::ND::PaintFxAdminOnly && !%client.isAdmin)
+	{
+		messageClient(%client, '', "\c6Paint Fx Mode is admin only. Ask an admin for help.");
+		return;
+	}
+
 	%client.ndSetMode(NDM_FillColorProgress);
 
-	if(%client.currentFxColor $= "")
-		%client.ndSelection.startFillColor(0, %client.currentColor);
-	else if(%client.currentFxColor < 7)
+	if(%client.currentFxColor < 7)
 		%client.ndSelection.startFillColor(1, %client.currentFxColor);
 	else
 		%client.ndSelection.startFillColor(2, %client.currentFxColor - 7);

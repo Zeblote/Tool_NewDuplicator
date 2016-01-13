@@ -46,7 +46,7 @@ function NDM_CutProgress::onCancelBrick(%this, %client)
 function NDM_CutProgress::getBottomPrint(%this, %client)
 {
 	%count = %client.ndSelection.brickCount;
-	%percent = mCeil(%client.ndSelection.cutIndex * 100 / %count);
+	%percent = mFloor(%client.ndSelection.cutIndex * 100 / %count);
 
 	%title = "Cutting... (\c3" @ %percent @ "%\c6)";
 	%l0 = "[Cancel Brick]: Cancel cut";

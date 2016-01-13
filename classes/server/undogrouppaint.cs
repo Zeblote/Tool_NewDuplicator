@@ -35,37 +35,37 @@ function ND_UndoGroupPaint::ndTickUndo(%this, %mode, %start, %client)
 	{
 		%brick = $NU[%client, %this, "B", %i];
 
-		if(isObject(%brick))
+		if(!isObject(%brick))
+			continue;
+			
+		%colorID = $NU[%client, %this, "V", %i];
+
+		switch(%mode)
 		{
-			%colorID = $NU[%client, %this, "V", %i];
+			case 0:
+				//Check whether brick is highlighted
+				if($NDHN[%brick])
+				{
+					$NDHC[%brick] = %colorID;
 
-			switch(%mode)
-			{
-				case 0:
-					//Check whether brick is highlighted
-					if($NDHN[%brick])
-					{
-						$NDHC[%brick] = %colorID;
-
-						//Update color fx indicator
-						if($NDHC[%brick] == $ND::BrickHighlightColor)
-							%brick.setColorFx(3);
-						else
-							%brick.setColorFx(0);
-					}
+					//Update color fx indicator
+					if($NDHC[%brick] == $ND::BrickHighlightColor)
+						%brick.setColorFx(3);
 					else
-						%brick.setColor(%colorID);
+						%brick.setColorFx(0);
+				}
+				else
+					%brick.setColor(%colorID);
 
-				case 1:
-					//Check whether brick is highlighted
-					if($NDHN[%brick])
-						$NDHF[%brick] = %colorID;
-					else
-						%brick.setColorFx(%colorID);
+			case 1:
+				//Check whether brick is highlighted
+				if($NDHN[%brick])
+					$NDHF[%brick] = %colorID;
+				else
+					%brick.setColorFx(%colorID);
 
-				case 2:
-					%brick.setShapeFx(%colorID);
-			}
+			case 2:
+				%brick.setShapeFx(%colorID);
 		}
 	}
 

@@ -49,16 +49,17 @@ function NewDuplicatorMode::getBottomPrint(%this, %client){}
 ///////////////////////////////////////////////////////////////////////////
 
 //Possible mode indices
-$NDM::Disabled            = 0;
-$NDM::CubeSelect          = 1;
-$NDM::CubeSelectProgress  = 2;
-$NDM::CutProgress         = 3;
-$NDM::FillColor           = 4;
-$NDM::FillColorProgress   = 5;
-$NDM::StackSelect         = 6;
-$NDM::StackSelectProgress = 7;
-$NDM::PlantCopy           = 8;
-$NDM::PlantCopyProgress   = 9;
+$NDM::Disabled            =  0;
+$NDM::CubeSelect          =  1;
+$NDM::CubeSelectProgress  =  2;
+$NDM::CutProgress         =  3;
+$NDM::FillColor           =  4;
+$NDM::FillColorProgress   =  5;
+$NDM::StackSelect         =  6;
+$NDM::StackSelectProgress =  7;
+$NDM::PlantCopy           =  8;
+$NDM::PlantCopyProgress   =  9;
+$NDM::WrenchProgress      = 10;
 
 //Create all the pseudo-classes to handle callbacks
 function ndRegisterDuplicatorModes()
@@ -116,7 +117,6 @@ function ndRegisterDuplicatorModes()
 			image = "any";
 			spin = true;
 
-
 			allowSelecting = false;
 			allowUnMount   = false;
 		}
@@ -131,7 +131,6 @@ function ndRegisterDuplicatorModes()
 			image = "any";
 			spin = false;
 
-
 			allowSelecting = false;
 			allowUnMount   = false;
 		}
@@ -145,7 +144,6 @@ function ndRegisterDuplicatorModes()
 			index = $NDM::FillColorProgress;
 			image = "any";
 			spin = true;
-
 
 			allowSelecting = false;
 			allowUnMount   = false;
@@ -201,6 +199,20 @@ function ndRegisterDuplicatorModes()
 			class = "NewDuplicatorMode";
 			index = $NDM::StackSelectProgress;
 			image = "ND_Image";
+			spin = true;
+
+			allowSelecting = false;
+			allowUnMount   = false;
+		}
+	);
+
+	//Wrench Progress duplicator mode
+	ND_ServerGroup.add(
+		new ScriptObject(NDM_WrenchProgress)
+		{
+			class = "NewDuplicatorMode";
+			index = $NDM::WrenchProgress;
+			image = "any";
 			spin = true;
 
 			allowSelecting = false;

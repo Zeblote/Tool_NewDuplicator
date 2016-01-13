@@ -39,7 +39,7 @@ function NDM_FillColorProgress::onCancelBrick(%this, %client)
 function NDM_FillColorProgress::getBottomPrint(%this, %client)
 {
 	%count = %client.ndSelection.brickCount;
-	%percent = mCeil(%client.ndSelection.paintIndex * 100 / %count);
+	%percent = mFloor(%client.ndSelection.paintIndex * 100 / %count);
 
 	%title = "Painting... (\c3" @ %percent @ "%\c6)";
 	%l0 = "[Cancel Brick]: Cancel painting";

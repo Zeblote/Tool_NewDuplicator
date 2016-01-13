@@ -24,25 +24,28 @@ function ndRegisterRTBPrefs()
 
 	%trustDropDown = "list None 0 Build 1 Full 2 Self 3";
 
-	//General
-	RTB_registerPref("Admin Only",                 "New Duplicator | General",  "$Pref::Server::ND::AdminOnly",           "bool",             "Tool_NewDuplicator", false,   false, false, "");
-	RTB_registerPref("Enable Menu Sounds",         "New Duplicator | General",  "$Pref::Server::ND::PlayMenuSounds",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
-
 	//Limits
-	RTB_RegisterPref("Trust Limit",                "New Duplicator | Limits",   "$Pref::Server::ND::TrustLimit",          %trustDropDown,     "Tool_NewDuplicator", 2,       false, false, "");
-	RTB_RegisterPref("Admin Trust Required",       "New Duplicator | Limits",   "$Pref::Server::ND::AdminTrustRequired",  "bool",             "Tool_NewDuplicator", 0,       false, false, "");
-	RTB_RegisterPref("Select Public Bricks",       "New Duplicator | Limits",   "$Pref::Server::ND::SelectPublicBricks",  "bool",             "Tool_NewDuplicator", 1,       false, false, "");
-
-	RTB_registerPref("Max Bricks (Admin)",         "New Duplicator | Limits",   "$Pref::Server::ND::MaxBricksAdmin",      "int 1000 1000000", "Tool_NewDuplicator", 1000000, false, false, "");
-	RTB_registerPref("Max Bricks (Player)",        "New Duplicator | Limits",   "$Pref::Server::ND::MaxBricksPlayer",     "int 1000 1000000", "Tool_NewDuplicator", 50000,   false, false, "");
-	RTB_registerPref("Max Cube Size (Admin)",      "New Duplicator | Limits",   "$Pref::Server::ND::MaxCubeSizeAdmin",    "int 1 50000",      "Tool_NewDuplicator", 256,     false, false, "");
-	RTB_registerPref("Max Cube Size (Player)",     "New Duplicator | Limits",   "$Pref::Server::ND::MaxCubeSizePlayer",   "int 1 50000",      "Tool_NewDuplicator", 32,      false, false, "");
-
-	RTB_registerPref("Selecting Timeout (Player)", "New Duplicator | Limits",   "$Pref::Server::ND::SelectTimeout",       "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
-	RTB_registerPref("Planting Timeout (Player)",  "New Duplicator | Limits",   "$Pref::Server::ND::PlantTimeout",        "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
+	RTB_registerPref("Admin Only",                 "New Duplicator | Limits",   "$Pref::Server::ND::AdminOnly",           "bool",             "Tool_NewDuplicator", false,   false, false, "");
+	RTB_registerPref("Fill Paint Admin Only",      "New Duplicator | Limits",   "$Pref::Server::ND::PaintAdminOnly",      "bool",             "Tool_NewDuplicator", false,   false, false, "");
+	RTB_registerPref("Fill Paint Fx Admin Only",   "New Duplicator | Limits",   "$Pref::Server::ND::PaintFxAdminOnly",    "bool",             "Tool_NewDuplicator", true,    false, false, "");
+	RTB_registerPref("Fill Wrench Admin Only",     "New Duplicator | Limits",   "$Pref::Server::ND::WrenchAdminOnly",     "bool",             "Tool_NewDuplicator", true,    false, false, "");
 	RTB_registerPref("Floating Bricks Admin Only", "New Duplicator | Limits",   "$Pref::Server::ND::FloatAdminOnly",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
 
+	//Settings
+	RTB_RegisterPref("Trust Limit",                "New Duplicator | Settings", "$Pref::Server::ND::TrustLimit",          %trustDropDown,     "Tool_NewDuplicator", 2,       false, false, "");
+	RTB_RegisterPref("Admin Trust Required",       "New Duplicator | Settings", "$Pref::Server::ND::AdminTrustRequired",  "bool",             "Tool_NewDuplicator", false,   false, false, "");
+	RTB_RegisterPref("Select Public Bricks",       "New Duplicator | Settings", "$Pref::Server::ND::SelectPublicBricks",  "bool",             "Tool_NewDuplicator", true,    false, false, "");
+
+	RTB_registerPref("Max Bricks (Admin)",         "New Duplicator | Settings", "$Pref::Server::ND::MaxBricksAdmin",      "int 1000 1000000", "Tool_NewDuplicator", 1000000, false, false, "");
+	RTB_registerPref("Max Bricks (Player)",        "New Duplicator | Settings", "$Pref::Server::ND::MaxBricksPlayer",     "int 1000 1000000", "Tool_NewDuplicator", 50000,   false, false, "");
+	RTB_registerPref("Max Cube Size (Admin)",      "New Duplicator | Settings", "$Pref::Server::ND::MaxCubeSizeAdmin",    "int 1 50000",      "Tool_NewDuplicator", 256,     false, false, "");
+	RTB_registerPref("Max Cube Size (Player)",     "New Duplicator | Settings", "$Pref::Server::ND::MaxCubeSizePlayer",   "int 1 50000",      "Tool_NewDuplicator", 32,      false, false, "");
+
+	RTB_registerPref("Selecting Timeout (Player)", "New Duplicator | Settings", "$Pref::Server::ND::SelectTimeout",       "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
+	RTB_registerPref("Planting Timeout (Player)",  "New Duplicator | Settings", "$Pref::Server::ND::PlantTimeout",        "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
+
 	//Advanced
+	RTB_registerPref("Enable Menu Sounds",         "New Duplicator | Advanced", "$Pref::Server::ND::PlayMenuSounds",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
 	RTB_registerPref("Highlight Time",             "New Duplicator | Advanced", "$Pref::Server::ND::HighlightDelay",      "int 1 60",         "Tool_NewDuplicator", 8,       false, false, "");
 	RTB_registerPref("Max Ghost Bricks",           "New Duplicator | Advanced", "$Pref::Server::ND::MaxGhostBricks",      "int 1 50000",      "Tool_NewDuplicator", 1500,    false, false, "");
 	RTB_registerPref("Instant Ghost Bricks",       "New Duplicator | Advanced", "$Pref::Server::ND::InstantGhostBricks",  "int 1 50000",      "Tool_NewDuplicator", 150,     false, false, "");
@@ -59,14 +62,17 @@ function ndExtendDefaultPrefs()
 {
 	echo("ND: Extending default prefs");
 
-	//General
-	if($Pref::Server::ND::AdminOnly           $= "") $Pref::Server::ND::AdminOnly           = false;
-	if($Pref::Server::ND::PlayMenuSounds      $= "") $Pref::Server::ND::PlayMenuSounds      = true;
-
 	//Limits
+	if($Pref::Server::ND::AdminOnly           $= "") $Pref::Server::ND::AdminOnly           = false;
+	if($Pref::Server::ND::PaintAdminOnly      $= "") $Pref::Server::ND::PaintAdminOnly      = false;
+	if($Pref::Server::ND::PaintFxAdminOnly    $= "") $Pref::Server::ND::PaintFxAdminOnly    = true;
+	if($Pref::Server::ND::WrenchAdminOnly     $= "") $Pref::Server::ND::WrenchAdminOnly     = true;
+	if($Pref::Server::ND::FloatAdminOnly      $= "") $Pref::Server::ND::FloatAdminOnly      = true;
+
+	//Settings
 	if($Pref::Server::ND::TrustLimit          $= "") $Pref::Server::ND::TrustLimit          = 2;
-	if($Pref::Server::ND::AdminTrustRequired  $= "") $Pref::Server::ND::AdminTrustRequired  = 0;
-	if($Pref::Server::ND::SelectPublicBricks  $= "") $Pref::Server::ND::SelectPublicBricks  = 1;
+	if($Pref::Server::ND::AdminTrustRequired  $= "") $Pref::Server::ND::AdminTrustRequired  = false;
+	if($Pref::Server::ND::SelectPublicBricks  $= "") $Pref::Server::ND::SelectPublicBricks  = true;
 
 	if($Pref::Server::ND::MaxBricksAdmin      $= "") $Pref::Server::ND::MaxBricksAdmin      = 1000000;
 	if($Pref::Server::ND::MaxBricksPlayer     $= "") $Pref::Server::ND::MaxBricksPlayer     = 10000;
@@ -75,9 +81,9 @@ function ndExtendDefaultPrefs()
 
 	if($Pref::Server::ND::SelectTimeout       $= "") $Pref::Server::ND::SelectTimeout       = 1;
 	if($Pref::Server::ND::PlantTimeout        $= "") $Pref::Server::ND::PlantTimeout        = 1;
-	if($Pref::Server::ND::FloatAdminOnly      $= "") $Pref::Server::ND::FloatAdminOnly      = true;
 
 	//Advanced
+	if($Pref::Server::ND::PlayMenuSounds      $= "") $Pref::Server::ND::PlayMenuSounds      = true;
 	if($Pref::Server::ND::HighlightDelay      $= "") $Pref::Server::ND::HighlightDelay      = 8;
 	if($Pref::Server::ND::MaxGhostBricks      $= "") $Pref::Server::ND::MaxGhostBricks      = 1500;
 	if($Pref::Server::ND::InstantGhostBricks  $= "") $Pref::Server::ND::InstantGhostBricks  = 150;
@@ -95,25 +101,28 @@ function ndApplyDefaultPrefs(%this)
 	echo("ND: Applying default prefs");
 	messageAll('', "\c6(\c3New Duplicator\c6) \c6Prefs reset to default values.");
 
-	//General
-	$Pref::Server::ND::AdminOnly           = false;
-	$Pref::Server::ND::PlayMenuSounds      = true;
-
 	//Limits
+	$Pref::Server::ND::AdminOnly           = false;
+	$Pref::Server::ND::PaintAdminOnly      = false;
+	$Pref::Server::ND::PaintFxAdminOnly    = true;
+	$Pref::Server::ND::WrenchAdminOnly     = true;
+	$Pref::Server::ND::FloatAdminOnly      = true;
+
+	//Settings
 	$Pref::Server::ND::TrustLimit          = 2;
-	$Pref::Server::ND::AdminTrustRequired  = 0;
-	$Pref::Server::ND::SelectPublicBricks  = 1;
+	$Pref::Server::ND::AdminTrustRequired  = false;
+	$Pref::Server::ND::SelectPublicBricks  = true;
 
 	$Pref::Server::ND::MaxBricksAdmin      = 1000000;
-	$Pref::Server::ND::MaxBricksPlayer     = 50000;
+	$Pref::Server::ND::MaxBricksPlayer     = 10000;
 	$Pref::Server::ND::MaxCubeSizeAdmin    = 256;
 	$Pref::Server::ND::MaxCubeSizePlayer   = 32;
 
 	$Pref::Server::ND::SelectTimeout       = 1;
 	$Pref::Server::ND::PlantTimeout        = 1;
-	$Pref::Server::ND::FloatAdminOnly      = true;
 
 	//Advanced
+	$Pref::Server::ND::PlayMenuSounds      = true;
 	$Pref::Server::ND::HighlightDelay      = 8;
 	$Pref::Server::ND::MaxGhostBricks      = 1500;
 	$Pref::Server::ND::InstantGhostBricks  = 150;
@@ -123,37 +132,6 @@ function ndApplyDefaultPrefs(%this)
 
 	//Always set this to false
 	$ND::RestoreDefaultPrefs = false;
-}
-
-//Print prefs to client (debug, may be useful for release?)
-function ndDumpPrefs(%client)
-{
-	messageClient(%client, '', "\c6New Duplicator pref values");
-	messageClient(%client, '', "\c7General");
-	messageClient(%client, '', "\c6      Admin Only: \c3" @ ($Pref::Server::ND::AdminOnly ? "Y" : "N"));
-	messageClient(%client, '', "\c6      Enable Menu Sounds: \c3" @ ($Pref::Server::ND::PlayMenuSounds ? "Y" : "N"));
-
-	messageClient(%client, '', "\c7Limits");
-	messageClient(%client, '', "\c6      Trust Limit: \c3" @ $Pref::Server::ND::TrustLimit);
-	messageClient(%client, '', "\c6      Admin Trust Required: \c3" @ ($Pref::Server::ND::AdminTrustRequired ? "Y" : "N"));
-	messageClient(%client, '', "\c6      Select Public Bricks: \c3" @ ($Pref::Server::ND::SelectPublicBricks ? "Y" : "N"));
-
-	messageClient(%client, '', "\c6      Max Bricks (Admin): \c3" @ $Pref::Server::ND::MaxBricksAdmin);
-	messageClient(%client, '', "\c6      Max Bricks (Player): \c3" @ $Pref::Server::ND::MaxBricksPlayer);
-	messageClient(%client, '', "\c6      Max Cube Size (Admin): \c3" @ $Pref::Server::ND::MaxCubeSizeAdmin);
-	messageClient(%client, '', "\c6      Max Cube Size (Player): \c3" @ $Pref::Server::ND::MaxCubeSizePlayer);
-
-	messageClient(%client, '', "\c6      Selecting Timeout (Player): \c3" @ $Pref::Server::ND::SelectTimeout);
-	messageClient(%client, '', "\c6      Planting Timeout (Player): \c3" @ $Pref::Server::ND::PlantTimeout);
-	messageClient(%client, '', "\c6      Floating Bricks Admin Only: \c3" @ $Pref::Server::ND::FloatAdminOnly);
-
-	messageClient(%client, '', "\c7Advanced");
-	messageClient(%client, '', "\c6      Highlight Time: \c3" @ $Pref::Server::ND::HighlightDelay);
-	messageClient(%client, '', "\c6      Max Ghost Bricks: \c3" @ $Pref::Server::ND::MaxGhostBricks);
-	messageClient(%client, '', "\c6      Instant Ghost Bricks: \c3" @ $Pref::Server::ND::InstantGhostBricks);
-	messageClient(%client, '', "\c6      Scatter Ghost Bricks: \c3" @ ($Pref::Server::ND::ScatterGhostBricks ? "Y" : "N"));
-	messageClient(%client, '', "\c6      Process per Tick: \c3" @ $Pref::Server::ND::ProcessPerTick);
-	messageClient(%client, '', "\c6      Cube Select Chunk Size: \c3" @ $Pref::Server::ND::CubeSelectChunkSize);
 }
 
 //Callback function to restore default prefs

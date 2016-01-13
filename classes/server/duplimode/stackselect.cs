@@ -67,6 +67,11 @@ function NDM_StackSelect::onChangeMode(%this, %client, %nextMode)
 		//Start de-highlighting the bricks
 		%client.ndSelection.deHighlight();
 	}
+	else if(%nextMode == $NDM::WrenchProgress)
+	{
+		//Start de-highlighting the bricks
+		%client.ndSelection.deHighlight();
+	}
 }
 
 //Kill this mode

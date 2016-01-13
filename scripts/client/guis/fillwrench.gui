@@ -1,0 +1,514 @@
+// * ######################################################################
+// *
+// *    New Duplicator - Client
+// *    Fill Wrench Gui
+// *
+// *    -------------------------------------------------------------------
+// *    Modified WrenchDlg with enable boxes for each element
+// *
+// * ######################################################################
+
+new GuiControl(ND_WrenchDlg)
+{
+    profile = "GuiDefaultProfile";
+    position = "0 0";
+    extent = "1024 768";
+
+    new GuiWindowCtrl(ND_Wrench_Window)
+    {
+        profile = "BlockWindowProfile";
+        horizSizing = "center";
+        vertSizing = "center";
+        position = "363 197";
+        extent = "297 373";
+        text = "New Duplicator | Fill Wrench";
+        resizeWidth = "0";
+        resizeHeight = "0";
+        canMove = "1";
+        canClose = "1";
+        canMinimize = "0";
+        canMaximize = "0";
+        minSize = "50 50";
+        closeCommand = "canvas.popDialog(ND_WrenchDlg);";
+
+        new GuiTextCtrl()
+        {
+            profile = "GuiTextProfile";
+            position = "13 33";
+            extent = "57 18";
+            text = "Brick Name:";
+        };
+        new GuiTextEditCtrl(ND_Wrench_Name)
+        {
+            profile = "GuiTextEditProfile";
+            position = "76 33";
+            extent = "162 18";
+            maxLength = "32";
+        };
+
+
+        new GuiTextCtrl()
+        {
+            profile = "GuiTextProfile";
+            position = "13 63";
+            extent = "26 18";
+            text = "Light:";
+        };
+        new GuiPopUpMenuCtrl(ND_Wrench_Lights)
+        {
+            profile = "BlockButtonProfile";
+            position = "76 60";
+            extent = "162 22";
+            maxPopupHeight = "200";
+        };
+
+
+        new GuiTextCtrl()
+        {
+            profile = "GuiTextProfile";
+            position = "13 93";
+            extent = "35 18";
+            text = "Emitter:";
+        };
+        new GuiPopUpMenuCtrl(ND_Wrench_Emitters)
+        {
+            profile = "BlockButtonProfile";
+            position = "76 90";
+            extent = "162 22";
+            maxPopupHeight = "200";
+        };
+
+
+        new GuiTextCtrl()
+        {
+            profile = "GuiTextProfile";
+            position = "13 113";
+            extent = "51 18";
+            text = "Emitter Dir:";
+        };
+        new GuiRadioCtrl(ND_Wrench_EmitterDir0)
+        {
+            profile = "GuiRadioProfile";
+            position = "78 110";
+            extent = "27 22";
+            text = "U";
+            groupNum = "1";
+            buttonType = "RadioButton";
+        };
+        new GuiRadioCtrl(ND_Wrench_EmitterDir1)
+        {
+            profile = "GuiRadioProfile";
+            position = "104 110";
+            extent = "27 22";
+            text = "D";
+            groupNum = "1";
+            buttonType = "RadioButton";
+        };
+        new GuiRadioCtrl(ND_Wrench_EmitterDir2)
+        {
+            profile = "GuiRadioProfile";
+            position = "130 110";
+            extent = "27 22";
+            text = "N";
+            groupNum = "1";
+            buttonType = "RadioButton";
+        };
+        new GuiRadioCtrl(ND_Wrench_EmitterDir3)
+        {
+            profile = "GuiRadioProfile";
+            position = "156 110";
+            extent = "27 22";
+            text = "E";
+            groupNum = "1";
+            buttonType = "RadioButton";
+        };
+        new GuiRadioCtrl(ND_Wrench_EmitterDir4)
+        {
+            profile = "GuiRadioProfile";
+            position = "182 110";
+            extent = "27 22";
+            text = "S";
+            groupNum = "1";
+            buttonType = "RadioButton";
+        };
+        new GuiRadioCtrl(ND_Wrench_EmitterDir5)
+        {
+            profile = "GuiRadioProfile";
+            position = "208 110";
+            extent = "27 22";
+            text = "W";
+            groupNum = "1";
+            buttonType = "RadioButton";
+        };
+
+
+        new GuiTextCtrl()
+        {
+            profile = "GuiTextProfile";
+            position = "13 153";
+            extent = "22 18";
+            text = "Item:";
+        };
+        new GuiPopUpMenuCtrl(ND_Wrench_Items)
+        {
+            profile = "BlockButtonProfile";
+            position = "76 150";
+            extent = "162 22";
+            maxPopupHeight = "200";
+        };
+
+
+        new GuiTextCtrl()
+        {
+            profile = "GuiTextProfile";
+            position = "13 173";
+            extent = "43 18";
+            text = "Item Pos:";
+        };
+        new GuiRadioCtrl(ND_Wrench_ItemPos1)
+        {
+            profile = "GuiRadioProfile";
+            position = "104 170";
+            extent = "27 22";
+            text = "D";
+            groupNum = "2";
+            buttonType = "RadioButton";
+        };
+        new GuiRadioCtrl(ND_Wrench_ItemPos0)
+        {
+            profile = "GuiRadioProfile";
+            position = "78 170";
+            extent = "27 22";
+            text = "U";
+            groupNum = "2";
+            buttonType = "RadioButton";
+        };
+        new GuiRadioCtrl(ND_Wrench_ItemPos2)
+        {
+            profile = "GuiRadioProfile";
+            position = "130 170";
+            extent = "27 22";
+            text = "N";
+            groupNum = "2";
+            buttonType = "RadioButton";
+        };
+        new GuiRadioCtrl(ND_Wrench_ItemPos3)
+        {
+            profile = "GuiRadioProfile";
+            position = "156 170";
+            extent = "27 22";
+            text = "E";
+            groupNum = "2";
+            buttonType = "RadioButton";
+        };
+        new GuiRadioCtrl(ND_Wrench_ItemPos4)
+        {
+            profile = "GuiRadioProfile";
+            position = "182 170";
+            extent = "27 22";
+            text = "S";
+            groupNum = "2";
+            buttonType = "RadioButton";
+        };
+        new GuiRadioCtrl(ND_Wrench_ItemPos5)
+        {
+            profile = "GuiRadioProfile";
+            position = "208 170";
+            extent = "27 22";
+            text = "W";
+            groupNum = "2";
+            buttonType = "RadioButton";
+        };
+
+
+        new GuiTextCtrl()
+        {
+            profile = "GuiTextProfile";
+            position = "13 193";
+            extent = "38 18";
+            text = "Item Dir:";
+        };
+        new GuiRadioCtrl(ND_Wrench_ItemDir5)
+        {
+            profile = "GuiRadioProfile";
+            position = "208 190";
+            extent = "27 22";
+            text = "W";
+            groupNum = "3";
+            buttonType = "RadioButton";
+        };
+        new GuiRadioCtrl(ND_Wrench_ItemDir2)
+        {
+            profile = "GuiRadioProfile";
+            position = "130 190";
+            extent = "27 22";
+            text = "N";
+            groupNum = "3";
+            buttonType = "RadioButton";
+        };
+        new GuiRadioCtrl(ND_Wrench_ItemDir3)
+        {
+            profile = "GuiRadioProfile";
+            position = "156 190";
+            extent = "27 22";
+            text = "E";
+            groupNum = "3";
+            buttonType = "RadioButton";
+        };
+        new GuiRadioCtrl(ND_Wrench_ItemDir4)
+        {
+            profile = "GuiRadioProfile";
+            position = "182 190";
+            extent = "27 22";
+            text = "S";
+            groupNum = "3";
+            buttonType = "RadioButton";
+        };
+
+
+        new GuiTextCtrl()
+        {
+            profile = "GuiTextProfile";
+            position = "13 213";
+            extent = "97 18";
+            text = "Item Respawn Time:";
+        };
+        new GuiTextEditCtrl(ND_Wrench_ItemTime)
+        {
+            profile = "GuiTextEditProfile";
+            position = "117 213";
+            extent = "121 18";
+        };
+
+
+        new GuiCheckBoxCtrl(ND_Wrench_RayCasting)
+        {
+            profile = "GuiCheckBoxProfile";
+            position = "14 240";
+            extent = "78 22";
+            text = "Ray Casting";
+            buttonType = "ToggleButton";
+        };
+        new GuiCheckBoxCtrl(ND_Wrench_Collision)
+        {
+            profile = "GuiCheckBoxProfile";
+            position = "14 260";
+            extent = "74 22";
+            text = "Collision";
+            buttonType = "ToggleButton";
+        };
+        new GuiCheckBoxCtrl(ND_Wrench_Rendering)
+        {
+            profile = "GuiCheckBoxProfile";
+            position = "14 280";
+            extent = "74 22";
+            text = "Rendering";
+            buttonType = "ToggleButton";
+        };
+
+
+        new GuiCheckBoxCtrl(ND_Wrench_ToggleName)
+        {
+            profile = "GuiCheckBoxProfile";
+            position = "244 32";
+            extent = "42 22";
+            command = "ND_Wrench_BlockName.setVisible(!$ThisControl.getValue());";
+            text = "Apply";
+            buttonType = "ToggleButton";
+        };
+        new GuiCheckBoxCtrl(ND_Wrench_ToggleLights)
+        {
+            profile = "GuiCheckBoxProfile";
+            position = "244 60";
+            extent = "42 22";
+            command = "ND_Wrench_BlockLights.setVisible(!$ThisControl.getValue());";
+            text = "Apply";
+            buttonType = "ToggleButton";
+        };
+        new GuiCheckBoxCtrl(ND_Wrench_ToggleEmitters)
+        {
+            profile = "GuiCheckBoxProfile";
+            position = "244 90";
+            extent = "42 22";
+            command = "ND_Wrench_BlockEmitters.setVisible(!$ThisControl.getValue());";
+            text = "Apply";
+            buttonType = "ToggleButton";
+        };
+        new GuiCheckBoxCtrl(ND_Wrench_ToggleEmitterDir)
+        {
+            profile = "GuiCheckBoxProfile";
+            position = "244 110";
+            extent = "42 22";
+            command = "ND_Wrench_BlockEmitterDir.setVisible(!$ThisControl.getValue());";
+            text = "Apply";
+            buttonType = "ToggleButton";
+        };
+        new GuiCheckBoxCtrl(ND_Wrench_ToggleItems)
+        {
+            profile = "GuiCheckBoxProfile";
+            position = "244 150";
+            extent = "42 22";
+            command = "ND_Wrench_BlockItems.setVisible(!$ThisControl.getValue());";
+            text = "Apply";
+            buttonType = "ToggleButton";
+        };
+        new GuiCheckBoxCtrl(ND_Wrench_ToggleItemPos)
+        {
+            profile = "GuiCheckBoxProfile";
+            position = "244 170";
+            extent = "42 22";
+            command = "ND_Wrench_BlockItemPos.setVisible(!$ThisControl.getValue());";
+            text = "Apply";
+            buttonType = "ToggleButton";
+        };
+        new GuiCheckBoxCtrl(ND_Wrench_ToggleItemDir)
+        {
+            profile = "GuiCheckBoxProfile";
+            position = "244 190";
+            extent = "42 22";
+            command = "ND_Wrench_BlockItemDir.setVisible(!$ThisControl.getValue());";
+            text = "Apply";
+            buttonType = "ToggleButton";
+        };
+        new GuiCheckBoxCtrl(ND_Wrench_ToggleItemTime)
+        {
+            profile = "GuiCheckBoxProfile";
+            position = "244 210";
+            extent = "42 22";
+            command = "ND_Wrench_BlockItemTime.setVisible(!$ThisControl.getValue());";
+            text = "Apply";
+            buttonType = "ToggleButton";
+        };
+        new GuiCheckBoxCtrl(ND_Wrench_ToggleRayCasting)
+        {
+            profile = "GuiCheckBoxProfile";
+            position = "244 240";
+            extent = "42 22";
+            command = "ND_Wrench_BlockRaycasting.setVisible(!$ThisControl.getValue());";
+            text = "Apply";
+            buttonType = "ToggleButton";
+        };
+        new GuiCheckBoxCtrl(ND_Wrench_ToggleCollision)
+        {
+            profile = "GuiCheckBoxProfile";
+            position = "244 260";
+            extent = "42 22";
+            command = "ND_Wrench_BlockCollision.setVisible(!$ThisControl.getValue());";
+            text = "Apply";
+            buttonType = "ToggleButton";
+        };
+        new GuiCheckBoxCtrl(ND_Wrench_ToggleRendering)
+        {
+            profile = "GuiCheckBoxProfile";
+            position = "244 280";
+            extent = "42 22";
+            command = "ND_Wrench_BlockRendering.setVisible(!$ThisControl.getValue());";
+            text = "Apply";
+            buttonType = "ToggleButton";
+        };
+
+
+        new GuiSwatchCtrl(ND_Wrench_BlockName)
+        {
+            profile = "GuiDefaultProfile";
+            position = "11 32";
+            extent = "233 24";
+            color = "200 200 200 200";
+        };
+        new GuiSwatchCtrl(ND_Wrench_BlockLights)
+        {
+            profile = "GuiDefaultProfile";
+            position = "11 60";
+            extent = "233 24";
+            color = "200 200 200 200";
+        };
+        new GuiSwatchCtrl(ND_Wrench_BlockEmitters)
+        {
+            profile = "GuiDefaultProfile";
+            position = "11 89";
+            extent = "233 24";
+            color = "200 200 200 200";
+        };
+        new GuiSwatchCtrl(ND_Wrench_BlockEmitterDir)
+        {
+            profile = "GuiDefaultProfile";
+            position = "11 114";
+            extent = "233 24";
+            color = "200 200 200 200";
+        };
+        new GuiSwatchCtrl(ND_Wrench_BlockItems)
+        {
+            profile = "GuiDefaultProfile";
+            position = "11 149";
+            extent = "233 24";
+            color = "200 200 200 200";
+        };
+        new GuiSwatchCtrl(ND_Wrench_BlockItemPos)
+        {
+            profile = "GuiDefaultProfile";
+            position = "11 173";
+            extent = "233 20";
+            color = "200 200 200 200";
+        };
+        new GuiSwatchCtrl(ND_Wrench_BlockItemDir)
+        {
+            profile = "GuiDefaultProfile";
+            position = "11 191";
+            extent = "233 20";
+            color = "200 200 200 200";
+        };
+        new GuiSwatchCtrl(ND_Wrench_BlockItemTime)
+        {
+            profile = "GuiDefaultProfile";
+            position = "11 212";
+            extent = "233 20";
+            color = "200 200 200 200";
+        };
+        new GuiSwatchCtrl(ND_Wrench_BlockRaycasting)
+        {
+            profile = "GuiDefaultProfile";
+            position = "11 242";
+            extent = "233 20";
+            color = "200 200 200 200";
+        };
+        new GuiSwatchCtrl(ND_Wrench_BlockCollision)
+        {
+            profile = "GuiDefaultProfile";
+            position = "11 262";
+            extent = "233 20";
+            color = "200 200 200 200";
+        };
+        new GuiSwatchCtrl(ND_Wrench_BlockRendering)
+        {
+            profile = "GuiDefaultProfile";
+            position = "11 282";
+            extent = "233 20";
+            color = "200 200 200 200";
+        };
+
+
+        new GuiBitmapButtonCtrl(ND_Wrench_Cancel)
+        {
+            profile = "BlockButtonProfile";
+            position = "16 317";
+            extent = "91 38";
+            command = "canvas.popDialog(ND_WrenchDlg);";
+            accelerator = "escape";
+            text = "<< Cancel";
+            buttonType = "PushButton";
+            bitmap = "base/client/ui/button2";
+            mColor = "255 255 255 255";
+        };
+        new GuiBitmapButtonCtrl(ND_Wrench_Send)
+        {
+            profile = "BlockButtonProfile";
+            position = "119 317";
+            extent = "160 38";
+            command = "ndSendFillWrenchData();";
+            text = "Apply Selected to All >>";
+            buttonType = "PushButton";
+            bitmap = "base/client/ui/button1";
+            mColor = "255 255 255 255";
+        };
+    };
+};

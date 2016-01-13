@@ -2491,8 +2491,8 @@ function ND_Selection::tickFillColor(%this, %mode, %colorID)
 //Finish filling color
 function ND_Selection::finishFillColor(%this)
 {
-	%s = %this.paintSuccessCount == 1 ? "" : "s";
-	%msg = "<font:Verdana:20>\c6Painted \c3" @ %this.paintSuccessCount @ "\c6 Brick" @ %s @ "!";
+	%s = %this.undoGroup.brickCount == 1 ? "" : "s";
+	%msg = "<font:Verdana:20>\c6Painted \c3" @ %this.undoGroup.brickCount @ "\c6 Brick" @ %s @ "!";
 
 	if(%this.paintFailCount > 0)
 		%msg = %msg @ "\n<font:Verdana:17>\c3" @ %this.paintFailCount @ "\c6 missing trust.";
@@ -2514,6 +2514,426 @@ function ND_Selection::cancelFillColor(%this)
 
 	if(%this.undoGroup.brickCount)
 		%this.client.undoStack.push(%this.undoGroup TAB "ND_PAINT");
+	else
+		%this.undoGroup.delete();
+}
+
+
+
+//Fill Wrench
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Start applying wrench settings to all bricks
+function ND_Selection::startFillWrench(%this, %data)
+{
+	%valid = false;
+	%this.fillWrenchName       = false;
+	%this.fillWrenchLight      = false;
+	%this.fillWrenchEmitter    = false;
+	%this.fillWrenchEmitterDir = false;
+	%this.fillWrenchItem       = false;
+	%this.fillWrenchItemPos    = false;
+	%this.fillWrenchItemDir    = false;
+	%this.fillWrenchItemTime   = false;
+	%this.fillWrenchRaycasting = false;
+	%this.fillWrenchCollision  = false;
+	%this.fillWrenchRendering  = false;
+
+	//Verify and save data
+	%fieldCount = getFieldCount(%data);
+
+	for(%i = 0; %i < %fieldCount; %i++)
+	{
+		%field = getField(%data, %i);
+
+		%type = getWord(%field, 0);
+		%value = trim(restWords(%field));
+
+		switch$(%type)
+		{
+			case "N":
+				%this.fillWrenchName = true;
+				%this.fillWrenchNameValue = getSafeVariableName(%value);
+				%valid = true;
+
+			case "LDB":
+				if((isObject(%value) && %value.getClassName() $= "FxLightData" && %value.uiName !$= "") || %value == 0)
+				{
+					%this.fillWrenchLight = true;
+					%this.fillWrenchLightValue = %value;
+					%valid = true;
+				}
+				else
+					messageClient(%this.client, '', "\c6Fill wrench error - Invalid light datablock " @ %value);
+
+			case "EDB":
+				if((isObject(%value) && %value.getClassName() $= "ParticleEmitterData" && %value.uiName !$= "") || %value == 0)
+				{
+					%this.fillWrenchEmitter = true;
+					%this.fillWrenchEmitterValue = %value;
+					%valid = true;
+				}
+				else
+					messageClient(%this.client, '', "\c6Fill wrench error - Invalid emitter datablock " @ %value);
+
+			case "EDIR":
+				if(%value >= 0 && %value <= 5)
+				{
+					%this.fillWrenchEmitterDir = true;
+					%this.fillWrenchEmitterDirValue = %value;
+					%valid = true;
+				}
+				else
+					messageClient(%this.client, '', "\c6Fill wrench error - Invalid emitter direction " @ %value);
+
+			case "IDB":
+				if((isObject(%value) && %value.getClassName() $= "ItemData" && %value.uiName !$= "") || %value == 0)
+				{
+					%this.fillWrenchItem = true;
+					%this.fillWrenchItemValue = %value;
+					%valid = true;
+				}
+				else
+					messageClient(%this.client, '', "\c6Fill wrench error - Invalid item datablock " @ %value);
+
+			case "IPOS":
+				if(%value >= 0 && %value <= 5)
+				{
+					%this.fillWrenchItemPos = true;
+					%this.fillWrenchItemPosValue = %value;
+					%valid = true;
+				}
+				else
+					messageClient(%this.client, '', "\c6Fill wrench error - Invalid item position " @ %value);
+
+			case "IDIR":
+				if(%value >= 2 && %value <= 5)
+				{
+					%this.fillWrenchItemDir = true;
+					%this.fillWrenchItemDirValue = %value;
+					%valid = true;
+				}
+				else
+					messageClient(%this.client, '', "\c6Fill wrench error - Invalid item direction " @ %value);
+
+			case "IRT":
+				%this.fillWrenchItemTime = true;
+				%this.fillWrenchItemTimeValue = mFloor(%value) * 1000;
+				%valid = true;
+
+			case "RC":
+				%this.fillWrenchRaycasting = true;
+				%this.fillWrenchRaycastingValue = %value;
+				%valid = true;
+
+			case "C":
+				%this.fillWrenchCollision = true;
+				%this.fillWrenchCollisionValue = %value;
+				%valid = true;
+
+			case "R":
+				%this.fillWrenchRendering = true;
+				%this.fillWrenchRenderingValue = %value;
+				%valid = true;
+
+			default:
+				messageClient(%this.client, '', "\c6Fill wrench error - Invalid field " @ %type);
+		}
+	}
+
+	if(!%valid)
+	{
+		messageClient(%this.client, '', "\c6Fill wrench error - No data to apply?");
+		%this.cancelFillWrench();
+		%this.client.ndSetMode(%this.client.ndLastSelectMode);
+		return;
+	}
+
+	%this.wrenchIndex = 0;
+	%this.wrenchFailCount = 0;
+	%this.wrenchSuccessCount = 0;
+
+	//Create undo group
+	%this.undoGroup = new ScriptObject(ND_UndoGroupWrench)
+	{
+		fillWrenchName       = %this.fillWrenchName;
+		fillWrenchLight      = %this.fillWrenchLight;
+		fillWrenchEmitter    = %this.fillWrenchEmitter;
+		fillWrenchEmitterDir = %this.fillWrenchEmitterDir;
+		fillWrenchItem       = %this.fillWrenchItem;
+		fillWrenchItemPos    = %this.fillWrenchItemPos;
+		fillWrenchItemDir    = %this.fillWrenchItemDir;
+		fillWrenchItemTime   = %this.fillWrenchItemTime;
+		fillWrenchRaycasting = %this.fillWrenchRaycasting;
+		fillWrenchCollision  = %this.fillWrenchCollision;
+		fillWrenchRendering  = %this.fillWrenchRendering;
+
+		brickCount = 0;
+		client = %this.client;
+	};
+
+	ND_ServerGroup.add(%this.undoGroup);
+
+	%this.tickFillWrench();
+}
+
+//Tick applying wrench settings to all bricks
+function ND_Selection::tickFillWrench(%this)
+{
+	cancel(%this.fillWrenchSchedule);
+
+	%start = %this.wrenchIndex;
+	%end = %start + $Pref::Server::ND::ProcessPerTick;
+
+	if(%end > %this.brickCount)
+		%end = %this.brickCount;
+
+	%group2 = %this.client.brickGroup.getId();
+	%bl_id = %this.client.bl_id;
+
+	%wrenchCount = %this.wrenchSuccessCount;
+	%failCount = %this.wrenchFailCount;
+
+	%undoCount = %this.undoGroup.brickCount;
+
+	%clientId = %this.client;
+	%undoId = %this.undoGroup;
+
+	%fillWrenchName       = %this.fillWrenchName;
+	%fillWrenchLight      = %this.fillWrenchLight;
+	%fillWrenchEmitter    = %this.fillWrenchEmitter;
+	%fillWrenchEmitterDir = %this.fillWrenchEmitterDir;
+	%fillWrenchItem       = %this.fillWrenchItem;
+	%fillWrenchItemPos    = %this.fillWrenchItemPos;
+	%fillWrenchItemDir    = %this.fillWrenchItemDir;
+	%fillWrenchItemTime   = %this.fillWrenchItemTime;
+	%fillWrenchRaycasting = %this.fillWrenchRaycasting;
+	%fillWrenchCollision  = %this.fillWrenchCollision;
+	%fillWrenchRendering  = %this.fillWrenchRendering;
+
+	%fillWrenchNameValue       = %this.fillWrenchNameValue;
+	%fillWrenchLightValue      = %this.fillWrenchLightValue;
+	%fillWrenchEmitterValue    = %this.fillWrenchEmitterValue;
+	%fillWrenchEmitterDirValue = %this.fillWrenchEmitterDirValue;
+	%fillWrenchItemValue       = %this.fillWrenchItemValue;
+	%fillWrenchItemPosValue    = %this.fillWrenchItemPosValue;
+	%fillWrenchItemDirValue    = %this.fillWrenchItemDirValue;
+	%fillWrenchItemTimeValue   = %this.fillWrenchItemTimeValue;
+	%fillWrenchRaycastingValue = %this.fillWrenchRaycastingValue;
+	%fillWrenchCollisionValue  = %this.fillWrenchCollisionValue;
+	%fillWrenchRenderingValue  = %this.fillWrenchRenderingValue;
+
+	for(%i = %start; %i < %end; %i++)
+	{
+		if(isObject(%brick = $NS[%this, "B", %i]))
+		{
+			if(ndTrustCheckModify(%brick, %group2, %bl_id))
+			{
+				%undoRequired = false;
+
+				//Apply wrench settings
+				if(%fillWrenchName)
+				{
+					%curr = getSubStr(%brick.getName(), 1, 254);
+					$NU[%clientId, %undoId, "N", %undoCount] = %curr;
+
+					if(%curr !$= %fillWrenchNameValue)
+					{
+						%brick.setNTObjectName(%fillWrenchNameValue);
+						%undoRequired = true;
+					}
+				}
+
+				if(%fillWrenchLight)
+				{
+					if(%tmp = %brick.light | 0)
+						%curr = %tmp.getDatablock();
+					else
+						%curr = 0;
+
+					$NU[%clientId, %undoId, "LDB", %undoCount] = %curr;
+
+					if(%curr != %fillWrenchLightValue)
+					{
+						%brick.setLight(%fillWrenchLightValue);
+						%undoRequired = true;
+					}
+				}
+
+				if(%fillWrenchEmitter)
+				{
+					if(%tmp = %brick.emitter | 0)
+						%curr = %tmp.getEmitterDatablock();
+					else
+						%curr = 0;
+
+					$NU[%clientId, %undoId, "EDB", %undoCount] = %curr;
+
+					if(%curr != %fillWrenchEmitterValue)
+					{
+						%brick.setEmitter(%fillWrenchEmitterValue);
+						%undoRequired = true;
+					}
+				}
+
+				if(%fillWrenchEmitterDir)
+				{
+					%curr = %brick.emitterDirection;
+					$NU[%clientId, %undoId, "EDIR", %undoCount] = %curr;
+
+					if(%curr != %fillWrenchEmitterDirValue)
+					{
+						%brick.setEmitterDirection(%fillWrenchEmitterDirValue);
+						%undoRequired = true;
+					}
+				}
+
+				if(%fillWrenchItem)
+				{
+					if(%tmp = %brick.item | 0)
+						%curr = %tmp.getDatablock();
+					else
+						%curr = 0;
+
+					$NU[%clientId, %undoId, "IDB", %undoCount] = %curr;
+
+					if(%curr != %fillWrenchItemValue)
+					{
+						%brick.setItem(%fillWrenchItemValue);
+						%undoRequired = true;
+					}
+				}
+
+				if(%fillWrenchItemPos)
+				{
+					%curr = %brick.itemPosition;
+					$NU[%clientId, %undoId, "IPOS", %undoCount] = %curr;
+
+					if(%curr != %fillWrenchItemPosValue)
+					{
+						%brick.setItemPosition(%fillWrenchItemPosValue);
+						%undoRequired = true;
+					}
+				}
+
+				if(%fillWrenchItemDir)
+				{
+					%curr = %brick.itemPosition;
+					$NU[%clientId, %undoId, "IDIR", %undoCount] = %curr;
+
+					if(%curr != %fillWrenchItemDirValue)
+					{
+						%brick.setItemDirection(%fillWrenchItemDirValue);
+						%undoRequired = true;
+					}
+				}
+
+				if(%fillWrenchItemTime)
+				{
+					%curr = %brick.itemRespawnTime;
+					$NU[%clientId, %undoId, "IRT", %undoCount] = %curr;
+
+					if(%curr != %fillWrenchItemTimeValue)
+					{
+						%brick.setItemRespawnTime(%fillWrenchItemTimeValue);
+						%undoRequired = true;
+					}
+				}
+
+				if(%fillWrenchRaycasting)
+				{
+					%curr = %brick.isRaycasting();
+					$NU[%clientId, %undoId, "RC", %undoCount] = %curr;
+
+					if(%curr != %fillWrenchRaycastingValue)
+					{
+						%brick.setRaycasting(%fillWrenchRaycastingValue);
+						%undoRequired = true;
+					}
+				}
+
+				if(%fillWrenchCollision)
+				{
+					%curr = %brick.isColliding();
+					$NU[%clientId, %undoId, "C", %undoCount] = %curr;
+
+					if(%curr != %fillWrenchCollisionValue)
+					{
+						%brick.setColliding(%fillWrenchCollisionValue);
+						%undoRequired = true;
+					}
+				}
+
+				if(%fillWrenchRendering)
+				{
+					%curr = %brick.isRendering();
+					$NU[%clientId, %undoId, "R", %undoCount] = %curr;
+
+					if(%curr != %fillWrenchRenderingValue)
+					{
+						%brick.setRendering(%fillWrenchRenderingValue);
+						%undoRequired = true;
+					}
+				}
+
+				if(%undoRequired)
+				{
+					$NU[%clientId, %undoId, "B", %undoCount] = %brick;
+					%undoCount++;
+				}
+
+				%wrenchCount++;
+			}
+			else
+				%failCount++;
+		}
+	}
+
+	%this.wrenchIndex = %i;
+	%this.wrenchSuccessCount = %wrenchCount;
+	%this.wrenchFailCount = %failCount;
+
+	%this.undoGroup.brickCount = %undoCount;
+
+	//Tell the client how much we wrenched this tick
+	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
+	{
+		%this.client.ndUpdateBottomPrint();
+		%this.client.ndLastMessageTime = $Sim::Time;
+	}
+
+	if(%i >= %this.brickCount)
+		%this.finishFillWrench();
+	else
+		%this.fillWrenchSchedule = %this.schedule(30, tickFillWrench);
+}
+
+//Finish wrenching
+function ND_Selection::finishFillWrench(%this)
+{
+	%s = %this.undoGroup.brickCount == 1 ? "" : "s";
+	%msg = "<font:Verdana:20>\c6Applied changes to \c3" @ %this.undoGroup.brickCount @ "\c6 Brick" @ %s @ "!";
+
+	if(%this.wrenchFailCount > 0)
+		%msg = %msg @ "\n<font:Verdana:17>\c3" @ %this.wrenchFailCount @ "\c6 missing trust.";
+
+	commandToClient(%this.client, 'centerPrint', %msg, 8);
+
+	if(%this.undoGroup.brickCount)
+		%this.client.undoStack.push(%this.undoGroup TAB "ND_WRENCH");
+	else
+		%this.undoGroup.delete();
+
+	%this.client.ndSetMode(%this.client.ndLastSelectMode);
+}
+
+//Cancel wrenching
+function ND_Selection::cancelFillWrench(%this)
+{
+	cancel(%this.fillWrenchSchedule);
+
+	if(%this.undoGroup.brickCount)
+		%this.client.undoStack.push(%this.undoGroup TAB "ND_WRENCH");
 	else
 		%this.undoGroup.delete();
 }

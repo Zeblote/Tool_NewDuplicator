@@ -34,16 +34,8 @@ function serverCmdDupClients(%client)
 		%cl = ClientGroup.getObject(%i);
 
 		if(%cl.ndClient)
-			messageClient(%client, '', "\c3" @ %cl.name @ "\c6 has version \c3" @ %cl.ndVersion);
-		else
-			messageClient(%client, '', "\c3" @ %cl.name @ "\c6 doesn't have it installed");
+			messageClient(%client, '', "\c3" @ %cl.name @ "\c6 has \c3" @ %cl.ndVersion);
 	}
-}
-
-//Shows current new duplicator config
-function serverCmdDupPrefs(%client)
-{
-	ndDumpPrefs(%client);
 }
 
 
@@ -479,6 +471,86 @@ package NewDuplicator_Server
 			parent::serverCmdUseFxCan(%client, %index);
 	}
 };
+
+
+
+//Fill wrench
+///////////////////////////////////////////////////////////////////////////
+
+//Open the fill wrench gui
+function serverCmdFillWrench(%client)
+{
+	//Check version
+	if(!%client.ndClient)
+	{
+		messageClient(%client, '', "\c6You need to have the new duplicator installed to use Fill Wrench.");
+		return;
+	}
+
+	if(ndCompareVersion("1.2.0", %client.ndVersion) == 1)
+	{
+		messageClient(%client, '', "\c6Your version of the new duplicator is too old to use Fill Wrench.");
+		return;
+	}
+
+	//Check admin
+	if($Pref::Server::ND::WrenchAdminOnly && !%client.isAdmin)
+	{
+		messageClient(%client, '', "\c6Fill Wrench is admin only. Ask an admin for help.");
+		return;
+	}
+
+	//Check mode
+	if(%client.ndModeIndex != $NDM::StackSelect && %client.ndModeIndex != $NDM::CubeSelect)
+	{
+		messageClient(%client, '', "\c6Fill Wrench can only be used in Selection Mode.");
+		return;
+	}
+
+	//Check selection
+	if(!isObject(%client.ndSelection) || !%client.ndSelection.brickCount)
+	{
+		messageClient(%client, '', "\c6Fill Wrench can only be used with a selection.");
+		return;
+	}
+
+	//Open fill wrench gui
+	commandToClient(%client, 'ndOpenWrenchGui');
+}
+
+//Short commands
+function serverCmdFillW  (%client) {serverCmdFillWrench(%client);}
+function serverCmdFWrench(%client) {serverCmdFillWrench(%client);}
+function serverCmdFW     (%client) {serverCmdFillWrench(%client);}
+
+//Send data from gui
+function serverCmdNdStartFillWrench(%client, %data)
+{
+	//Check admin
+	if($Pref::Server::ND::WrenchAdminOnly && !%client.isAdmin)
+	{
+		messageClient(%client, '', "\c6Fill Wrench is admin only. Ask an admin for help.");
+		return;
+	}
+
+	//Check mode
+	if(%client.ndModeIndex != $NDM::StackSelect && %client.ndModeIndex != $NDM::CubeSelect)
+	{
+		messageClient(%client, '', "\c6Fill Wrench can only be used in Selection Mode.");
+		return;
+	}
+
+	//Check selection
+	if(!isObject(%client.ndSelection) || !%client.ndSelection.brickCount)
+	{
+		messageClient(%client, '', "\c6Fill Wrench can only be used with a selection.");
+		return;
+	}
+
+	//Change mode
+	%client.ndSetMode(NDM_WrenchProgress);
+	%client.ndSelection.startFillWrench(%data);
+}
 
 
 

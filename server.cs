@@ -29,6 +29,7 @@ exec($ND::ClassPath @ "server/selection.cs");
 exec($ND::ClassPath @ "server/selectionbox.cs");
 exec($ND::ClassPath @ "server/undogrouppaint.cs");
 exec($ND::ClassPath @ "server/undogroupplant.cs");
+exec($ND::ClassPath @ "server/undogroupwrench.cs");
 
 exec($ND::ClassPath @ "server/duplimode/cubeselect.cs");
 exec($ND::ClassPath @ "server/duplimode/cubeselectprogress.cs");
@@ -39,6 +40,7 @@ exec($ND::ClassPath @ "server/duplimode/plantcopy.cs");
 exec($ND::ClassPath @ "server/duplimode/plantcopyprogress.cs");
 exec($ND::ClassPath @ "server/duplimode/stackselect.cs");
 exec($ND::ClassPath @ "server/duplimode/stackselectprogress.cs");
+exec($ND::ClassPath @ "server/duplimode/wrenchprogress.cs");
 
 echo(" \n--- Loading Server Scripts ---");
 exec($ND::ScriptPath @ "server/commands.cs");
