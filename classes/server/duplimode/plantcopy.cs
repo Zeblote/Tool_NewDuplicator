@@ -161,7 +161,17 @@ function NDM_PlantCopy::onRotateBrick(%this, %client, %direction)
 //Plant Brick
 function NDM_PlantCopy::onPlantBrick(%this, %client)
 {
-	%this.conditionalPlant(%client, false);
+	//Check force plant
+	if(%client.ndForcePlant)
+	{
+		if($Pref::Server::ND::FloatAdminOnly && !%client.isAdmin)
+		{
+			messageClient(%client, '', "\c6Force Plant has been disabled because it is admin only. Ask an admin for help.");
+			%client.ndForcePlant = false;
+		}
+	}
+
+	%this.conditionalPlant(%client, %client.ndForcePlant);
 }
 
 //Cancel Brick

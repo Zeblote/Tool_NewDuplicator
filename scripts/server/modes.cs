@@ -225,9 +225,10 @@ function ndRegisterDuplicatorModes()
 	{
 		%cl = ClientGroup.getObject(%i);
 
-		%cl.ndPivot     = true;
-		%cl.ndLimited   = true;
-		%cl.ndDirection = true;
+		%cl.ndPivot      = true;
+		%cl.ndLimited    = true;
+		%cl.ndDirection  = true;
+		%cl.ndForcePlant = false;
 
 		%cl.ndImage          = ND_Image.getId();
 		%cl.ndMode           = NDM_Disabled;
@@ -353,9 +354,10 @@ package NewDuplicator_Server
 	//Set initial variables on join
 	function GameConnection::onClientEnterGame(%this)
 	{
-		%this.ndPivot     = true;
-		%this.ndLimited   = true;
-		%this.ndDirection = true;
+		%this.ndPivot      = true;
+		%this.ndLimited    = true;
+		%this.ndDirection  = true;
+		%this.ndForcePlant = false;
 
 		%this.ndImage          = ND_Image.getId();
 		%this.ndMode           = NDM_Disabled;

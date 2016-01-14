@@ -409,10 +409,29 @@ function serverCmdForcePlant(%client)
 	NDM_PlantCopy.conditionalPlant(%client, true);
 }
 
-//Alternative short commands
-function serverCmdForceP(%client){serverCmdForcePlant(%client);}
-function serverCmdFPlant(%client){serverCmdForcePlant(%client);}
-function serverCmdFP    (%client){serverCmdForcePlant(%client);}
+//Alternative short command
+function serverCmdFP(%client){serverCmdForcePlant(%client);}
+
+//Keep force plant enabled
+function serverCmdToggleForcePlant(%client)
+{
+	//Check admin
+	if($Pref::Server::ND::FloatAdminOnly && !%client.isAdmin)
+	{
+		messageClient(%client, '', "\c6Force Plant is admin only. Ask an admin for help.");
+		return;
+	}
+
+	%client.ndForcePlant = !%client.ndForcePlant;
+
+	if(%client.ndForcePlant)
+		messageClient(%client, '', "\c6Force Plant has been enabled. Use \c3/toggleForcePlant\c6 to disable it.");
+	else
+		messageClient(%client, '', "\c6Force Plant has been disabled. Use \c3/toggleForcePlant\c6 to enable it again.");
+}
+
+//Alternative short command
+function serverCmdTFP(%client){serverCmdToggleForcePlant(%client);}
 
 
 
@@ -518,10 +537,8 @@ function serverCmdFillWrench(%client)
 	commandToClient(%client, 'ndOpenWrenchGui');
 }
 
-//Short commands
-function serverCmdFillW  (%client) {serverCmdFillWrench(%client);}
-function serverCmdFWrench(%client) {serverCmdFillWrench(%client);}
-function serverCmdFW     (%client) {serverCmdFillWrench(%client);}
+//Short command
+function serverCmdFW(%client) {serverCmdFillWrench(%client);}
 
 //Send data from gui
 function serverCmdNdStartFillWrench(%client, %data)
