@@ -1635,8 +1635,6 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 	%qCount = %this.plantQueueCount;
 	%numClients = %this.numClients;
 
-	%quota = getQuotaObjectFromClient(%client);
-
 	for(%i = %start; %i < %end; %i++)
 	{
 		//Brick already placed
@@ -1644,7 +1642,7 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 			continue;
 
 		//Attempt to place brick
-		%brick = ND_Selection::plantBrick(%this, %i, %position, %angleID, %group, %client, %bl_id, %quota);
+		%brick = ND_Selection::plantBrick(%this, %i, %position, %angleID, %group, %client, %bl_id);
 		%plants++;
 
 		if(%brick > 0)
@@ -1733,8 +1731,6 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 	%qCount = %this.plantQueueCount;
 	%numClients = %this.numClients;
 
-	%quota = getQuotaObjectFromClient(%client);
-
 	for(%i = %start; %i < %end; %i++)
 	{
 		//The queue is empty! Switch back to plant search.
@@ -1752,7 +1748,7 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 		//Attempt to plant queued brick
 		%bId = $NS[%this, "PQueue", %i];
 
-		%brick = ND_Selection::plantBrick(%this, %bId, %position, %angleID, %group, %client, %bl_id, %quota);
+		%brick = ND_Selection::plantBrick(%this, %bId, %position, %angleID, %group, %client, %bl_id);
 
 		if(%brick > 0)
 		{
@@ -1815,7 +1811,7 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 
 //Attempt to plant brick with id %i
 //Returns brick if planted, 0 if floating, -1 if blocked, -2 if trust failure
-function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %client, %bl_id, %quota)
+function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %client, %bl_id)
 {
 	//Offset position
 	%bPos = $NS[%this, "P", %i];
@@ -1988,6 +1984,9 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		case 2: %bRot = "0 0 1 180";
 		case 3: %bRot = "0 0 -1 90.0002";
 	}
+
+	//Somehow quota applies to bricks?????
+	//clearCurrentQuotaObject();
 
 	//Attempt to plant brick	
 	%brick = new FxDTSBrick()
@@ -2207,7 +2206,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	%brick.setRaycasting(!$NS[%this, "NRC", %i]);
 	%brick.setColliding(!$NS[%this, "NC", %i]);
 
-	setCurrentQuotaObject(%quota);
+	setCurrentQuotaObject(getQuotaObjectFromClient(%client));
 
 	if((%tmp = $NS[%this, "NT", %i]) !$= "")
 		%brick.setNTObjectName(%tmp);
@@ -2277,8 +2276,6 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 
 	if(%tmp = $NS[%this, "MD", %i])
 		%brick.setSound(%tmp, %client);
-
-	clearCurrentQuotaObject();
 
 	return %brick;
 }
