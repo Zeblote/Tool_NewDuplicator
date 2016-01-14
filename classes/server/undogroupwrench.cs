@@ -31,6 +31,8 @@ function ND_UndoGroupWrench::ndTickUndo(%this, %start, %client)
 	if(%end > %this.brickCount)
 		%end = %this.brickCount;
 
+	setCurrentQuotaObject(getQuotaObjectFromClient(%client));
+
 	%fillWrenchName       = %this.fillWrenchName;
 	%fillWrenchLight      = %this.fillWrenchLight;
 	%fillWrenchEmitter    = %this.fillWrenchEmitter;
@@ -77,6 +79,8 @@ function ND_UndoGroupWrench::ndTickUndo(%this, %start, %client)
 		{
 			if(%tmp = %brick.emitter | 0)
 				%curr = %tmp.getEmitterDatablock();
+			else if(%tmp = %brick.oldEmitterDB | 0)
+				%curr = %tmp;
 			else
 				%curr = 0;
 
@@ -159,9 +163,22 @@ function ND_UndoGroupWrench::ndTickUndo(%this, %start, %client)
 			%fillWrenchRenderingValue = $NU[%client, %this, "R", %i];
 
 			if(%curr != %fillWrenchRenderingValue)
+			{
+				//Copy emitter ...?
+				if(!%fillWrenchRenderingValue && (%tmp = %brick.emitter | 0))
+					%emitter = %tmp.getEmitterDatablock();
+				else
+					%emitter = 0;
+
 				%brick.setRendering(%fillWrenchRenderingValue);
+
+				if(!%fillWrenchRenderingValue && %emitter)
+					%brick.setEmitter(%emitter);
+			}
 		}
 	}
+
+	clearCurrentQuotaObject();
 
 	//If undo is taking long, tell the client how far we get
 	if(%client.ndLastMessageTime + 0.1 < $Sim::Time)

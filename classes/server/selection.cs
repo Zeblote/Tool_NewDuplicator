@@ -1635,6 +1635,8 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 	%qCount = %this.plantQueueCount;
 	%numClients = %this.numClients;
 
+	%quota = getQuotaObjectFromClient(%client);
+
 	for(%i = %start; %i < %end; %i++)
 	{
 		//Brick already placed
@@ -1642,7 +1644,7 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 			continue;
 
 		//Attempt to place brick
-		%brick = ND_Selection::plantBrick(%this, %i, %position, %angleID, %group, %client, %bl_id);
+		%brick = ND_Selection::plantBrick(%this, %i, %position, %angleID, %group, %client, %bl_id, %quota);
 		%plants++;
 
 		if(%brick > 0)
@@ -1731,6 +1733,8 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 	%qCount = %this.plantQueueCount;
 	%numClients = %this.numClients;
 
+	%quota = getQuotaObjectFromClient(%client);
+
 	for(%i = %start; %i < %end; %i++)
 	{
 		//The queue is empty! Switch back to plant search.
@@ -1748,7 +1752,7 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 		//Attempt to plant queued brick
 		%bId = $NS[%this, "PQueue", %i];
 
-		%brick = ND_Selection::plantBrick(%this, %bId, %position, %angleID, %group, %client, %bl_id);
+		%brick = ND_Selection::plantBrick(%this, %bId, %position, %angleID, %group, %client, %bl_id, %quota);
 
 		if(%brick > 0)
 		{
@@ -1811,7 +1815,7 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 
 //Attempt to plant brick with id %i
 //Returns brick if planted, 0 if floating, -1 if blocked, -2 if trust failure
-function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %client, %bl_id)
+function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %client, %bl_id, %quota)
 {
 	//Offset position
 	%bPos = $NS[%this, "P", %i];
@@ -2203,11 +2207,13 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	%brick.setRaycasting(!$NS[%this, "NRC", %i]);
 	%brick.setColliding(!$NS[%this, "NC", %i]);
 
+	setCurrentQuotaObject(%quota);
+
 	if((%tmp = $NS[%this, "NT", %i]) !$= "")
 		%brick.setNTObjectName(%tmp);
 
 	if(%tmp = $NS[%this, "LD", %i])
-		%brick.setLight(%tmp);
+		%brick.setLight(%tmp, %client);
 
 	if(%tmp = $NS[%this, "ED", %i])
 	{
@@ -2226,7 +2232,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 			%dir = !%dir;
 
 		%brick.emitterDirection = %dir;
-		%brick.setEmitter(%tmp);
+		%brick.setEmitter(%tmp, %client);
 	}
 
 	if(%tmp = $NS[%this, "ID", %i])
@@ -2260,17 +2266,19 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		%brick.itemPosition = %pos;
 		%brick.itemDirection = %dir;
 		%brick.itemRespawnTime = $NS[%this, "IT", %i];
-		%brick.setItem(%tmp);
+		%brick.setItem(%tmp, %client);
 	}
 
 	if(%tmp = $NS[%this, "VD", %i])
 	{
 		%brick.reColorVehicle = $NS[%this, "VC", %i];
-		%brick.setVehicle(%tmp);
+		%brick.setVehicle(%tmp, %client);
 	}
 
 	if(%tmp = $NS[%this, "MD", %i])
-		%brick.setSound(%tmp);
+		%brick.setSound(%tmp, %client);
+
+	clearCurrentQuotaObject();
 
 	return %brick;
 }
@@ -2688,8 +2696,10 @@ function ND_Selection::tickFillWrench(%this)
 	if(%end > %this.brickCount)
 		%end = %this.brickCount;
 
-	%group2 = %this.client.brickGroup.getId();
-	%bl_id = %this.client.bl_id;
+	%client = %this.client;
+
+	%group2 = %client.brickGroup.getId();
+	%bl_id = %client.bl_id;
 
 	%wrenchCount = %this.wrenchSuccessCount;
 	%failCount = %this.wrenchFailCount;
@@ -2698,6 +2708,8 @@ function ND_Selection::tickFillWrench(%this)
 
 	%clientId = %this.client;
 	%undoId = %this.undoGroup;
+
+	setCurrentQuotaObject(getQuotaObjectFromClient(%client));
 
 	%fillWrenchName       = %this.fillWrenchName;
 	%fillWrenchLight      = %this.fillWrenchLight;
@@ -2755,7 +2767,7 @@ function ND_Selection::tickFillWrench(%this)
 
 					if(%curr != %fillWrenchLightValue)
 					{
-						%brick.setLight(%fillWrenchLightValue);
+						%brick.setLight(%fillWrenchLightValue, %client);
 						%undoRequired = true;
 					}
 				}
@@ -2764,6 +2776,8 @@ function ND_Selection::tickFillWrench(%this)
 				{
 					if(%tmp = %brick.emitter | 0)
 						%curr = %tmp.getEmitterDatablock();
+					else if(%tmp = %brick.oldEmitterDB | 0)
+						%curr = %tmp;
 					else
 						%curr = 0;
 
@@ -2771,7 +2785,7 @@ function ND_Selection::tickFillWrench(%this)
 
 					if(%curr != %fillWrenchEmitterValue)
 					{
-						%brick.setEmitter(%fillWrenchEmitterValue);
+						%brick.setEmitter(%fillWrenchEmitterValue, %client);
 						%undoRequired = true;
 					}
 				}
@@ -2799,7 +2813,7 @@ function ND_Selection::tickFillWrench(%this)
 
 					if(%curr != %fillWrenchItemValue)
 					{
-						%brick.setItem(%fillWrenchItemValue);
+						%brick.setItem(%fillWrenchItemValue, %client);
 						%undoRequired = true;
 					}
 				}
@@ -2871,8 +2885,17 @@ function ND_Selection::tickFillWrench(%this)
 
 					if(%curr != %fillWrenchRenderingValue)
 					{
+						//Copy emitter ...?
+						if(!%fillWrenchRenderingValue && (%tmp = %brick.emitter | 0))
+							%emitter = %tmp.getEmitterDatablock();
+						else
+							%emitter = 0;
+
 						%brick.setRendering(%fillWrenchRenderingValue);
 						%undoRequired = true;
+
+						if(!%fillWrenchRenderingValue && %emitter)
+							%brick.setEmitter(%emitter);
 					}
 				}
 
@@ -2889,6 +2912,8 @@ function ND_Selection::tickFillWrench(%this)
 		}
 	}
 
+	clearCurrentQuotaObject();
+
 	%this.wrenchIndex = %i;
 	%this.wrenchSuccessCount = %wrenchCount;
 	%this.wrenchFailCount = %failCount;
@@ -2896,10 +2921,10 @@ function ND_Selection::tickFillWrench(%this)
 	%this.undoGroup.brickCount = %undoCount;
 
 	//Tell the client how much we wrenched this tick
-	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
+	if(%client.ndLastMessageTime + 0.1 < $Sim::Time)
 	{
-		%this.client.ndUpdateBottomPrint();
-		%this.client.ndLastMessageTime = $Sim::Time;
+		%client.ndUpdateBottomPrint();
+		%client.ndLastMessageTime = $Sim::Time;
 	}
 
 	if(%i >= %this.brickCount)
