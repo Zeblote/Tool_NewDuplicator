@@ -12,6 +12,9 @@
 if(isFile("Add-Ons/Support_Updater.zip"))
 	return;
 
+if($SupportUpdaterMigration)
+	return;
+
 function ndInstallUpdaterPrompt()
 {
 	%message = "<just:left>The New Duplicator is regularly updated with new modes, features, and bug fixes."
