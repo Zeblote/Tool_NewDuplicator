@@ -2046,11 +2046,21 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		printID = $NS[%this, "PR", %i];
 	};
 
+	//This will call ::onLoadPlant instead of ::onPlant
+	%prev1 = $Server_LoadFileObj;
+	%prev2 = $LastLoadedBrick;
+	$Server_LoadFileObj = %brick;
+	$LastLoadedBrick = %brick;
+
 	//Add to brickgroup
 	%brickGroup.add(%brick);
 
 	//Attempt plant
 	%error = %brick.plant();
+
+	//Restore variable
+	$Server_LoadFileObj = %prev1;
+	$LastLoadedBrick = %prev2;
 
 	if(%error == 2)
 	{
@@ -2122,11 +2132,12 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	else
 		%brick.stackBL_ID = %bl_id;
 
-	%brick.setTrusted(true);
-	%datablock.onTrustCheckFinished(%brick);
+	%brick.trustCheckFinished();
 
-	//Workaround - water cubes change this in onPlant
-	//so we have to set it manually after planting.
+	//Apply special settings
+	%brick.setRendering(!$NS[%this, "NR", %i]);
+	%brick.setRaycasting(!$NS[%this, "NRC", %i]);
+	%brick.setColliding(!$NS[%this, "NC", %i]);
 	%brick.setShapeFx($NS[%this, "SF", %i]);
 
 	//Apply events
@@ -2234,19 +2245,6 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		}
 	}
 
-	//Hole bots... why don't you use the correct function?
-	//Add-ons are supposed to package _ON_TrustCheckFinished...
-	if(%datablock.isBotHole)
-	{
-		%brick.isBotHole = true;
-		%brick.onHoleSpawnPlanted();
-	}
-
-	//Apply wrench settings
-	%brick.setRendering(!$NS[%this, "NR", %i]);
-	%brick.setRaycasting(!$NS[%this, "NRC", %i]);
-	%brick.setColliding(!$NS[%this, "NC", %i]);
-
 	setCurrentQuotaObject(getQuotaObjectFromClient(%client));
 
 	if((%tmp = $NS[%this, "NT", %i]) !$= "")
@@ -2317,9 +2315,6 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 
 	if(%tmp = $NS[%this, "MD", %i])
 		%brick.setSound(%tmp, %client);
-
-	//JVS support
-	%brick.noContentEvents = true;
 
 	return %brick;
 }
