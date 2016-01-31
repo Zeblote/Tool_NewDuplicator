@@ -50,7 +50,7 @@
 // VD[i]: Vehicle datablock
 // VC[i]: Vehicle color
 
-// MD[i]: Vehicle datablock
+// MD[i]: Music datablock
 
 
 // EN[i]: Number of events on the brick
@@ -115,6 +115,9 @@ function ND_Selection::deleteData(%this)
 	%this.deHighlight();
 	%this.deleteHighlightBox();
 	%this.deleteGhostBricks();
+
+	if(isObject(%this.saveFile))
+		%this.saveFile.delete();
 }
 
 //Remove data when selection is deleted
@@ -244,6 +247,8 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 
 	//Save number of connections
 	$NS[%this, "N", 0] = %conns;
+	%this.maxConnections = %conns;
+	%this.connectionCount = %conns;
 
 	%this.trustFailCount += %trustFailCount;
 	%this.highlightGroup = %highlightGroup;
@@ -380,6 +385,12 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 		}
 
 		$NS[%this, "N", %i] = %conns;
+
+		//Inc number of connections
+		%this.connectionCount += %conns;
+
+		if(%conns > %this.maxConnections)
+			%this.maxConnections = %conns;
 	}
 
 	%this.trustFailCount += %trustFailCount;
@@ -473,6 +484,9 @@ function ND_Selection::startCubeSelection(%this, %box, %limited)
 
 	%this.trustFailCount = 0;
 	%this.brickLimitReached = false;
+
+	%this.maxConnections = 0;
+	%this.connectionCount = 0;
 
 	if(%this.client.isAdmin)
 		%brickLimit = $Pref::Server::ND::MaxBricksAdmin;
@@ -718,6 +732,12 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 		}
 
 		$NS[%this, "N", %i] = %conns;
+
+		//Inc number of connections
+		%this.connectionCount += %conns;
+
+		if(%conns > %this.maxConnections)
+			%this.maxConnections = %conns;
 	}
 
 	//Save how far we got
@@ -929,7 +949,7 @@ function ND_Selection::recordBrickData(%this, %i)
 		$NS[%this, "-Z"] = %minZ;
 		$NS[%this, "+X"] = %maxX;
 		$NS[%this, "+Y"] = %maxY;
-		$NS[%this, "+Z"] = %maxZ;			
+		$NS[%this, "+Z"] = %maxZ;
 	}
 
 	return %brick;
@@ -1128,6 +1148,10 @@ function ND_Selection::spawnGhostBricks(%this, %position, %angleID)
 	for(%f = 0; %f < %max; %f += %increment)
 	{
 		%i = mFloor(%f);
+
+		//Skip missing bricks
+		if($NS[%this, "D", %i] == 0)
+			continue;
 
 		//Offset position
 		%bPos = vectorAdd(ndRotateVector($NS[%this, "P", %i], %angleID), %position);
@@ -1578,6 +1602,7 @@ function ND_Selection::startPlant(%this, %position, %angleID, %forcePlant)
 	%this.plantSuccessCount = 0;
 	%this.plantTrustFailCount = 0;
 	%this.plantBlockedFailCount = 0;
+	%this.plantMissingFailCount = 0;
 
 	%this.undoGroup = new SimSet();
 	ND_ServerGroup.add(%this.undoGroup);
@@ -1640,6 +1665,14 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 		//Brick already placed
 		if($NP[%this, %i])
 			continue;
+
+		//Skip nonexistant bricks
+		if($NS[%this, "D", %i] == 0)
+		{
+			$NP[%this, %i] = true;
+			%this.plantMissingFailCount++;
+			continue;
+		}
 
 		//Attempt to place brick
 		%brick = ND_Selection::plantBrick(%this, %i, %position, %angleID, %group, %client, %bl_id);
@@ -1747,6 +1780,14 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 
 		//Attempt to plant queued brick
 		%bId = $NS[%this, "PQueue", %i];
+
+		//Skip nonexistant bricks
+		if($NS[%this, "D", %i] == 0)
+		{
+			$NP[%this, %bId] = true;
+			%this.plantMissingFailCount++;
+			continue;
+		}
 
 		%brick = ND_Selection::plantBrick(%this, %bId, %position, %angleID, %group, %client, %bl_id);
 
@@ -2277,6 +2318,9 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	if(%tmp = $NS[%this, "MD", %i])
 		%brick.setSound(%tmp, %client);
 
+	//JVS support
+	%brick.noContentEvents = true;
+
 	return %brick;
 }
 
@@ -2291,7 +2335,8 @@ function ND_Selection::finishPlant(%this)
 	%planted = %this.plantSuccessCount;
 	%blocked = %this.plantBlockedFailCount;
 	%trusted = %this.plantTrustFailCount;
-	%floating = %count - %planted - %blocked - %trusted;
+	%missing = %this.plantMissingFailCount;
+	%floating = %count - %planted - %blocked - %trusted - %missing;
 
 	%s = %this.plantSuccessCount == 1 ? "" : "s";
 	%message = "<font:Verdana:20>\c6Planted \c3" @ %this.plantSuccessCount @ "\c6 / \c3" @ %count @ "\c6 Brick" @ %s @ "!";
@@ -2304,6 +2349,9 @@ function ND_Selection::finishPlant(%this)
 
 	if(%floating)
 		%message = %message @ "\n<font:Verdana:17>\c3" @ %floating @ "\c6 floating.";
+
+	if(%missing)
+		%message = %message @ "\n<font:Verdana:17>\c3" @ %missing @ "\c6 missing Datablock.";
 
 	commandToClient(%this.client, 'centerPrint', %message, 4);
 
@@ -2958,4 +3006,884 @@ function ND_Selection::cancelFillWrench(%this)
 		%this.client.undoStack.push(%this.undoGroup TAB "ND_WRENCH");
 	else
 		%this.undoGroup.delete();
+}
+
+
+
+//Saving bricks
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Begin saving
+function ND_Selection::startSaving(%this, %filePath)
+{
+	//Open file
+	%this.saveFilePath = %filePath;
+	%this.saveFile = new FileObject();
+
+	if(!%this.saveFile.openForWrite(%filePath))
+		return false;
+
+	//Write file header
+	%this.saveFile.writeLine("Do not modify this file at all. You will break it.");
+	%this.saveFile.writeLine("1");
+	%this.saveFile.writeLine("Saved by " @ %this.client.name @ " (" @ %this.client.bl_id @ ") at " @ getDateTime());
+
+	//Write colorset
+	for(%i = 0; %i < 64; %i++)
+		%this.saveFile.writeLine(getColorIDTable(%i));
+
+	//Write line count
+	%this.saveFile.writeLine("Linecount " @ %this.brickCount);
+
+	if($Pref::Server::ND::PlayMenuSounds)
+		messageClient(%this.client, 'MsgUploadStart', "");
+
+	//Schedule first tick
+	%this.saveStage = 0;
+	%this.saveIndex = 0;
+	%this.saveSchedule = %this.schedule(30, tickSaveBricks);
+
+	return true;
+}
+
+//Save some bricks
+function ND_Selection::tickSaveBricks(%this)
+{
+	cancel(%this.saveSchedule);
+
+	//Get bounds for this tick
+	%start = %this.saveIndex;
+	%end = %start + $Pref::Server::ND::ProcessPerTick * 2;
+
+	if(%end > %this.brickCount)
+		%end = %this.brickCount;
+
+	%file = %this.saveFile;
+
+	//Save bricks
+	for(%i = %start; %i < %end; %i++)
+	{
+		%data = $NS[%this, "D", %i];
+
+		//Get correct print texture
+		if(%data.hasPrint)
+		{
+			%fileName = getPrintTexture($NS[%this, "PR", %i]);
+			%fileBase = fileBase(%fileName);
+			%path = filePath(%fileName);
+
+			if(%path !$= "" && %fileName !$= "base/data/shapes/bricks/brickTop.png")
+			{
+				%dirName = getSubStr(%path, strLen("Add-Ons/"), (strLen(%path) - strLen("Add-Ons/")));
+
+				%posA = strpos(%dirName, "_");
+				%posB = strpos(%dirName, "_", %posA + 1);
+
+				%aspectRatio = getSubStr(%dirName, %posA + 1, %posB - %posA - 1);
+				%printTexture = %aspectRatio @ "/" @ %fileBase;
+			}
+			else
+				%printTexture = "/";
+		}
+		else
+			%printTexture = "";
+
+		//Write brick data
+		%file.writeLine(%data.uiName @ "\""
+			SPC vectorAdd($NS[%this, "P", %i], %this.rootPosition)
+			SPC $NS[%this, "R", %i]
+			SPC 0
+			SPC $NS[%this, "CO", %i]
+			SPC %printTexture
+			SPC $NS[%this, "CF", %i] * 1
+			SPC $NS[%this, "SF", %i] * 1
+			SPC !$NS[%this, "NRC", %i]
+			SPC !$NS[%this, "NC", %i]
+			SPC !$NS[%this, "NR", %i]
+		);
+
+		//Write brick name
+		if((%tmp = $NS[%this, "NT", %i]) !$= "")
+			%file.writeLine("+-NTOBJECTNAME " @ %tmp);
+
+		//Write events
+		%cnt = $NS[%this, "EN", %i];
+
+		for(%j = 0; %j < %cnt; %j++)
+		{
+			//Basic event parameters
+			%enabled = $NS[%this, "EE", %i, %j];
+			%inputName = $NS[%this, "EI", %i, %j];
+			%delay = $NS[%this, "ED", %i, %j];
+			%targetIdx = $NS[%this, "ETI", %i, %j];
+
+			if(%targetIdx == -1)
+			{
+				%targetName = "-1";
+				%NT = $NS[%this, "ENT", %i, %j];
+			}
+			else
+			{
+				%targetName = $NS[%this, "ET", %i, %j];
+				%NT = "";
+			}
+
+			%outputName = $NS[%this, "EO", %i, %j];
+
+			//Temp line (without output parameters)
+			%line = "+-EVENT" TAB %j TAB %enabled TAB %inputName TAB %delay TAB %targetName TAB %NT TAB %outputName;
+
+			//Output event parameters
+			if(%targetIdx >= 0)
+				%targetClass = getWord(getField($InputEvent_TargetListfxDtsBrick_[$NS[%this, "EII", %i, %j]], %targetIdx), 1);
+			else
+				%targetClass = "FxDTSBrick";
+
+			for(%k = 0; %k < 4; %k++)
+			{
+				%param = $NS[%this, "EP", %i, %j, %k];
+				%dataType = getWord(getField($OutputEvent_parameterList[%targetClass, $NS[%this, "EOI", %i, %j]], %k), 0);
+
+				if(%dataType $= "Datablock")
+				{
+					if(isObject(%param))
+						%line = %line TAB %param.getName();
+					else
+						%line = %line TAB "-1";
+				}
+				else
+					%line = %line TAB %param;
+			}
+
+			%file.writeLine(%line);
+		}
+
+		//Write emitter
+		%edb = $NS[%this, "ED", %i];
+		%edir = $NS[%this, "ER", %i];
+
+		if(isObject(%edb))
+			%file.writeLine("+-EMITTER" SPC %edb.uiName @ "\" " @ %edir);
+		else if(%edir != 0)
+			%file.writeLine("+-EMITTER NONE\" " @ %edir);
+
+		//Write light
+		%ldb = $NS[%this, "LD", %i];
+
+		if(isObject(%ldb))
+			%file.writeLine("+-LIGHT" SPC %ldb.uiName @ "\" 1");
+
+		//Write item
+		%idb = $NS[%this, "ID", %i];
+		%ipos = $NS[%this, "IP", %i];
+		%idir = $NS[%this, "IR", %i];
+		%irt = $NS[%this, "IT", %i];
+
+		if(isObject(%idb))
+			%file.writeLine("+-ITEM" SPC %idb.uiName @ "\" " @ %ipos SPC %idir SPC %irt);
+		else if(%ipos != 0 || (%idir !$= "" && %idir != 2) || (%irt != 4000 && %irt != 0))
+			%file.writeLine("+-ITEM NONE\" " @ %ipos SPC %idir SPC %irt);
+
+		//Write music
+		%mdb = $NS[%this, "MD", %i];
+
+		if(isObject(%mdb))
+			%file.writeLine("+-AUDIOEMITTER" SPC %mdb.uiName @ "\"");
+
+		//Write vehicle
+		%vdb = $NS[%this, "VD", %i];
+		%vcol = $NS[%this, "VC", %i];
+
+		if(isObject(%vdb))
+			%file.writeLine("+-VEHICLE" SPC %vdb.uiName @ "\" " @ %vcol);
+	}
+
+	//Save how far we got
+	%this.saveIndex = %i;
+
+	//Tell the client how much we saved this tick
+	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
+	{
+		%this.client.ndUpdateBottomPrint();
+		%this.client.ndLastMessageTime = $Sim::Time;
+	}
+
+	//Finished saving all bricks?
+	if(%i >= %this.brickCount)
+	{
+		//Find width of connection numbers
+		if(%this.maxConnections >= 241 * 241)
+			%numberSize = 3;
+		else if(%this.maxConnections >= 241)
+			%numberSize = 2;
+		else
+			%numberSize = 1;
+
+		//Find width of connection indices
+		if(%this.brickCount > 241 * 241)
+			%indexSize = 3;
+		else if(%this.brickCount > 241)
+			%indexSize = 2;
+		else
+			%indexSize = 1;
+
+		//Save the sizes
+		%file.writeLine("ND_SIZE\" 1 " @ %this.connectionCount SPC %numberSize SPC %indexSize);
+
+		%this.saveStage = 1;
+		%this.saveIndex = 0;
+		%this.saveLineBuffer = "ND_TREE\" ";
+
+		//Create byte table
+		if(!$ND::ByteTableCreated)
+			ndCreateByteTable();
+
+		//Start saving connections
+		%this.connectionCount = 0;
+		%this.saveSchedule = %this.schedule(30, tickSaveConnections, %numberSize, %indexSize);
+	}
+	else
+		%this.saveSchedule = %this.schedule(30, tickSaveBricks);
+}
+
+//Save some connections
+function ND_Selection::tickSaveConnections(%this, %numberSize, %indexSize)
+{
+	cancel(%this.saveSchedule);
+
+	//Get bounds for this tick
+	%start = %this.saveIndex;
+	%end = %start + $Pref::Server::ND::ProcessPerTick * 2;
+
+	if(%end > %this.brickCount)
+		%end = %this.brickCount;
+
+	%file = %this.saveFile;
+	%lineBuffer = %this.saveLineBuffer;
+	%connections = %this.connectionCount;
+
+	//Save connections
+	for(%i = %start; %i < %end; %i++)
+	{
+		//Save number of connections of this brick
+		%cnt = $NS[%this, "N", %i];
+
+		%connections += %cnt;
+
+		//Write compressed connection number
+		if(%numberSize == 1)
+			%lineBuffer = %lineBuffer @ ndPack241_1(%cnt);
+		else if(%numberSize == 2)
+			%lineBuffer = %lineBuffer @ ndPack241_2(%cnt);
+		else
+			%lineBuffer = %lineBuffer @ ndPack241_3(%cnt);
+
+		//If buffer is full, save to file
+		if(strLen(%lineBuffer) > 1000)
+		{
+			%file.writeLine(%lineBuffer);
+			%lineBuffer = "ND_TREE\" ";
+		}
+
+		for(%j = 0; %j < %cnt; %j++)
+		{
+			//Write compressed connection index
+			if(%indexSize == 1)
+				%lineBuffer = %lineBuffer @ ndPack241_1($NS[%this, "C", %i, %j]);
+			else if(%indexSize == 2)
+				%lineBuffer = %lineBuffer @ ndPack241_2($NS[%this, "C", %i, %j]);
+			else
+				%lineBuffer = %lineBuffer @ ndPack241_3($NS[%this, "C", %i, %j]);
+
+			//If buffer is full, save to file
+			if(strLen(%lineBuffer) > 1000)
+			{
+				%file.writeLine(%lineBuffer);
+				%lineBuffer = "ND_TREE\" ";
+			}
+		}
+	}
+
+	//Save how far we got
+	%this.saveIndex = %i;
+	%this.saveLineBuffer = %lineBuffer;
+	%this.connectionCount = %connections;
+
+	//Tell the client how much we cut this tick
+	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
+	{
+		%this.client.ndUpdateBottomPrint();
+		%this.client.ndLastMessageTime = $Sim::Time;
+	}
+
+	if(%i >= %this.brickCount)
+	{
+		if(strLen(%lineBuffer) != 9)
+			%file.writeLine(%lineBuffer);
+
+		%this.saveLineBuffer = "";
+		%this.finishSaving();
+	}
+	else
+		%this.saveSchedule = %this.schedule(30, tickSaveConnections, %numberSize, %indexSize);
+}
+
+//Finish saving
+function ND_Selection::finishSaving(%this)
+{
+	%this.saveFile.close();
+	%this.saveFile.delete();
+
+	%s1 = %this.brickCount == 1 ? "" : "s";
+	%s2 = %this.connectionCount == 1 ? "" : "s";
+
+	messageClient(%this.client, 'MsgProcessComplete', "\c6Finished saving selection, wrote \c3"
+		@ %this.brickCount @ "\c6 Brick" @ %s1 @ " with \c3" @ %this.connectionCount @ "\c6 Connection" @ %s2 @ "!");
+
+	%this.client.ndSetMode(NDM_PlantCopy);
+}
+
+//Cancel saving
+function ND_Selection::cancelSaving(%this)
+{
+	cancel(%this.saveSchedule);
+
+	%this.saveFile.close();
+	%this.saveFile.delete();
+
+	if(isFile(%this.saveFilePath))
+		fileDelete(%this.saveFilePath);
+}
+
+
+
+//Loading bricks
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Begin loading
+function ND_Selection::startLoading(%this, %filePath)
+{
+	//Open file
+	%this.loadFile = new FileObject();
+
+	if(!%this.loadFile.openForRead(%filePath))
+		return false;
+
+	//Skip file header
+	%this.loadFile.readLine();
+	%cnt = %this.loadFile.readLine();
+
+	for(%i = 0; %i < %cnt; %i++)
+		%this.loadFile.readLine();
+
+	//Read colorset
+	for(%i = 0; %i < 64; %i++)
+		$NS[%this, "CT", %i] = ndGetClosestColorID2(getColorI(%this.loadFile.readLine()));
+
+	//Read line count (temporary, allows displaying percentage)
+	%this.loadExpectedBrickCount = getWord(%this.loadFile.readLine(), 1) * 1;
+
+	if($Pref::Server::ND::PlayMenuSounds)
+		messageClient(%this.client, 'MsgUploadStart', "");
+
+	//Schedule first tick
+	%this.connectionCount = 0;
+	%this.brickCount = 0;
+	%this.loadCount = 0;
+
+	%this.loadStage = 0;
+	%this.loadIndex = -1;
+	%this.loadSchedule = %this.schedule(30, tickLoadBricks);
+
+	return true;
+}
+
+//Load some bricks
+function ND_Selection::tickLoadBricks(%this)
+{
+	cancel(%this.loadSchedule);
+
+	%file = %this.loadFile;
+	%index = %this.loadIndex;
+
+	%loadCount = %this.loadCount;
+
+	//Process lines
+	while(!%file.isEOF())
+	{
+		%line = %file.readLine();
+
+		//Skip empty lines
+		if(trim(%line $= ""))
+			continue;
+
+		//Figure out what to do with the line
+		switch$(getWord(%line, 0))
+		{
+			//Line is brick name
+			case "+-NTOBJECTNAME":
+
+				$NS[%this, "NT", %index] = getWord(%line, 1);
+
+			//Line is event
+			case "+-EVENT":
+
+				//Mostly copied from default loading code
+				%idx = $NS[%this, "EN", %index];
+
+				if(!%idx)
+					%idx = 0;
+
+				%enabled = getField(%line, 2);
+				%inputName = getField(%line, 3);
+				%delay = getField(%line, 4);
+				%targetName = getField(%line, 5);
+				%NT = getField(%line, 6);
+				%outputName = getField(%line, 7);
+				%par1 = getField(%line, 8);
+				%par2 = getField(%line, 9);
+				%par3 = getField(%line, 10);
+				%par4 = getField(%line, 11);
+
+				%inputIdx = inputEvent_GetInputEventIdx(%inputName);
+
+				if(%inputIdx == -1)
+					warn("LOAD DUP: Input Event not found for name \"" @ %inputName @ "\"");
+
+				%targetIdx = inputEvent_GetTargetIndex("FxDTSBrick", %inputIdx, %targetName);
+
+				if (%targetName == -1)
+					%targetClass = "FxDTSBrick";
+				else
+				{
+					%field = getField($InputEvent_TargetList["FxDTSBrick", %inputIdx], %targetIdx);
+					%targetClass = getWord(%field, 1);
+				}
+
+				%outputIdx = outputEvent_GetOutputEventIdx(%targetClass, %outputName);
+
+				if(%outputIdx == -1)
+					warn("LOAD DUP: Output Event not found for name \"" @ %outputName @ "\"");
+
+				for (%j = 1; %j < 5; %j++)
+				{
+					%field = getField($OutputEvent_ParameterList[%targetClass, %outputIdx], %j - 1);
+					%dataType = getWord(%field, 0);
+
+					if (%dataType $= "Datablock" && %par[%j] != -1 && !isObject(%par[%j]))
+					{
+						warn("LOAD DUP: Datablock not found for event " @ %outputName @ " -> " @ %par[%j]);
+						%par[%j] = 0;
+					}
+				}
+
+				//Save event
+				$NS[%this, "EE", %index, %idx] = %enabled;
+				$NS[%this, "ED", %index, %idx] = %delay;
+
+				$NS[%this, "EI", %index, %idx] = %inputName;
+				$NS[%this, "EII", %index, %idx] = %inputIdx;
+
+				$NS[%this, "EO", %index, %idx] = %outputName;
+				$NS[%this, "EOI", %index, %idx] = %outputIdx;
+				$NS[%this, "EOC", %index, %idx] = $OutputEvent_AppendClient["FxDTSBrick", %outputIdx];
+
+				$NS[%this, "ET", %index, %idx] = %targetName;
+				$NS[%this, "ETI", %index, %idx] = %targetIdx;
+				$NS[%this, "ENT", %index, %idx] = %NT;
+
+				$NS[%this, "EP", %index, %idx, 0] = %par1;
+				$NS[%this, "EP", %index, %idx, 1] = %par2;
+				$NS[%this, "EP", %index, %idx, 2] = %par3;
+				$NS[%this, "EP", %index, %idx, 3] = %par4;
+
+				$NS[%this, "EN", %index] = %idx + 1;
+
+			//Line is emitter
+			case "+-EMITTER":
+
+				%line = getSubStr(%line, 10, 9999);
+
+				%pos = strpos(%line, "\"");
+				%dbName = getSubStr(%line, 0, %pos);
+
+				if (%dbName !$= "NONE")
+				{
+					%db = $UINameTable_Emitters[%dbName];
+
+					//Ensure emitter exists
+					if(!isObject(%db))
+					{
+						warn("LOAD DUP: Emitter datablock no found for uiName \"" @ %dbName @ "\"");
+						%db = 0;
+					}
+				}
+				else
+					%db = 0;
+
+				$NS[%this, "ED", %index] = %db;
+				$NS[%this, "ER", %index] = mFLoor(getSubStr(%line, %pos + 2, 9999));
+
+			//Line is light
+			case "+-LIGHT":
+
+				%line = getSubStr(%line, 8, 9999);
+
+				%pos = strpos(%line, "\"");
+				%dbName = getSubStr(%line, 0, %pos);
+
+				%db = $UINameTable_Lights[%dbName];
+
+				//Ensure light exists
+				if(!isObject(%db))
+				{
+					warn("LOAD DUP: Light datablock no found for uiName \"" @ %dbName @ "\"");
+					%db = 0;
+				}
+				else
+					$NS[%this, "LD", %index] = %db;
+			
+			//Line is item
+			case "+-ITEM":
+
+				%line = getSubStr(%line, 7, 9999);
+
+				%pos = strpos(%line, "\"");
+				%dbName = getSubStr(%line, 0, %pos);
+
+				if (%dbName !$= "NONE")
+				{
+					%db = $UINameTable_Items[%dbName];
+
+					//Ensure item exists
+					if(!isObject(%db))
+					{
+						warn("LOAD DUP: Item datablock no found for uiName \"" @ %dbName @ "\"");
+						%db = 0;
+					}
+				}
+				else
+					%db = 0;
+
+				%line = getSubStr(%line, %pos + 2, 9999);
+
+				$NS[%this, "ID", %index] = %db;
+				$NS[%this, "IP", %index] = getWord(%line, 0);
+				$NS[%this, "IR", %index] = getWord(%line, 1);
+				$NS[%this, "IT", %index] = getWord(%line, 2);
+			
+			//Line is music
+			case "+-AUDIOEMITTER":
+
+				%line = getSubStr(%line, 15, 9999);
+
+				%pos = strpos(%line, "\"");
+				%dbName = getSubStr(%line, 0, %pos);
+
+				%db = $UINameTable_Music[%dbName];
+
+				//Ensure music exists
+				if(!isObject(%db))
+				{
+					warn("LOAD DUP: Music datablock no found for uiName \"" @ %dbName @ "\"");
+					%db = 0;
+				}
+				else
+					$NS[%this, "MD", %index] = %db;
+			
+			//Line is vehicle
+			case "+-VEHICLE":
+
+				%line = getSubStr(%line, 10, 9999);
+
+				%pos = strpos(%line, "\"");
+				%dbName = getSubStr(%line, 0, %pos);
+
+				if (%dbName !$= "NONE")
+				{
+					%db = $UINameTable_Vehicle[%dbName];
+
+					//Ensure vehicle exists
+					if(!isObject(%db))
+					{
+						warn("LOAD DUP: Vehicle datablock no found for uiName \"" @ %dbName @ "\"");
+						%db = 0;
+					}
+				}
+				else
+					%db = 0;
+
+				$NS[%this, "VD", %index] = %db;
+				$NS[%this, "VC", %index] = mFLoor(getSubStr(%line, %pos + 2, 9999));
+
+			//Start reading connections
+			case "ND_SIZE\"":
+
+				%version = getWord(%line, 1);
+				%this.loadExpectedConnectionCount = getWord(%line, 2);
+				%numberSize = getWord(%line, 3);
+				%indexSize = getWord(%line, 4);
+				%connections = true;
+				break;
+
+			//Error
+			case "ND_TREE\"":
+
+				warn("LOAD DUP: Got connection data before connection sizes");
+
+			//Line is irrelevant
+			case "+-OWNER":
+
+				%nothing = "";				
+
+			//Line is brick
+			default:
+
+				//Increment selection index
+				%index++;
+				%quotePos = strstr(%line, "\"");
+
+				if (%quotePos >= 0)
+				{
+					//Get datablock
+					%uiName = getSubStr(%line, 0, %quotePos);
+					%db = $uiNameTable[%uiName];
+
+					if(isObject(%db))
+					{
+						$NS[%this, "D", %index] = %db;
+
+						//Load all the info from brick line
+						%line = getSubStr(%line, %quotePos + 2, 9999);
+						%pos = getWords(%line, 0, 2);
+						%angId = getWord(%line, 3);
+
+						if(%loadCount == 0)
+							%this.rootPosition = %pos;
+
+						$NS[%this, "P", %index] = vectorSub(%pos, %this.rootPosition);
+						$NS[%this, "R", %index] = %angId;
+
+						$NS[%this, "CO", %index] = $NS[%this, "CT", mFloor(getWord(%line, 5))];
+						$NS[%this, "CF", %index] = getWord(%line, 7);
+						$NS[%this, "SF", %index] = getWord(%line, 8);
+
+						$NS[%this, "PR", %index] = $printNameTable[getWord(%line, 6)];
+
+						if(!getWord(%line, 9))
+							$NS[%this, "NRC", %index] = true;
+
+						if(!getWord(%line, 10))
+							$NS[%this, "NC", %index] = true;
+
+						if(!getWord(%line, 11))
+							$NS[%this, "NR", %index] = true;
+
+						//Update selection size with brick datablock
+						if(%angId % 2 == 0)
+						{
+							%sx = %db.brickSizeX / 4;
+							%sy = %db.brickSizeY / 4;
+						}
+						else
+						{
+							%sy = %db.brickSizeX / 4;
+							%sx = %db.brickSizeY / 4;
+						}
+
+						%sz = %db.brickSizeZ / 10;
+
+						%minX = getWord(%pos, 0) - %sx;
+						%minY = getWord(%pos, 1) - %sy;
+						%minZ = getWord(%pos, 2) - %sz;
+						%maxX = getWord(%pos, 0) + %sx;
+						%maxY = getWord(%pos, 1) + %sy;
+						%maxZ = getWord(%pos, 2) + %sz;
+
+						if(%loadCount)
+						{
+							if(%minX < $NS[%this, "-X"])
+								$NS[%this, "-X"] = %minX;
+
+							if(%minY < $NS[%this, "-Y"])
+								$NS[%this, "-Y"] = %minY;
+
+							if(%minZ < $NS[%this, "-Z"])
+								$NS[%this, "-Z"] = %minZ;
+
+							if(%maxX > $NS[%this, "+X"])
+								$NS[%this, "+X"] = %maxX;
+
+							if(%maxY > $NS[%this, "+Y"])
+								$NS[%this, "+Y"] = %maxY;
+
+							if(%maxZ > $NS[%this, "+Z"])
+								$NS[%this, "+Z"] = %maxZ;
+						}
+						else
+						{
+							$NS[%this, "-X"] = %minX;
+							$NS[%this, "-Y"] = %minY;
+							$NS[%this, "-Z"] = %minZ;
+							$NS[%this, "+X"] = %maxX;
+							$NS[%this, "+Y"] = %maxY;
+							$NS[%this, "+Z"] = %maxZ;
+						}
+
+						%loadCount++;
+					}
+					else	
+					{
+						warn("LOAD DUP: Brick datablock not found for uiName \"" @ %uiName @ "\"");
+						$NS[%this, "D", %index] = 0;
+					}
+				}
+				else
+				{
+					warn("LOAD DUP: Brick uiName missing on line \"" @ %line @ "\"");
+					$NS[%this, "D", %index] = 0;
+				}
+		}
+
+		if(%linesProcessed++ > $Pref::Server::ND::ProcessPerTick * 2)
+			break;
+	}
+
+	//Save how far we got
+	%this.loadIndex = %index;
+	%this.brickCount = %index + 1;
+	%this.loadCount = %loadCount;
+
+	//Tell the client how much we loaded this tick
+	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
+	{
+		%this.client.ndUpdateBottomPrint();
+		%this.client.ndLastMessageTime = $Sim::Time;
+	}
+
+	//Switch over to connection mode if necessary
+	if(%connections)
+	{
+		%this.loadStage = 1;
+		%this.loadIndex = 0;
+		%this.connectionCount = 0;
+		%this.connectionIndex = -1;
+		%this.connectionIndex2 = 0;
+		%this.connectionsRemaining = 0;
+
+		%this.loadSchedule = %this.schedule(30, tickLoadConnections, %numberSize, %indexSize);
+		return;
+	}
+
+	//Reached end of file, means we got no connection data
+	if(%file.isEOF())
+	{
+		messageClient(%this.client, '', "\c0Warning:\c6 The loaded save contains no connection data. Planting may not work as expected.");
+		%this.finishLoading();
+	}
+	else
+		%this.loadSchedule = %this.schedule(30, tickLoadBricks);
+}
+
+//Load connections
+function ND_Selection::tickLoadConnections(%this, %numberSize, %indexSize)
+{
+	cancel(%this.loadSchedule);
+
+	%connections = %this.connectionCount;
+	%connectionIndex = %this.connectionIndex;
+	%connectionIndex2 = %this.connectionIndex2;
+	%connectionsRemaining = %this.connectionsRemaining;
+
+	//Process 5 lines
+	for(%i = 0; %i < 5 && !%this.loadFile.isEOF(); %i++)
+	{
+		%line = getSubStr(%this.loadFile.readLine(), 9, 9999);
+		%len = strLen(%line);
+		%pos = 0;
+
+		while(%pos < %len)
+		{
+			if(%connectionsRemaining == 0)
+			{
+				//No connections remaining for active brick, increment index
+				%connectionIndex++;
+				%connectionIndex2 = 0;
+
+				if(%numberSize == 1)
+					%connectionsRemaining = ndUnpack241_1(%line, %pos);
+				else if(%numberSize == 2)
+					%connectionsRemaining = ndUnpack241_2(%line, %pos);
+				else
+					%connectionsRemaining = ndUnpack241_3(%line, %pos);
+
+				$NS[%this, "N", %connectionIndex] = %connectionsRemaining;
+
+				%pos += %numberSize;
+			}
+			else
+			{
+				//Read a connection
+				if(%indexSize == 1)
+					%conn = ndUnpack241_1(%line, %pos);
+				else if(%indexSize == 2)
+					%conn = ndUnpack241_2(%line, %pos);
+				else
+					%conn = ndUnpack241_3(%line, %pos);
+
+				$NS[%this, "C", %connectionIndex, %connectionIndex2] = %conn;
+				%connectionsRemaining--;
+				%connectionIndex2++;
+				%connections++;
+
+				%pos += %indexSize;
+			}
+		}
+	}
+
+	//Save how far we got
+	%this.connectionCount = %connections;
+	%this.connectionIndex = %connectionIndex;
+	%this.connectionIndex2 = %connectionIndex2;
+	%this.connectionsRemaining = %connectionsRemaining;
+
+	//Tell the client how much we loaded this tick
+	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
+	{
+		%this.client.ndUpdateBottomPrint();
+		%this.client.ndLastMessageTime = $Sim::Time;
+	}
+
+	//Check if we're done
+	if(%this.loadFile.isEOF())
+		%this.finishLoading();
+	else
+		%this.loadSchedule = %this.schedule(30, tickLoadConnections, %numberSize, %indexSize);
+}
+
+//Finish loading
+function ND_Selection::finishLoading(%this)
+{
+	%this.loadFile.close();
+	%this.loadFile.delete();
+
+	%this.updateSize();
+	%this.updateHighlightBox();
+
+	%s1 = %this.brickCount == 1 ? "" : "s";
+	%s2 = %this.connectionCount == 1 ? "" : "s";
+
+	messageClient(%this.client, 'MsgProcessComplete', "\c6Finished loading selection, got \c3"
+		@ %this.brickCount @ "\c6 Brick" @ %s1 @ " with \c3" @ %this.connectionCount @ "\c6 Connection" @ %s2 @ "!");
+
+	%this.client.ndSetMode(NDM_PlantCopy);
+}
+
+//Cancel loading
+function ND_Selection::cancelLoading(%this)
+{
+	cancel(%this.loadSchedule);
+
+	%this.loadFile.close();
+	%this.loadFile.delete();
 }

@@ -54,6 +54,46 @@ function ndGetClosestColorID(%rgb)
 	return %best;
 }
 
+//Get the closest paint color to an rgba value
+function ndGetClosestColorID2(%rgba)
+{
+	%rgb = getWords(%rgba, 0, 2);
+	%a = getWord(%rgba, 3);
+
+	//Set initial value
+	%color = getColorI(getColorIdTable(0));
+	%alpha = getWord(%color, 3);
+
+	%best = 0;
+	%bestDiff = vectorLen(vectorSub(%rgb, %color));
+
+	if((%alpha > 254 && %a < 254) || (%alpha < 254 && %a > 254))
+		%bestDiff += 1000;
+	else
+		%bestDiff += mAbs(%alpha - %a) * 0.5;
+
+	for(%i = 1; %i < 64; %i++)
+	{
+		%color = getColorI(getColorIdTable(%i));
+		%alpha = getWord(%color, 3);
+
+		%diff = vectorLen(vectorSub(%rgb, %color));
+
+		if((%alpha > 254 && %a < 254) || (%alpha < 254 && %a > 254))
+			%diff += 1000;
+		else
+			%diff += mAbs(%alpha - %a) * 0.5;
+
+		if(%diff < %bestDiff)
+		{
+			%best = %i;
+			%bestDiff = %diff;
+		}
+	}
+
+	return %best;
+}
+
 //Convert a paint color to a <color:xxxxxx> code
 function ndGetPaintColorCode(%id)
 {
@@ -299,4 +339,92 @@ function FxDtsBrick::ndMirrorGhost(%brick, %client, %axis)
 
 	//Apply transform
 	%brick.setTransform(%bPos SPC %bRot);
+}
+
+
+
+//Binary compression
+///////////////////////////////////////////////////////////////////////////
+
+//Creates byte lookup table
+function ndCreateByteTable()
+{
+	$ND::Byte241Lookup = "";
+
+	//This will map numbers 0-241 to chars 15-255, starting after \r
+	for(%i = 15; %i < 256; %i++)
+	{
+		%char = collapseEscape("\\x" @
+			getSubStr("0123456789abcdef", (%i & 0xf0) >> 4, 1) @
+			getSubStr("0123456789abcdef", %i & 0x0f, 1));
+
+		$ND::Byte241ToChar[%i - 15] = %char;
+		$ND::Byte241Lookup = $ND::Byte241Lookup @ %char;
+	}
+
+	$ND::ByteTableCreated = true;
+}
+
+//Packs number in single byte
+function ndPack241_1(%num)
+{
+	return $ND::Byte241ToChar[%num];
+}
+
+//Packs number in two bytes
+function ndPack241_2(%num)
+{
+	return $ND::Byte241ToChar[(%num / 241) | 0] @ $ND::Byte241ToChar[%num % 241];
+}
+
+//Packs number in three bytes
+function ndPack241_3(%num)
+{
+	return
+		$ND::Byte241ToChar[(((%num / 241) | 0) / 241) | 0] @
+		$ND::Byte241ToChar[((%num / 241) | 0) % 241] @
+		$ND::Byte241ToChar[%num % 241];
+}
+
+//Packs number in four bytes
+function ndPack241_4(%num)
+{
+	return
+		$ND::Byte241ToChar[(((((%num / 241) | 0) / 241) | 0) / 241) | 0] @
+		$ND::Byte241ToChar[((((%num / 241) | 0) / 241) | 0) % 241] @
+		$ND::Byte241ToChar[((%num / 241) | 0) % 241] @
+		$ND::Byte241ToChar[%num % 241];
+}
+
+//Unpacks number from single byte
+function ndUnpack241_1(%string, %i)
+{
+	return strpos($ND::Byte241Lookup, getSubStr(%string, %i, 1));
+}
+
+//Unpacks number from two bytes
+function ndUnpack241_2(%string, %i)
+{
+	return
+		strpos($ND::Byte241Lookup, getSubStr(%string, %i    , 1)) * 241 +
+		strpos($ND::Byte241Lookup, getSubStr(%string, %i + 1, 1));
+}
+
+//Unpacks number from three bytes
+function ndUnpack241_3(%string, %i)
+{
+	return
+		((strpos($ND::Byte241Lookup, getSubStr(%string, %i    , 1)) * 58081) | 0) +
+		  strpos($ND::Byte241Lookup, getSubStr(%string, %i + 1, 1)) *   241       +
+		  strpos($ND::Byte241Lookup, getSubStr(%string, %i + 2, 1));
+}
+
+//Unpacks number from four bytes
+function ndUnpack241_4(%string, %i)
+{
+	return
+		((strpos($ND::Byte241Lookup, getSubStr(%string, %i    , 1)) * 13997521) | 0) +
+		((strpos($ND::Byte241Lookup, getSubStr(%string, %i + 1, 1)) *    58081) | 0) +
+		  strpos($ND::Byte241Lookup, getSubStr(%string, %i + 2, 1)) *      241       +
+		  strpos($ND::Byte241Lookup, getSubStr(%string, %i + 3, 1));
 }

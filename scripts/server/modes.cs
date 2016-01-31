@@ -60,6 +60,8 @@ $NDM::StackSelectProgress =  7;
 $NDM::PlantCopy           =  8;
 $NDM::PlantCopyProgress   =  9;
 $NDM::WrenchProgress      = 10;
+$NDM::SaveProgress        = 11;
+$NDM::LoadProgress        = 12;
 
 //Create all the pseudo-classes to handle callbacks
 function ndRegisterDuplicatorModes()
@@ -212,6 +214,34 @@ function ndRegisterDuplicatorModes()
 		{
 			class = "NewDuplicatorMode";
 			index = $NDM::WrenchProgress;
+			image = "any";
+			spin = true;
+
+			allowSelecting = false;
+			allowUnMount   = false;
+		}
+	);
+
+	//Save Progress duplicator mode
+	ND_ServerGroup.add(
+		new ScriptObject(NDM_SaveProgress)
+		{
+			class = "NewDuplicatorMode";
+			index = $NDM::SaveProgress;
+			image = "any";
+			spin = true;
+
+			allowSelecting = false;
+			allowUnMount   = false;
+		}
+	);
+
+	//Load Progress duplicator mode
+	ND_ServerGroup.add(
+		new ScriptObject(NDM_LoadProgress)
+		{
+			class = "NewDuplicatorMode";
+			index = $NDM::LoadProgress;
 			image = "any";
 			spin = true;
 

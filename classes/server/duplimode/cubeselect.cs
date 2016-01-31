@@ -67,6 +67,12 @@ function NDM_CubeSelect::onChangeMode(%this, %client, %nextMode)
 		if(isObject(%client.ndSelectionBox))
 			%client.ndSelectionBox.delete();
 	}
+	else if(%nextMode == $NDM::LoadProgress)
+	{
+		//Remove the selection box
+		if(isObject(%client.ndSelectionBox))
+			%client.ndSelectionBox.delete();
+	}
 }
 
 //Kill this mode

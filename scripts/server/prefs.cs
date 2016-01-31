@@ -30,6 +30,9 @@ function ndRegisterRTBPrefs()
 	RTB_registerPref("Fill Paint Fx Admin Only",   "New Duplicator | Limits",   "$Pref::Server::ND::PaintFxAdminOnly",    "bool",             "Tool_NewDuplicator", true,    false, false, "");
 	RTB_registerPref("Fill Wrench Admin Only",     "New Duplicator | Limits",   "$Pref::Server::ND::WrenchAdminOnly",     "bool",             "Tool_NewDuplicator", true,    false, false, "");
 	RTB_registerPref("Floating Bricks Admin Only", "New Duplicator | Limits",   "$Pref::Server::ND::FloatAdminOnly",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
+	RTB_registerPref("Save Admin Only",            "New Duplicator | Limits",   "$Pref::Server::ND::SaveAdminOnly",       "bool",             "Tool_NewDuplicator", true,    false, false, "");
+	RTB_registerPref("Load Admin Only",            "New Duplicator | Limits",   "$Pref::Server::ND::LoadAdminOnly",       "bool",             "Tool_NewDuplicator", false,   false, false, "");
+	RTB_registerPref("Client Load Admin Only",     "New Duplicator | Limits",   "$Pref::Server::ND::ClientLoadAdminOnly", "bool",             "Tool_NewDuplicator", true,    false, false, "");
 
 	//Settings
 	RTB_RegisterPref("Trust Limit",                "New Duplicator | Settings", "$Pref::Server::ND::TrustLimit",          %trustDropDown,     "Tool_NewDuplicator", 2,       false, false, "");
@@ -68,6 +71,9 @@ function ndExtendDefaultPrefs()
 	if($Pref::Server::ND::PaintFxAdminOnly    $= "") $Pref::Server::ND::PaintFxAdminOnly    = true;
 	if($Pref::Server::ND::WrenchAdminOnly     $= "") $Pref::Server::ND::WrenchAdminOnly     = true;
 	if($Pref::Server::ND::FloatAdminOnly      $= "") $Pref::Server::ND::FloatAdminOnly      = true;
+	if($Pref::Server::ND::SaveAdminOnly       $= "") $Pref::Server::ND::SaveAdminOnly       = true;
+	if($Pref::Server::ND::LoadAdminOnly       $= "") $Pref::Server::ND::LoadAdminOnly       = false;
+	if($Pref::Server::ND::ClientLoadAdminOnly $= "") $Pref::Server::ND::ClientLoadAdminOnly = true;
 
 	//Settings
 	if($Pref::Server::ND::TrustLimit          $= "") $Pref::Server::ND::TrustLimit          = 2;
@@ -107,6 +113,9 @@ function ndApplyDefaultPrefs(%this)
 	$Pref::Server::ND::PaintFxAdminOnly    = true;
 	$Pref::Server::ND::WrenchAdminOnly     = true;
 	$Pref::Server::ND::FloatAdminOnly      = true;
+	$Pref::Server::ND::SaveAdminOnly       = true;
+	$Pref::Server::ND::LoadAdminOnly       = false;
+	$Pref::Server::ND::ClientLoadAdminOnly = true;
 
 	//Settings
 	$Pref::Server::ND::TrustLimit          = 2;

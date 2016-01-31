@@ -14,8 +14,8 @@
 //Switch to this mode
 function NDM_PlantCopy::onStartMode(%this, %client, %lastMode)
 {
-	if(%lastMode != $NDM::PlantCopyProgress)
-		%client.ndSelection.spawnGhostBricks(%client.ndSelection.rootPosition, 0);
+	if(%lastMode == $NDM::StackSelect || %lastMode == $NDM::CubeSelect || %lastMode == $NDM::CutProgress || %lastMode == $NDM::LoadProgress)
+		%client.ndSelection.spawnGhostBricks(%client.ndSelection.rootPosition, 0); 
 
 	%client.ndUpdateBottomPrint();
 }
@@ -23,7 +23,7 @@ function NDM_PlantCopy::onStartMode(%this, %client, %lastMode)
 //Switch away from this mode
 function NDM_PlantCopy::onChangeMode(%this, %client, %nextMode)
 {	
-	if(%nextMode != $NDM::PlantCopyProgress)
+	if(%nextMode == $NDM::StackSelect || %nextMode == $NDM::CubeSelect)
 	{
 		%client.ndSelection.deleteData();
 	}

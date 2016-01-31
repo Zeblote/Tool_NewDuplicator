@@ -571,6 +571,261 @@ function serverCmdNdStartFillWrench(%client, %data)
 
 
 
+//Saving and loading
+///////////////////////////////////////////////////////////////////////////
+
+package NewDuplicator_Server_Final
+{
+	//Save current selection to file
+	function serverCmdSaveDup(%client, %f0, %f1, %f2, %f3, %f4, %f5, %f6, %f7)
+	{
+		//Check timeout
+		if(!%client.isAdmin && %client.ndLastSaveTime + 10 > $Sim::Time)
+		{
+			%remain = mCeil(%client.ndLastSaveTime + 10 - $Sim::Time);
+
+			if(%remain != 1)
+				%s = "s";
+
+			messageClient(%client, '', "\c6Please wait\c3 " @ %remain @ "\c6 second" @ %s @ " before saving again!");
+			return;
+		}
+
+		//Check admin
+		if($Pref::Server::ND::SaveAdminOnly && !%client.isAdmin)
+		{
+			messageClient(%client, '', "\c6Saving duplications is admin only. Ask an admin for help.");
+			return;
+		}
+
+		//Check mode
+		if(%client.ndModeIndex != $NDM::PlantCopy)
+		{
+			messageClient(%client, '', "\c6Saving duplications can only be used in Plant Mode.");
+			return;
+		}
+
+		//Filter file name
+		%allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ._-()";
+		%fileName = trim(%f0 SPC %f1 SPC %f2 SPC %f3 SPC %f4 SPC %f5 SPC %f6 SPC %f7);
+		%filePath = $ND::ConfigPath @ "Saves/" @ %fileName @ ".bls";
+		%filePath = strReplace(%filePath, ".bls.bls", ".bls");
+
+		for(%i = 0; %i < strLen(%fileName); %i++)
+		{
+			if(strPos(%allowed, getSubStr(%fileName, %i, 1)) == -1)
+			{
+				%forbidden = true;
+				break;
+			}
+		}
+
+		if(%forbidden || !strLen(%fileName) || strLen(%fileName) > 50)
+		{
+			messageClient(%client, '', "\c6Bad save name \"\c3" @ %fileName @ "\c6\", please try again.");
+			messageClient(%client, '', "\c6Only \c3a-z A-Z 0-9 ._-()\c6 and \c3space\c6 are allowed, with a max length of 50 characters.");
+			return;
+		}
+
+		//Check overwrite
+		if(isFile(%filePath) && %client.ndPotentialOverwrite !$= %fileName)
+		{
+			messageClient(%client, '', "\c6Save \"\c3" @ %fileName @ "\c6\" already exists. Repeat the command to overwrite.");
+			%client.ndPotentialOverwrite = %fileName;
+			return;
+		}
+
+		%client.ndPotentialOverwrite = "";
+
+		//Check writeable
+		if(!isWriteableFileName(%filePath))
+		{
+			messageClient(%client, '', "\c6File \"\c3" @ %fileName @ "\c6\" is not writeable. Ask the host for help.");
+			return;
+		}
+
+		messageClient(%client, '', "\c6Saving selection to \"\c3" @ %fileName @ "\c6\"...");
+
+		//Notify admins
+		for(%i = 0; %i < ClientGroup.getCount(); %i++)
+		{
+			%cl = ClientGroup.getObject(%i);
+
+			if(%cl.isAdmin && %cl != %client)
+				messageClient(%cl, '', "\c3" @ %client.name @ "\c6 is saving duplication \"\c3" @ %fileName @ "\c6\"");
+		}
+
+		//Write log
+		echo("ND: " @ %client.name @ " (" @ %client.bl_id @ ") is saving duplication " @ %fileName);
+
+		//Change mode
+		%client.ndSetMode(NDM_SaveProgress);
+		
+		if(!%client.ndSelection.startSaving(%filePath))
+		{
+			messageClient(%client, '', "\c6Failed to write save \"\c3" @ %fileName @ "\c6\". Ask the host for help.");
+			%client.ndSetMode(NDM_PlantCopy);
+		}
+	}
+
+	//Load selection from file
+	function serverCmdLoadDup(%client, %f0, %f1, %f2, %f3, %f4, %f5, %f6, %f7)
+	{
+		//Check timeout
+		if(!%client.isAdmin && %client.ndLastSaveTime + 5 > $Sim::Time)
+		{
+			%remain = mCeil(%client.ndLastSaveTime + 5 - $Sim::Time);
+
+			if(%remain != 1)
+				%s = "s";
+
+			messageClient(%client, '', "\c6Please wait\c3 " @ %remain @ "\c6 second" @ %s @ " before loading again!");
+			return;
+		}
+
+		//Check admin
+		if($Pref::Server::ND::LoadAdminOnly && !%client.isAdmin)
+		{
+			messageClient(%client, '', "\c6Loading duplications is admin only. Ask an admin for help.");
+			return;
+		}
+
+		//Check mode
+		%mode = %client.ndModeIndex;
+
+		if(%mode != $NDM::StackSelect && %mode != $NDM::CubeSelect && %mode != $NDM::PlantCopy)
+		{
+			messageClient(%client, '', "\c6Loading duplications can only be used in Plant or Selection Mode.");
+			return;
+		}
+
+		//Filter file name
+		%allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ._-()";
+		%fileName = trim(%f0 SPC %f1 SPC %f2 SPC %f3 SPC %f4 SPC %f5 SPC %f6 SPC %f7);
+		%filePath = $ND::ConfigPath @ "Saves/" @ %fileName @ ".bls";
+		%filePath = strReplace(%filePath, ".bls.bls", ".bls");
+
+		for(%i = 0; %i < strLen(%fileName); %i++)
+		{
+			if(strPos(%allowed, getSubStr(%fileName, %i, 1)) == -1)
+			{
+				%forbidden = true;
+				break;
+			}
+		}
+
+		if(%forbidden || !strLen(%fileName) || strLen(%fileName) > 50)
+		{
+			messageClient(%client, '', "\c6Bad save name \"\c3" @ %fileName @ "\c6\", please try again.");
+			messageClient(%client, '', "\c6Only \c3a-z A-Z 0-9 ._-()\c6 and \c3space\c6 are allowed, with a max length of 50 characters.");
+			return;
+		}
+
+		//Check if file exists
+		if(!isFile(%filePath))
+		{
+			messageClient(%client, '', "\c6Save \"\c3" @ %fileName @ "\c6\" does not exist, please try again.");
+			return;
+		}
+
+		messageClient(%client, '', "\c6Loading selection from \"\c3" @ %fileName @ "\c6\"...");
+
+		//Notify admins
+		for(%i = 0; %i < ClientGroup.getCount(); %i++)
+		{
+			%cl = ClientGroup.getObject(%i);
+
+			if(%cl.isAdmin && %cl != %client)
+				messageClient(%cl, '', "\c3" @ %client.name @ "\c6 is loading duplication \"\c3" @ %fileName @ "\c6\"");
+		}
+
+		//Write log
+		echo("ND: " @ %client.name @ " (" @ %client.bl_id @ ") is loading duplication " @ %fileName);
+
+		//Change mode
+		%client.ndSetMode(NDM_LoadProgress);
+		
+		if(!%client.ndSelection.startLoading(%filePath))
+		{
+			messageClient(%client, '', "\c6Failed to read save \"\c3" @ %fileName @ "\c6\". Ask the host for help.");
+			%client.ndSetMode(%client.ndLastSelectMode);
+		}
+	}
+};
+
+//Get list of all available dups
+function serverCmdAllDups(%client, %pattern)
+{
+	//Check admin
+	if($Pref::Server::ND::LoadAdminOnly && !%client.isAdmin)
+	{
+		messageClient(%client, '', "\c6Loading duplications is admin only. Ask an admin for help.");
+		return;
+	}
+
+	if(strLen(%pattern))
+	{
+		//Filter pattern
+		%allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-()";
+		%pattern = trim(%pattern);
+
+		for(%i = 0; %i < strLen(%pattern); %i++)
+		{
+			if(strPos(%allowed, getSubStr(%pattern, %i, 1)) == -1)
+			{
+				messageClient(%client, '', "\c6Bad pattern \"\c3" @ %pattern @ "\c6\", please try again.");
+				messageClient(%client, '', "\c6Only \c3a-z A-Z 0-9 ._-()\c6 are allowed.");
+				return;
+			}
+		}
+
+		%p = $ND::ConfigPath @ "Saves/*" @ %pattern @ "*.bls";
+	}
+	else
+		%p = $ND::ConfigPath @ "Saves/*.bls";
+
+	//Get sorted list of files
+	%sort = new GuiTextListCtrl();
+
+	for(%i = findFirstFile(%p); isFile(%i); %i = findNextFile(%p))
+		%sort.addRow(0, fileBase(%i));
+
+	%fileCount = %sort.rowCount();
+	%sort.sort(0, 1);
+
+	//Dump list to client
+	if(%fileCount)
+	{
+		%s = (%fileCount == 1) ? " is" : "s are";
+
+		if(strLen(%pattern))
+			messageClient(%client, '', "\c3" @ %fileCount @ "\c6 saved duplication" @ %s @ " available for filter \"\c3" @ %pattern @ "\c6\":");
+		else
+			messageClient(%client, '', "\c3" @ %fileCount @ "\c6 saved duplication" @ %s @ " available:");
+
+		for(%i = 0; %i < %fileCount; %i++)
+			messageClient(%client, '', "\c6 - \c3" @ %sort.getRowText(%i));
+	}
+	else
+	{
+		if(strLen(%pattern))
+			messageClient(%client, '', "\c6No saved duplications are available for filter \"\c3" @ %pattern @ "\c6\".");
+		else
+			messageClient(%client, '', "\c6No saved duplications are available.");
+	}
+
+	%sort.delete();
+
+	messageClient(%client, '', "\c6Scroll using \c3PageUp\c6 and \c3PageDown\c6 if you can't see the whole list.");
+}
+
+//Alternative short commands
+function serverCmdSD(%client, %f0, %f1, %f2, %f3, %f4, %f5, %f6, %f7) {serverCmdSaveDup(%client, %f0, %f1, %f2, %f3, %f4, %f5, %f6, %f7);}
+function serverCmdLD(%client, %f0, %f1, %f2, %f3, %f4, %f5, %f6, %f7) {serverCmdLoadDup(%client, %f0, %f1, %f2, %f3, %f4, %f5, %f6, %f7);}
+function serverCmdAD(%client, %pattern) {serverCmdAllDups(%client, %pattern);}
+
+
+
 //Admin commands
 ///////////////////////////////////////////////////////////////////////////
 
