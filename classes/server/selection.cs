@@ -3773,7 +3773,7 @@ function ND_Selection::tickLoadBricks(%this)
 	//Reached end of file, means we got no connection data
 	if(%file.isEOF())
 	{
-		messageClient(%this.client, '', "\c0Warning:\c6 The loaded save contains no connection data. Planting may not work as expected.");
+		messageClient(%this.client, '', "\c0Warning:\c6 The save was not written by the New Duplicator. Planting may not work as expected.");
 		%this.finishLoading();
 	}
 	else
@@ -3862,9 +3862,18 @@ function ND_Selection::finishLoading(%this)
 	%this.loadFile.close();
 	%this.loadFile.delete();
 
+	//Align the build to the brick grid
 	%this.updateSize();
+
+	%pos = vectorAdd(%this.rootPosition, %this.rootToCenter);
+	%x = mCeil(getWord(%pos, 0) * 2 - %this.brickSizeX % 2) / 2 + (%this.brickSizeX % 2) / 4;
+	%y = mCeil(getWord(%pos, 1) * 2 - %this.brickSizeY % 2) / 2 + (%this.brickSizeY % 2) / 4;
+	%z = mCeil(getWord(%pos, 2) * 5 - %this.brickSizeZ % 2) / 5 + (%this.brickSizeZ % 2) / 10;
+	%this.rootPosition = vectorSub(%x SPC %y SPC %z, %this.rootToCenter);
+
 	%this.updateHighlightBox();
 
+	//Message client
 	%s1 = %this.brickCount == 1 ? "" : "s";
 	%s2 = %this.connectionCount == 1 ? "" : "s";
 
