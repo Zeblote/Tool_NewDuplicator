@@ -3866,11 +3866,21 @@ function ND_Selection::finishLoading(%this)
 	%this.updateSize();
 
 	%pos = vectorAdd(%this.rootPosition, %this.rootToCenter);
-	%x = mCeil(getWord(%pos, 0) * 2 - %this.brickSizeX % 2) / 2 + (%this.brickSizeX % 2) / 4;
-	%y = mCeil(getWord(%pos, 1) * 2 - %this.brickSizeY % 2) / 2 + (%this.brickSizeY % 2) / 4;
-	%z = mCeil(getWord(%pos, 2) * 5 - %this.brickSizeZ % 2) / 5 + (%this.brickSizeZ % 2) / 10;
-	%this.rootPosition = vectorSub(%x SPC %y SPC %z, %this.rootToCenter);
 
+	%shiftX = mCeil(getWord(%pos, 0) * 2 - %this.brickSizeX % 2) / 2 + (%this.brickSizeX % 2) / 4  - getWord(%pos, 0);
+	%shiftY = mCeil(getWord(%pos, 1) * 2 - %this.brickSizeY % 2) / 2 + (%this.brickSizeY % 2) / 4  - getWord(%pos, 1);
+	%shiftZ = mCeil(getWord(%pos, 2) * 5 - %this.brickSizeZ % 2) / 5 + (%this.brickSizeZ % 2) / 10 - getWord(%pos, 2);
+
+	%this.rootPosition = vectorAdd(%shiftX SPC %shiftY SPC %shiftZ, %this.rootPosition);
+
+	$NS[%this, "-X"] = $NS[%this, "-X"] + %shiftX;
+	$NS[%this, "+X"] = $NS[%this, "+X"] + %shiftX;
+	$NS[%this, "-Y"] = $NS[%this, "-Y"] + %shiftY;
+	$NS[%this, "+Y"] = $NS[%this, "+Y"] + %shiftY;
+	$NS[%this, "-Z"] = $NS[%this, "-Z"] + %shiftZ;
+	$NS[%this, "+Z"] = $NS[%this, "+Z"] + %shiftZ;
+
+	%this.updateSize();
 	%this.updateHighlightBox();
 
 	//Message client
