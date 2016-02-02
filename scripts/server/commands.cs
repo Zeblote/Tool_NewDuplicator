@@ -656,7 +656,7 @@ package NewDuplicator_Server_Final
 		}
 
 		//Write log
-		echo("ND: " @ %client.name @ " (" @ %client.bl_id @ ") is saving duplication " @ %fileName);
+		echo("ND: " @ %client.name @ " (" @ %client.bl_id @ ") is saving duplication \"" @ %fileName @ "\"");
 
 		//Change mode
 		%client.ndSetMode(NDM_SaveProgress);
@@ -740,7 +740,7 @@ package NewDuplicator_Server_Final
 		}
 
 		//Write log
-		echo("ND: " @ %client.name @ " (" @ %client.bl_id @ ") is loading duplication " @ %fileName);
+		echo("ND: " @ %client.name @ " (" @ %client.bl_id @ ") is loading duplication \"" @ %fileName @ "\"");
 
 		//Change mode
 		%client.ndSetMode(NDM_LoadProgress);

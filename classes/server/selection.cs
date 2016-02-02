@@ -3659,11 +3659,12 @@ function ND_Selection::tickLoadBricks(%this)
 						$NS[%this, "P", %index] = vectorSub(%pos, %this.rootPosition);
 						$NS[%this, "R", %index] = %angId;
 
-						$NS[%this, "CO", %index] = $NS[%this, "CT", mFloor(getWord(%line, 5))];
+						$NS[%this, "CO", %index] = $NS[%this, "CT", getWord(%line, 5)];
 						$NS[%this, "CF", %index] = getWord(%line, 7);
 						$NS[%this, "SF", %index] = getWord(%line, 8);
 
-						$NS[%this, "PR", %index] = $printNameTable[getWord(%line, 6)];
+						if(%db.hasPrint)
+							$NS[%this, "PR", %index] = $printNameTable[getWord(%line, 6)];
 
 						if(!getWord(%line, 9))
 							$NS[%this, "NRC", %index] = true;
@@ -3766,6 +3767,18 @@ function ND_Selection::tickLoadBricks(%this)
 		%this.connectionIndex2 = 0;
 		%this.connectionsRemaining = 0;
 
+		if((%numberSize != 1 && %numberSize != 2 && %numberSize != 3) ||
+		    (%indexSize != 1 &&  %indexSize != 2 &&  %indexSize != 3))
+		{
+			messageClient(%this.client, '', "\c0Warning:\c6 The connection data is corrupted. Planting may not work as expected.");
+			%this.finishLoading();
+			return;
+		}
+
+		//Create byte table
+		if(!$ND::ByteTableCreated)
+			ndCreateByteTable();
+
 		%this.loadSchedule = %this.schedule(30, tickLoadConnections, %numberSize, %indexSize);
 		return;
 	}
@@ -3786,12 +3799,13 @@ function ND_Selection::tickLoadConnections(%this, %numberSize, %indexSize)
 	cancel(%this.loadSchedule);
 
 	%connections = %this.connectionCount;
+	%maxConnections = %this.maxConnections;
 	%connectionIndex = %this.connectionIndex;
 	%connectionIndex2 = %this.connectionIndex2;
 	%connectionsRemaining = %this.connectionsRemaining;
 
-	//Process 5 lines
-	for(%i = 0; %i < 5 && !%this.loadFile.isEOF(); %i++)
+	//Process 10 lines
+	for(%i = 0; %i < 10 && !%this.loadFile.isEOF(); %i++)
 	{
 		%line = getSubStr(%this.loadFile.readLine(), 9, 9999);
 		%len = strLen(%line);
@@ -3799,45 +3813,89 @@ function ND_Selection::tickLoadConnections(%this, %numberSize, %indexSize)
 
 		while(%pos < %len)
 		{
-			if(%connectionsRemaining == 0)
+			if(%connectionsRemaining)
+			{
+				//Read a connection
+				if(%indexSize == 1)
+				{
+					$NS[%this, "C", %connectionIndex, %connectionIndex2] =
+					    strStr($ND::Byte241Lookup, getSubStr(%line, %pos, 1));
+
+					%pos++;
+				}
+				else if(%indexSize == 2)
+				{
+					%tmp = getSubStr(%line, %pos, 2);
+
+					$NS[%this, "C", %connectionIndex, %connectionIndex2] =
+					    strStr($ND::Byte241Lookup, getSubStr(%tmp, 0, 1)) * 241 +
+					    strStr($ND::Byte241Lookup, getSubStr(%tmp, 1, 1));
+
+					%pos += 2;
+				}
+				else
+				{
+					%tmp = getSubStr(%line, %pos, 3);
+
+					$NS[%this, "C", %connectionIndex, %connectionIndex2] = 
+					    ((strStr($ND::Byte241Lookup, getSubStr(%tmp, 0, 1)) * 58081) | 0) +
+					      strStr($ND::Byte241Lookup, getSubStr(%tmp, 1, 1)) *   241       +
+					      strStr($ND::Byte241Lookup, getSubStr(%tmp, 2, 1));
+
+					%pos += 3;
+				}
+
+				%connectionsRemaining--;
+				%connectionIndex2++;
+				%connections++;
+			}
+			else
 			{
 				//No connections remaining for active brick, increment index
 				%connectionIndex++;
 				%connectionIndex2 = 0;
 
+				//Read a connection number
 				if(%numberSize == 1)
-					%connectionsRemaining = ndUnpack241_1(%line, %pos);
+				{
+					%connectionsRemaining =
+					    strStr($ND::Byte241Lookup, getSubStr(%line, %pos, 1));
+
+					%pos++;
+				}
 				else if(%numberSize == 2)
-					%connectionsRemaining = ndUnpack241_2(%line, %pos);
+				{
+					%tmp = getSubStr(%line, %pos, 2);
+
+					%connectionsRemaining =
+					    strStr($ND::Byte241Lookup, getSubStr(%tmp, 0, 1)) * 241 +
+					    strStr($ND::Byte241Lookup, getSubStr(%tmp, 1, 1));
+
+					%pos += 2;
+				}
 				else
-					%connectionsRemaining = ndUnpack241_3(%line, %pos);
+				{
+					%tmp = getSubStr(%line, %pos, 3);
+
+					%connectionsRemaining = 
+					    ((strStr($ND::Byte241Lookup, getSubStr(%tmp, 0, 1)) * 58081) | 0) +
+					      strStr($ND::Byte241Lookup, getSubStr(%tmp, 1, 1)) *   241       +
+					      strStr($ND::Byte241Lookup, getSubStr(%tmp, 2, 1));
+
+					%pos += 3;
+				}
 
 				$NS[%this, "N", %connectionIndex] = %connectionsRemaining;
 
-				%pos += %numberSize;
-			}
-			else
-			{
-				//Read a connection
-				if(%indexSize == 1)
-					%conn = ndUnpack241_1(%line, %pos);
-				else if(%indexSize == 2)
-					%conn = ndUnpack241_2(%line, %pos);
-				else
-					%conn = ndUnpack241_3(%line, %pos);
-
-				$NS[%this, "C", %connectionIndex, %connectionIndex2] = %conn;
-				%connectionsRemaining--;
-				%connectionIndex2++;
-				%connections++;
-
-				%pos += %indexSize;
+				if(%maxConnections < %connectionsRemaining)
+					%maxConnections = %connectionsRemaining;
 			}
 		}
 	}
 
 	//Save how far we got
 	%this.connectionCount = %connections;
+	%this.maxConnections = %maxConnections;
 	%this.connectionIndex = %connectionIndex;
 	%this.connectionIndex2 = %connectionIndex2;
 	%this.connectionsRemaining = %connectionsRemaining;
