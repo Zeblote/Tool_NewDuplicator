@@ -3248,53 +3248,94 @@ function ND_Selection::tickSaveConnections(%this, %numberSize, %indexSize)
 
 	//Get bounds for this tick
 	%start = %this.saveIndex;
-	%end = %start + $Pref::Server::ND::ProcessPerTick * 2;
+	%end = %start + $Pref::Server::ND::ProcessPerTick * 4;
 
 	if(%end > %this.brickCount)
 		%end = %this.brickCount;
 
 	%file = %this.saveFile;
-	%lineBuffer = %this.saveLineBuffer;
 	%connections = %this.connectionCount;
+
+	%lineBuffer = %this.saveLineBuffer;
+	%len = strLen(%lineBuffer);
 
 	//Save connections
 	for(%i = %start; %i < %end; %i++)
 	{
 		//Save number of connections of this brick
 		%cnt = $NS[%this, "N", %i];
-
 		%connections += %cnt;
 
 		//Write compressed connection number
 		if(%numberSize == 1)
-			%lineBuffer = %lineBuffer @ ndPack241_1(%cnt);
+		{
+			%lineBuffer = %lineBuffer @ $ND::Byte241ToChar[%cnt];
+
+			%len++;
+		}
 		else if(%numberSize == 2)
-			%lineBuffer = %lineBuffer @ ndPack241_2(%cnt);
+		{
+			%lineBuffer = %lineBuffer @ 
+			    $ND::Byte241ToChar[(%cnt / 241) | 0] @
+			    $ND::Byte241ToChar[%cnt % 241];
+
+			%len += 2;
+		}
 		else
-			%lineBuffer = %lineBuffer @ ndPack241_3(%cnt);
+		{
+			%lineBuffer = %lineBuffer @ 
+			    $ND::Byte241ToChar[(((%cnt / 241) | 0) / 241) | 0] @
+			    $ND::Byte241ToChar[((%cnt / 241) | 0) % 241] @
+			    $ND::Byte241ToChar[%cnt % 241];
+
+			%len += 3;
+		}
 
 		//If buffer is full, save to file
-		if(strLen(%lineBuffer) > 1000)
+		if(%len > 254)
 		{
 			%file.writeLine(%lineBuffer);
 			%lineBuffer = "ND_TREE\" ";
+			%len = 9;
 		}
 
 		for(%j = 0; %j < %cnt; %j++)
 		{
 			//Write compressed connection index
 			if(%indexSize == 1)
-				%lineBuffer = %lineBuffer @ ndPack241_1($NS[%this, "C", %i, %j]);
+			{
+				%lineBuffer = %lineBuffer @ $ND::Byte241ToChar[$NS[%this, "C", %i, %j]];
+
+				%len++;
+			}
 			else if(%indexSize == 2)
-				%lineBuffer = %lineBuffer @ ndPack241_2($NS[%this, "C", %i, %j]);
+			{
+				%conn = $NS[%this, "C", %i, %j];
+
+				%lineBuffer = %lineBuffer @ 
+				    $ND::Byte241ToChar[(%conn / 241) | 0] @
+				    $ND::Byte241ToChar[%conn % 241];
+
+				%len += 2;
+			}
 			else
-				%lineBuffer = %lineBuffer @ ndPack241_3($NS[%this, "C", %i, %j]);
+			{
+				%conn = $NS[%this, "C", %i, %j];
+
+				%lineBuffer = %lineBuffer @ 
+				    $ND::Byte241ToChar[(((%conn / 241) | 0) / 241) | 0] @
+				    $ND::Byte241ToChar[((%conn / 241) | 0) % 241] @
+				    $ND::Byte241ToChar[%conn % 241];
+
+				%len += 3;
+			}
 
 			//If buffer is full, save to file
-			if(strLen(%lineBuffer) > 1000)
+			if(%len > 254)
 			{
 				%file.writeLine(%lineBuffer);
 				%lineBuffer = "ND_TREE\" ";
+				%len = 9;
 			}
 		}
 	}
