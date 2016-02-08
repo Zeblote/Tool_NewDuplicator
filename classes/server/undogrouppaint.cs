@@ -48,8 +48,14 @@ function ND_UndoGroupPaint::ndTickUndo(%this, %mode, %start, %client)
 				{
 					$NDHC[%brick] = %colorID;
 
+					//Handle transparent bricks
+					if($ND::Transparent[%colorID])
+						%highlight = $ND::BrickHighlightColor2;
+					else
+						%highlight = $ND::BrickHighlightColor;
+
 					//Update color fx indicator
-					if($NDHC[%brick] == $ND::BrickHighlightColor)
+					if(%colorID == %highlight)
 						%brick.setColorFx(3);
 					else
 						%brick.setColorFx(0);

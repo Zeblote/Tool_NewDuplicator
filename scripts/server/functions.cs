@@ -23,6 +23,11 @@ function ndRotateVector(%vector, %steps)
 	}
 }
 
+
+
+//Color functions
+///////////////////////////////////////////////////////////////////////////
+
 //Get the closest paint color to an rgb value
 function ndGetClosestColorID(%rgb)
 {
@@ -114,6 +119,15 @@ function ndGetPaintColorCode(%id)
 	%b2 = getSubStr(%chars,  %b % 16     , 1);
 
 	return "<color:" @ %r1 @ %r2 @ %g1 @ %g2 @ %b1 @ %b2 @ ">";
+}
+
+//Make a lookup table of color id transparency
+function ndCreateAlphaTable()
+{
+	for(%i = 0; %i < 64; %i++)
+		$ND::Transparent[%i] = getWord(getColorIDTable(%i), 3) < 0.99;
+
+	$ND::TransparencyTableCreated = true;
 }
 
 
