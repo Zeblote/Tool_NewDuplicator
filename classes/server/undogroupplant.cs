@@ -41,6 +41,9 @@ function SimSet::ndTickUndo(%this, %count, %client)
 	{
 		%brick = %this.getObject(%i);
 		%brick.killBrick();
+
+		if(%start > 1024)
+			%brick.delete();
 	}
 
 	//If undo is taking long, tell the client how far we get
