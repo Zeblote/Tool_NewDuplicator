@@ -337,7 +337,7 @@ function ndFormatMessage(%title, %l0, %r0, %l1, %r1, %l2, %r2)
 	//Last used alignment, false = left | true = right
 	%align = false;
 
-	if(strPos("\c0\c1\c2\c3\c4\c5\c6\c7\c8\c9", getSubStr(%title, 0, 1)) < 0)
+	if(strStr("\c0\c1\c2\c3\c4\c5\c6\c7\c8\c9", getSubStr(%title, 0, 1)) < 0)
 		%message = %message @ "\c6";
 
 	%message = %message @ %title @ "\n<font:Verdana:16>";
@@ -349,7 +349,7 @@ function ndFormatMessage(%title, %l0, %r0, %l1, %r1, %l2, %r2)
 			if(%align)
 				%message = %message @ "<just:left>";
 
-			if(strPos("\c0\c1\c2\c3\c4\c5\c6\c7\c8\c9", getSubStr(%l[%i], 0, 1)) < 0)
+			if(strStr("\c0\c1\c2\c3\c4\c5\c6\c7\c8\c9", getSubStr(%l[%i], 0, 1)) < 0)
 				%message = %message @ "\c6";
 
 			%message = %message @ %l[%i];
@@ -361,7 +361,7 @@ function ndFormatMessage(%title, %l0, %r0, %l1, %r1, %l2, %r2)
 			if(!%align)
 				%message = %message @ "<just:right>";
 
-			if(strPos("\c0\c1\c2\c3\c4\c5\c6\c7\c8\c9", getSubStr(%r[%i], 0, 1)) < 0)
+			if(strStr("\c0\c1\c2\c3\c4\c5\c6\c7\c8\c9", getSubStr(%r[%i], 0, 1)) < 0)
 				%message = %message @ "\c6";
 
 			%message = %message @ %r[%i] @ " ";

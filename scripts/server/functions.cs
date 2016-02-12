@@ -413,32 +413,32 @@ function ndPack241_4(%num)
 //Unpacks number from single byte
 function ndUnpack241_1(%string, %i)
 {
-	return strpos($ND::Byte241Lookup, getSubStr(%string, %i, 1));
+	return strStr($ND::Byte241Lookup, getSubStr(%string, %i, 1));
 }
 
 //Unpacks number from two bytes
 function ndUnpack241_2(%string, %i)
 {
 	return
-		strpos($ND::Byte241Lookup, getSubStr(%string, %i    , 1)) * 241 +
-		strpos($ND::Byte241Lookup, getSubStr(%string, %i + 1, 1));
+		strStr($ND::Byte241Lookup, getSubStr(%string, %i    , 1)) * 241 +
+		strStr($ND::Byte241Lookup, getSubStr(%string, %i + 1, 1));
 }
 
 //Unpacks number from three bytes
 function ndUnpack241_3(%string, %i)
 {
 	return
-		((strpos($ND::Byte241Lookup, getSubStr(%string, %i    , 1)) * 58081) | 0) +
-		  strpos($ND::Byte241Lookup, getSubStr(%string, %i + 1, 1)) *   241       +
-		  strpos($ND::Byte241Lookup, getSubStr(%string, %i + 2, 1));
+		((strStr($ND::Byte241Lookup, getSubStr(%string, %i    , 1)) * 58081) | 0) +
+		  strStr($ND::Byte241Lookup, getSubStr(%string, %i + 1, 1)) *   241       +
+		  strStr($ND::Byte241Lookup, getSubStr(%string, %i + 2, 1));
 }
 
 //Unpacks number from four bytes
 function ndUnpack241_4(%string, %i)
 {
 	return
-		((strpos($ND::Byte241Lookup, getSubStr(%string, %i    , 1)) * 13997521) | 0) +
-		((strpos($ND::Byte241Lookup, getSubStr(%string, %i + 1, 1)) *    58081) | 0) +
-		  strpos($ND::Byte241Lookup, getSubStr(%string, %i + 2, 1)) *      241       +
-		  strpos($ND::Byte241Lookup, getSubStr(%string, %i + 3, 1));
+		((strStr($ND::Byte241Lookup, getSubStr(%string, %i    , 1)) * 13997521) | 0) +
+		((strStr($ND::Byte241Lookup, getSubStr(%string, %i + 1, 1)) *    58081) | 0) +
+		  strStr($ND::Byte241Lookup, getSubStr(%string, %i + 2, 1)) *      241       +
+		  strStr($ND::Byte241Lookup, getSubStr(%string, %i + 3, 1));
 }

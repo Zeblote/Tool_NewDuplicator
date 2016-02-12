@@ -613,7 +613,7 @@ package NewDuplicator_Server_Final
 
 		for(%i = 0; %i < strLen(%fileName); %i++)
 		{
-			if(strPos(%allowed, getSubStr(%fileName, %i, 1)) == -1)
+			if(strStr(%allowed, getSubStr(%fileName, %i, 1)) == -1)
 			{
 				%forbidden = true;
 				break;
@@ -707,7 +707,7 @@ package NewDuplicator_Server_Final
 
 		for(%i = 0; %i < strLen(%fileName); %i++)
 		{
-			if(strPos(%allowed, getSubStr(%fileName, %i, 1)) == -1)
+			if(strStr(%allowed, getSubStr(%fileName, %i, 1)) == -1)
 			{
 				%forbidden = true;
 				break;
@@ -771,7 +771,7 @@ function serverCmdAllDups(%client, %pattern)
 
 		for(%i = 0; %i < strLen(%pattern); %i++)
 		{
-			if(strPos(%allowed, getSubStr(%pattern, %i, 1)) == -1)
+			if(strStr(%allowed, getSubStr(%pattern, %i, 1)) == -1)
 			{
 				messageClient(%client, '', "\c6Bad pattern \"\c3" @ %pattern @ "\c6\", please try again.");
 				messageClient(%client, '', "\c6Only \c3a-z A-Z 0-9 ._-()\c6 are allowed.");

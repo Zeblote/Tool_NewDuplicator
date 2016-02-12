@@ -3084,8 +3084,8 @@ function ND_Selection::tickSaveBricks(%this)
 			{
 				%dirName = getSubStr(%path, strLen("Add-Ons/"), (strLen(%path) - strLen("Add-Ons/")));
 
-				%posA = strpos(%dirName, "_");
-				%posB = strpos(%dirName, "_", %posA + 1);
+				%posA = strStr(%dirName, "_");
+				%posB = strStr(%dirName, "_", %posA + 1);
 
 				%aspectRatio = getSubStr(%dirName, %posA + 1, %posB - %posA - 1);
 				%printTexture = %aspectRatio @ "/" @ %fileBase;
@@ -3553,7 +3553,7 @@ function ND_Selection::tickLoadBricks(%this)
 
 				%line = getSubStr(%line, 10, 9999);
 
-				%pos = strpos(%line, "\"");
+				%pos = strStr(%line, "\"");
 				%dbName = getSubStr(%line, 0, %pos);
 
 				if (%dbName !$= "NONE")
@@ -3578,7 +3578,7 @@ function ND_Selection::tickLoadBricks(%this)
 
 				%line = getSubStr(%line, 8, 9999);
 
-				%pos = strpos(%line, "\"");
+				%pos = strStr(%line, "\"");
 				%dbName = getSubStr(%line, 0, %pos);
 
 				%db = $UINameTable_Lights[%dbName];
@@ -3597,7 +3597,7 @@ function ND_Selection::tickLoadBricks(%this)
 
 				%line = getSubStr(%line, 7, 9999);
 
-				%pos = strpos(%line, "\"");
+				%pos = strStr(%line, "\"");
 				%dbName = getSubStr(%line, 0, %pos);
 
 				if (%dbName !$= "NONE")
@@ -3626,7 +3626,7 @@ function ND_Selection::tickLoadBricks(%this)
 
 				%line = getSubStr(%line, 15, 9999);
 
-				%pos = strpos(%line, "\"");
+				%pos = strStr(%line, "\"");
 				%dbName = getSubStr(%line, 0, %pos);
 
 				%db = $UINameTable_Music[%dbName];
@@ -3645,7 +3645,7 @@ function ND_Selection::tickLoadBricks(%this)
 
 				%line = getSubStr(%line, 10, 9999);
 
-				%pos = strpos(%line, "\"");
+				%pos = strStr(%line, "\"");
 				%dbName = getSubStr(%line, 0, %pos);
 
 				if (%dbName !$= "NONE")
