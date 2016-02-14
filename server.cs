@@ -61,10 +61,6 @@ echo(" \n--- Initializing Server ---");
 activatePackage(NewDuplicator_Server);
 schedule(10, 0, activatePackage, NewDuplicator_Server_Final);
 
-$ND::BrickHighlightColor = ndGetClosestColorID2("255 255 0 255");
-$ND::BrickHighlightColor2 = ndGetClosestColorID2("255 255 0 128");
-
+$ND::BrickHighlightColor = ndGetClosestColorID("255 255 0");
 ndRegisterDuplicatorModes();
 ndAutoRegisterPrefs();
-ndCreateAlphaTable();
-ndCreateByteTable();

@@ -57,19 +57,12 @@ function ndHighlightBrick(%group, %brick)
 	//If brick is not highlighted, do that
 	if(!$NDHN[%brick])
 	{
-		%color = %brick.colorID;
-		$NDHC[%brick] = %color;
+		$NDHC[%brick] = %brick.colorID;
 		$NDHF[%brick] = %brick.colorFxID;
 
-		//Handle transparent colors
-		if($ND::Transparent[%color])
-			%highlight = $ND::BrickHighlightColor2;
-		else
-			%highlight = $ND::BrickHighlightColor;
-
-		if(%color != %highlight)
+		if($NDHC[%brick] != $ND::BrickHighlightColor)
 		{
-			%brick.setColor(%highlight);
+			%brick.setColor($ND::BrickHighlightColor);
 			%brick.setColorFx(0);
 		}
 		else

@@ -819,16 +819,9 @@ function ND_Selection::recordBrickData(%this, %i)
 	//Colors
 	if($NDHN[%brick])
 	{
-		%color = $NDHC[%brick];
-		$NS[%this, "CO", %i] = %color;
+		$NS[%this, "CO", %i] = $NDHC[%brick];
 
-		//Handle transparent bricks
-		if($ND::Transparent[%color])
-			%highlight = $ND::BrickHighlightColor2;
-		else
-			%highlight = $ND::BrickHighlightColor;
-
-		if(%color == %highlight)
+		if($NDHC[%brick] == $ND::BrickHighlightColor)
 			$NS[%this, "CF", %i] = $NDHF[%brick];
 	}
 	else
@@ -2452,14 +2445,8 @@ function ND_Selection::tickFillColor(%this, %mode, %colorID)
 							//If we're highlighted, change the original color instead
 							$NDHC[%brick] = %colorID;
 
-							//Handle transparent bricks
-							if($ND::Transparent[%colorID])
-								%highlight = $ND::BrickHighlightColor2;
-							else
-								%highlight = $ND::BrickHighlightColor;
-
 							//Update color fx indicator
-							if(%colorID == %highlight)
+							if($NDHC[%brick] == $ND::BrickHighlightColor)
 								%brick.setColorFx(3);
 							else
 								%brick.setColorFx(0);
