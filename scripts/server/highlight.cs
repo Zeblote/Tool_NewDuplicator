@@ -57,13 +57,19 @@ function ndHighlightBrick(%group, %brick)
 	//If brick is not highlighted, do that
 	if(!$NDHN[%brick])
 	{
-		$NDHC[%brick] = %brick.colorID;
 		$NDHF[%brick] = %brick.colorFxID;
 
-		if($NDHC[%brick] != $ND::BrickHighlightColor)
+		if($Pref::Server::ND::OldHighlightMethod)
 		{
-			%brick.setColor($ND::BrickHighlightColor);
-			%brick.setColorFx(0);
+			$NDHC[%brick] = %brick.colorID;
+
+			if($NDHC[%brick] != $ND::BrickHighlightColor)
+			{
+				%brick.setColor($ND::BrickHighlightColor);
+				%brick.setColorFx(0);
+			}
+			else
+				%brick.setColorFx(3);
 		}
 		else
 			%brick.setColorFx(3);
@@ -112,7 +118,9 @@ function ndTickDeHighlight(%group, %start)
 			//If the brick is in no more groups, de-highlight it
 			if(!($NDHN[%brick]--))
 			{
-				%brick.setColor($NDHC[%brick]);
+				if($Pref::Server::ND::OldHighlightMethod)
+					%brick.setColor($NDHC[%brick]);
+					
 				%brick.setColorFx($NDHF[%brick]);
 			}
 		}

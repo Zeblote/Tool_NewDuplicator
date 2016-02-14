@@ -819,10 +819,12 @@ function ND_Selection::recordBrickData(%this, %i)
 	//Colors
 	if($NDHN[%brick])
 	{
-		$NS[%this, "CO", %i] = $NDHC[%brick];
+		if($Pref::Server::ND::OldHighlightMethod)
+			$NS[%this, "CO", %i] = $NDHC[%brick];
+		else
+			$NS[%this, "CO", %i] = %brick.colorID;
 
-		if($NDHC[%brick] == $ND::BrickHighlightColor)
-			$NS[%this, "CF", %i] = $NDHF[%brick];
+		$NS[%this, "CF", %i] = $NDHF[%brick];
 	}
 	else
 	{
@@ -2433,7 +2435,7 @@ function ND_Selection::tickFillColor(%this, %mode, %colorID)
 				{
 					case 0:
 						//Check whether brick is highlighted
-						if($NDHN[%brick])
+						if($Pref::Server::ND::OldHighlightMethod && $NDHN[%brick])
 						{
 							//Don't change to same value
 							if($NDHC[%brick] == %colorID)

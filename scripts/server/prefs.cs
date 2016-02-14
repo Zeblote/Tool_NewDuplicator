@@ -55,6 +55,7 @@ function ndRegisterRTBPrefs()
 	RTB_registerPref("Scatter Ghost Bricks",       "New Duplicator | Advanced", "$Pref::Server::ND::ScatterGhostBricks",  "bool",             "Tool_NewDuplicator", true,    false, false, "");
 	RTB_registerPref("Process Bricks per Tick",    "New Duplicator | Advanced", "$Pref::Server::ND::ProcessPerTick",      "int 1 50000",      "Tool_NewDuplicator", 300,     false, false, "");
 	RTB_registerPref("Cube Selection Chunk Size",  "New Duplicator | Advanced", "$Pref::Server::ND::CubeSelectChunkSize", "int 1 50000",      "Tool_NewDuplicator", 32,      false, false, "");
+	RTB_registerPref("Use Old Highlight Method",   "New Duplicator | Advanced", "$Pref::Server::ND::OldHighlightMethod",  "bool",             "Tool_NewDuplicator", false,   false, false, "");
 
 	//Restore default prefs
 	RTB_registerPref("Check to restore defaults", "New Duplicator | Reset Prefs", "$ND::RestoreDefaultPrefs", "bool", "Tool_NewDuplicator", false, false, false, "ndResetPrefs");
@@ -96,6 +97,7 @@ function ndExtendDefaultPrefs()
 	if($Pref::Server::ND::ScatterGhostBricks  $= "") $Pref::Server::ND::ScatterGhostBricks  = true;
 	if($Pref::Server::ND::ProcessPerTick      $= "") $Pref::Server::ND::ProcessPerTick      = 300;
 	if($Pref::Server::ND::CubeSelectChunkSize $= "") $Pref::Server::ND::CubeSelectChunkSize = 32;
+	if($Pref::Server::ND::OldHighlightMethod  $= "") $Pref::Server::ND::OldHighlightMethod  = false;
 
 	//Always set this to false
 	$ND::RestoreDefaultPrefs = false;
@@ -138,6 +140,7 @@ function ndApplyDefaultPrefs(%this)
 	$Pref::Server::ND::ScatterGhostBricks  = true;
 	$Pref::Server::ND::ProcessPerTick      = 300;
 	$Pref::Server::ND::CubeSelectChunkSize = 32;
+	$Pref::Server::ND::OldHighlightMethod  = false;
 
 	//Always set this to false
 	$ND::RestoreDefaultPrefs = false;

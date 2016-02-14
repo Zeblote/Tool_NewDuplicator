@@ -44,7 +44,7 @@ function ND_UndoGroupPaint::ndTickUndo(%this, %mode, %start, %client)
 		{
 			case 0:
 				//Check whether brick is highlighted
-				if($NDHN[%brick])
+				if($Pref::Server::ND::OldHighlightMethod && $NDHN[%brick])
 				{
 					$NDHC[%brick] = %colorID;
 
