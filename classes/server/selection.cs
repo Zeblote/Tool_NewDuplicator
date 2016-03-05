@@ -3074,7 +3074,7 @@ function ND_Selection::tickSaveBricks(%this)
 				%dirName = getSubStr(%path, strLen("Add-Ons/"), (strLen(%path) - strLen("Add-Ons/")));
 
 				%posA = strStr(%dirName, "_");
-				%posB = strStr(%dirName, "_", %posA + 1);
+				%posB = strPos(%dirName, "_", %posA + 1);
 
 				%aspectRatio = getSubStr(%dirName, %posA + 1, %posB - %posA - 1);
 				%printTexture = %aspectRatio @ "/" @ %fileBase;
