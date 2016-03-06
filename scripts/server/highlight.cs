@@ -26,6 +26,9 @@ function ndNewHighlightGroup()
 	$NDH::LastId++;
 	$NDH::Count++;
 
+	//Set initial count
+	$NDH[$NDH::LastId] = 0;
+
 	//Assign free id
 	return $NDH::LastId;
 }
@@ -33,11 +36,15 @@ function ndNewHighlightGroup()
 //Remove highlight group and clean up garbage variables
 function ndRemoveHighlightGroup(%group)
 {
+	//Don't delete groups that don't exist
+	if($NDH[%group] $= "")
+		return;
+
 	//Lower group number
 	$NDH::Count--;
 
 	//Clear count to allow reuse of index
-	$NDH[%group] = 0;
+	$NDH[%group] = "";
 
 	//Cancel schedules
 	cancel($NDHS[%group]);
