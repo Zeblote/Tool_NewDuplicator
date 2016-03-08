@@ -13,7 +13,6 @@
 // $NDH::Count : Total number of active highlight groups
 //
 // $NDHN[brick] : Number of groups a brick is in
-// $NDHC[brick] : Original color of the brick
 // $NDHF[brick] : Original color fx of the brick
 //
 // $NDH[group] : Count of bricks in a group
@@ -65,21 +64,7 @@ function ndHighlightBrick(%group, %brick)
 	if(!$NDHN[%brick])
 	{
 		$NDHF[%brick] = %brick.colorFxID;
-
-		if($Pref::Server::ND::OldHighlightMethod)
-		{
-			$NDHC[%brick] = %brick.colorID;
-
-			if($NDHC[%brick] != $ND::BrickHighlightColor)
-			{
-				%brick.setColor($ND::BrickHighlightColor);
-				%brick.setColorFx(0);
-			}
-			else
-				%brick.setColorFx(3);
-		}
-		else
-			%brick.setColorFx(3);
+		%brick.setColorFx(3);
 	}
 
 	//Increase group number of this brick
@@ -120,17 +105,9 @@ function ndTickDeHighlight(%group, %start)
 	{
 		%brick = $NDH[%group, %i];
 
-		if(isObject(%brick))
-		{
-			//If the brick is in no more groups, de-highlight it
-			if(!($NDHN[%brick]--))
-			{
-				if($Pref::Server::ND::OldHighlightMethod)
-					%brick.setColor($NDHC[%brick]);
-					
-				%brick.setColorFx($NDHF[%brick]);
-			}
-		}
+		//If the brick is in no more groups, de-highlight it
+		if(isObject(%brick) && !($NDHN[%brick]--))
+			%brick.setColorFx($NDHF[%brick]);
 	}
 
 	if(!%lastTick)

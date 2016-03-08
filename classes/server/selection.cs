@@ -819,11 +819,7 @@ function ND_Selection::recordBrickData(%this, %i)
 	//Colors
 	if($NDHN[%brick])
 	{
-		if($Pref::Server::ND::OldHighlightMethod)
-			$NS[%this, "CO", %i] = $NDHC[%brick];
-		else
-			$NS[%this, "CO", %i] = %brick.colorID;
-
+		$NS[%this, "CO", %i] = %brick.colorID;
 		$NS[%this, "CF", %i] = $NDHF[%brick];
 	}
 	else
@@ -2434,36 +2430,14 @@ function ND_Selection::tickFillColor(%this, %mode, %colorID)
 				switch(%mode)
 				{
 					case 0:
-						//Check whether brick is highlighted
-						if($Pref::Server::ND::OldHighlightMethod && $NDHN[%brick])
-						{
-							//Don't change to same value
-							if($NDHC[%brick] == %colorID)
-								continue;
+						//Don't change to same value
+						if(%brick.colorID == %colorID)
+							continue;
 
-							//Write previous value to undo array
-							$NU[%clientId, %undoId, "V", %paintCount] = $NDHC[%brick];
+						//Write previous value to undo array
+						$NU[%clientId, %undoId, "V", %paintCount] = %brick.colorID;
 
-							//If we're highlighted, change the original color instead
-							$NDHC[%brick] = %colorID;
-
-							//Update color fx indicator
-							if($NDHC[%brick] == $ND::BrickHighlightColor)
-								%brick.setColorFx(3);
-							else
-								%brick.setColorFx(0);
-						}
-						else
-						{
-							//Don't change to same value
-							if(%brick.colorID == %colorID)
-								continue;
-
-							//Write previous value to undo array
-							$NU[%clientId, %undoId, "V", %paintCount] = %brick.colorID;
-
-							%brick.setColor(%colorID);
-						}
+						%brick.setColor(%colorID);
 
 						//Update selection data
 						$NS[%this, "CO", $NS[%this, "I", %brick]] = %colorID;
