@@ -77,9 +77,14 @@ function ndHighlightBrick(%group, %brick)
 //Immediately start de-highlighting bricks
 function ndStartDeHighlight(%group)
 {
-	cancel($NDHS[%group]);
+	//Don't do this if already de-highlighting
+	%t = getTimeRemaining($NDHS[%group]);
 
-	ndTickDeHighlight(%group, 0);
+	if(%t > 66 || %t == 0)
+	{
+		cancel($NDHS[%group]);
+		ndTickDeHighlight(%group, 0);
+	}
 }
 
 //De-highglight bricks after some time
