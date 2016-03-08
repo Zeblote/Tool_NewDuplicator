@@ -467,7 +467,7 @@ function ND_Selection::startCubeSelection(%this, %box, %limited)
 	%this.chunkY2 = getWord(%box, 4);
 	%this.chunkZ2 = getWord(%box, 5);
 
-	%this.chunkSize = $Pref::Server::ND::CubeSelectChunkSize;
+	%this.chunkSize = $Pref::Server::ND::CubeSelectChunkDim;
 
 	%this.numChunksX = mCeil((%this.chunkX2 - %this.chunkX1) / %this.chunkSize);
 	%this.numChunksY = mCeil((%this.chunkY2 - %this.chunkY1) / %this.chunkSize);
@@ -505,113 +505,164 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 {
 	cancel(%this.cubeSelectSchedule);
 
-	//Calculate position and size of chunk
-	%x1 = %this.chunkX1 + (%this.currChunkX * %this.chunkSize) + 0.05;
-	%y1 = %this.chunkY1 + (%this.currChunkY * %this.chunkSize) + 0.05;
-	%z1 = %this.chunkZ1 + (%this.currChunkZ * %this.chunkSize) + 0.05;
+	//Restore chunk variables (scopes and slow object fields suck)
+	%chunkSize = %this.chunkSize;
+	%currChunk = %this.currChunk;
 
-	%x2 = getMin(%this.chunkX2, %this.chunkX1 + ((%this.currChunkX + 1) * %this.chunkSize)) - 0.05;
-	%y2 = getMin(%this.chunkY2, %this.chunkY1 + ((%this.currChunkY + 1) * %this.chunkSize)) - 0.05;
-	%z2 = getMin(%this.chunkZ2, %this.chunkZ1 + ((%this.currChunkZ + 1) * %this.chunkSize)) - 0.05;
+	%currChunkX = %this.currChunkX;
+	%currChunkY = %this.currChunkY;
+	%currChunkZ = %this.currChunkZ;
 
-	%size = %x2 - %x1 SPC %y2 - %y1 SPC %z2 - %z1;
-	%pos = vectorAdd(%x1 SPC %y1 SPC %z1, vectorScale(%size, 0.5));
+	%numChunksX = %this.numChunksX;
+	%numChunksY = %this.numChunksY;
+	%numChunksZ = %this.numChunksZ;
 
-	//Figure out which sides need to be limited in this chunk
-	%limit = false;
+	%chunkX1 = %this.chunkX1;
+	%chunkY1 = %this.chunkY1;
+	%chunkZ1 = %this.chunkZ1;
 
-	if(%limited)
-	{
-		if(%this.currChunkX == 0)
-			%limitX1 = true;
+	%chunkX2 = %this.chunkX2;
+	%chunkY2 = %this.chunkY2;
+	%chunkZ2 = %this.chunkZ2;
 
-		if(%this.currChunkX + 1 == %this.numChunksX)
-			%limitX2 = true;
-
-		if(%this.currChunkY == 0)
-			%limitY1 = true;
-
-		if(%this.currChunkY + 1 == %this.numChunksY)
-			%limitY2 = true;
-
-		if(%this.currChunkZ == 0)
-			%limitZ1 = true;
-
-		if(%this.currChunkZ + 1 == %this.numChunksZ)
-			%limitZ2 = true;
-
-		if(%limitX1 || %limitX2 || %limitY1 || %limitY2 || %limitZ1 || %limitZ2)
-			%limit = true;
-	}
-
-	//Queue all new bricks found in this chunk
-	initContainerBoxSearch(%pos, %size, $TypeMasks::FxBrickAlwaysObjectType);
-
-	%i = %this.queueCount;
-	%_id = %this @ "_I"; //Maximum optimization for loop
-	%_br = %this @ "_B";
+	//Where to insert bricks in the queue
+	%queueIndex = %this.queueCount;
 
 	//Variables for trust checks
 	%admin = %this.client.isAdmin;
 	%group = %this.client.brickGroup.getId();
 	%bl_id = %this.client.bl_id;
 
-	while(%obj = containerSearchNext())
+	%chunksDone = 0;
+	%bricksFound = 0;
+	%trustFailCount = 0;
+
+	//Process chunks until we reach the brick or chunk limit
+	while(%chunksDone < 600 && %bricksFound < 1000)
 	{
-		if($NS[%_id, %obj] $= "")
+		%chunksDone++;
+
+		//Calculate position and size of chunk
+		%x1 = %chunkX1 + (%currChunkX * %chunkSize) + 0.05;
+		%y1 = %chunkY1 + (%currChunkY * %chunkSize) + 0.05;
+		%z1 = %chunkZ1 + (%currChunkZ * %chunkSize) + 0.05;
+
+		%x2 = getMin(%chunkX2, %x1 + %chunkSize - 0.1);
+		%y2 = getMin(%chunkY2, %y1 + %chunkSize - 0.1);
+		%z2 = getMin(%chunkZ2, %z1 + %chunkSize - 0.1);
+
+		%size = %x2 - %x1 SPC %y2 - %y1 SPC %z2 - %z1;
+		%pos = vectorAdd(%x1 SPC %y1 SPC %z1, vectorScale(%size, 0.5));
+
+		//Figure out which sides need to be limited in this chunk
+		%limit = false;
+
+		if(%limited)
 		{
-			if(%limit)
+			%limitX1 = (%currChunkX == 0);
+			%limitX2 = (%currChunkX + 1 == %numChunksX);
+
+			%limitY1 = (%currChunkY == 0);
+			%limitY2 = (%currChunkY + 1 == %numChunksY);
+
+			%limitZ1 = (%currChunkZ == 0);
+			%limitZ2 = (%currChunkZ + 1 == %numChunksZ);
+
+			if(%limitX1 || %limitX2 || %limitY1 || %limitY2 || %limitZ1 || %limitZ2)
+				%limit = true;
+		}
+
+		//Queue all new bricks found in this chunk
+		initContainerBoxSearch(%pos, %size, $TypeMasks::FxBrickAlwaysObjectType);
+
+		while(%obj = containerSearchNext())
+		{
+			%bricksFound++;
+
+			if($NS[%this, "I", %obj] $= "")
 			{
-				//Skip bricks that are outside the limit
-				%box = %obj.getWorldBox();
+				if(%limit)
+				{
+					//Skip bricks that are outside the limit
+					%box = %obj.getWorldBox();
 
-				if(%limitX1 && getWord(%box, 0) < %x1 - 0.1)
-					continue;
+					if(%limitX1 && getWord(%box, 0) < %x1 - 0.1)
+						continue;
 
-				if(%limitY1 && getWord(%box, 1) < %y1 - 0.1)
-					continue;
+					if(%limitY1 && getWord(%box, 1) < %y1 - 0.1)
+						continue;
 
-				if(%limitZ1 && getWord(%box, 2) < %z1 - 0.1)
-					continue;
+					if(%limitZ1 && getWord(%box, 2) < %z1 - 0.1)
+						continue;
 
-				if(%limitX2 && getWord(%box, 3) > %x2 + 0.1)
-					continue;
+					if(%limitX2 && getWord(%box, 3) > %x2 + 0.1)
+						continue;
 
-				if(%limitY2 && getWord(%box, 4) > %y2 + 0.1)
-					continue;
+					if(%limitY2 && getWord(%box, 4) > %y2 + 0.1)
+						continue;
 
-				if(%limitZ2 && getWord(%box, 5) > %z2 + 0.1)
+					if(%limitZ2 && getWord(%box, 5) > %z2 + 0.1)
+						continue;
+				}
+
+				//Check trust
+				if(!ndTrustCheckSelect(%obj, %group, %bl_id, %admin))
+				{
+					%trustFailCount++;
 					continue;
+				}
+
+				//Queue brick
+				$NS[%this, "I", %obj] = %queueIndex;
+				$NS[%this, "B", %queueIndex] = %obj;
+				%queueIndex++;
+
+				//Test brick limit
+				if(%queueIndex >= %brickLimit)
+				{
+					%limitReached = true;
+					break;
+				}
 			}
+		}
 
-			//Check trust
-			if(!ndTrustCheckSelect(%obj, %group, %bl_id, %admin))
+		//Stop processing chunks if limit was reached
+		if(%limitReached)
+			break;
+
+		//Set next chunk index or break
+		%currChunk++;
+
+		if(%currChunkZ++ >= %numChunksZ)
+		{
+			%currChunkZ = 0;
+
+			if(%currChunkY++ >= %numChunksY)
 			{
-				%trustFailCount++;
-				continue;
-			}
+				%currChunkY = 0;
 
-			$NS[%_id, %obj] = %i;
-			$NS[%_br, %i] = %obj;
-			%i++;
-
-			if(%i >= %brickLimit)
-			{
-				%limitReached = true;
-				break;
+				if(%currChunkX++ >= %numChunksX)
+				{
+					%searchComplete = true;
+					break;
+				}
 			}
 		}
 	}
 
+	//Save chunk variables (scopes and slow object fields suck)
+	%this.currChunk = %currChunk;
+
+	%this.currChunkX = %currChunkX;
+	%this.currChunkY = %currChunkY;
+	%this.currChunkZ = %currChunkZ;
+
+	%this.numChunksX = %numChunksX;
+	%this.numChunksY = %numChunksY;
+	%this.numChunksZ = %numChunksZ;
+
 	%this.trustFailCount += %trustFailCount;
-	%this.queueCount = %i;
-	
-	//Tell the client which chunk we just processed
-	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
-	{
-		%this.client.ndUpdateBottomPrint();
-		%this.client.ndLastMessageTime = $Sim::Time;
-	}
+	%this.queueCount = %queueIndex;
 
 	//If the brick limit was reached, start processing
 	if(%limitReached)
@@ -623,47 +674,42 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 		return;
 	}
 
-	//Set next chunk index or finish
-	%this.currChunk++;
-
-	if(%this.currChunkZ++ >= %this.numChunksZ)
+	//If all chunks have been searched, start processing
+	if(%searchComplete)
 	{
-		%this.currChunkZ = 0;
-
-		if(%this.currChunkY++ >= %this.numChunksY)
+		//Did we find any bricks at all?
+		if(%queueIndex > 0)
 		{
-			%this.currChunkY = 0;
+			//Create highlight group
+			%this.highlightGroup = ndNewHighlightGroup();
 
-			if(%this.currChunkX++ >= %this.numChunksX)
-			{
-				//All chunks have been searched, now process connections
-				if(%this.queueCount > 0)
-				{
-					//Create highlight group
-					%this.highlightGroup = ndNewHighlightGroup();
-
-					//Start processing bricks
-					%this.rootPosition = $NS[%this, "B", 0].getPosition();
-					%this.cubeSelectSchedule = %this.schedule(30, tickCubeSelectionProcess);
-				}
-				else
-				{
-					messageClient(%this.client, 'MsgError', "");
-
-					%m = "<font:Verdana:20>\c6No bricks were found inside the selection!";
-
-					if(%this.trustFailCount > 0)
-						%m = %m @ "\n<font:Verdana:17>\c3" @ %this.trustFailCount @ "\c6 missing trust.";
-
-					commandToClient(%this.client, 'centerPrint', %m, 5);
-
-					%this.cancelCubeSelection();
-					%this.client.ndSetMode(NDM_CubeSelect);
-				}
-
-				return;
-			}
+			//Start processing bricks
+			%this.rootPosition = $NS[%this, "B", 0].getPosition();
+			%this.cubeSelectSchedule = %this.schedule(30, tickCubeSelectionProcess);
 		}
+		else
+		{
+			messageClient(%this.client, 'MsgError', "");
+
+			%m = "<font:Verdana:20>\c6No bricks were found inside the selection!";
+
+			if(%this.trustFailCount > 0)
+				%m = %m @ "\n<font:Verdana:17>\c3" @ %this.trustFailCount @ "\c6 missing trust.";
+
+			commandToClient(%this.client, 'centerPrint', %m, 5);
+
+			%this.cancelCubeSelection();
+			%this.client.ndSetMode(NDM_CubeSelect);
+		}
+
+		return;
+	}
+		
+	//Tell the client which chunks we just processed
+	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
+	{
+		%this.client.ndUpdateBottomPrint();
+		%this.client.ndLastMessageTime = $Sim::Time;
 	}
 
 	//Schedule next chunk
