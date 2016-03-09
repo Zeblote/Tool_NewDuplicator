@@ -633,15 +633,15 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 		//Set next chunk index or break
 		%currChunk++;
 
-		if(%currChunkZ++ >= %numChunksZ)
+		if(%currChunkX++ >= %numChunksX)
 		{
-			%currChunkZ = 0;
+			%currChunkX = 0;
 
 			if(%currChunkY++ >= %numChunksY)
 			{
 				%currChunkY = 0;
 
-				if(%currChunkX++ >= %numChunksX)
+				if(%currChunkZ++ >= %numChunksZ)
 				{
 					%searchComplete = true;
 					break;
