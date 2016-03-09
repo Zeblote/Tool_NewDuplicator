@@ -554,24 +554,6 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 		%size = %x2 - %x1 SPC %y2 - %y1 SPC %z2 - %z1;
 		%pos = vectorAdd(%x1 SPC %y1 SPC %z1, vectorScale(%size, 0.5));
 
-		//Figure out which sides need to be limited in this chunk
-		%limit = false;
-
-		if(%limited)
-		{
-			%limitX1 = (%currChunkX == 0);
-			%limitX2 = (%currChunkX + 1 == %numChunksX);
-
-			%limitY1 = (%currChunkY == 0);
-			%limitY2 = (%currChunkY + 1 == %numChunksY);
-
-			%limitZ1 = (%currChunkZ == 0);
-			%limitZ2 = (%currChunkZ + 1 == %numChunksZ);
-
-			if(%limitX1 || %limitX2 || %limitY1 || %limitY2 || %limitZ1 || %limitZ2)
-				%limit = true;
-		}
-
 		//Queue all new bricks found in this chunk
 		initContainerBoxSearch(%pos, %size, $TypeMasks::FxBrickAlwaysObjectType);
 
@@ -581,27 +563,27 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 
 			if($NS[%this, "I", %obj] $= "")
 			{
-				if(%limit)
+				if(%limited)
 				{
 					//Skip bricks that are outside the limit
 					%box = %obj.getWorldBox();
 
-					if(%limitX1 && getWord(%box, 0) < %x1 - 0.1)
+					if(getWord(%box, 0) < %chunkX1 - 0.1)
 						continue;
 
-					if(%limitY1 && getWord(%box, 1) < %y1 - 0.1)
+					if(getWord(%box, 1) < %chunkY1 - 0.1)
 						continue;
 
-					if(%limitZ1 && getWord(%box, 2) < %z1 - 0.1)
+					if(getWord(%box, 2) < %chunkZ1 - 0.1)
 						continue;
 
-					if(%limitX2 && getWord(%box, 3) > %x2 + 0.1)
+					if(getWord(%box, 3) > %chunkX2 + 0.1)
 						continue;
 
-					if(%limitY2 && getWord(%box, 4) > %y2 + 0.1)
+					if(getWord(%box, 4) > %chunkY2 + 0.1)
 						continue;
 
-					if(%limitZ2 && getWord(%box, 5) > %z2 + 0.1)
+					if(getWord(%box, 5) > %chunkZ2 + 0.1)
 						continue;
 				}
 
