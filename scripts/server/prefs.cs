@@ -41,8 +41,8 @@ function ndRegisterRTBPrefs()
 
 	RTB_registerPref("Max Bricks (Admin)",         "New Duplicator | Settings", "$Pref::Server::ND::MaxBricksAdmin",      "int 1000 1000000", "Tool_NewDuplicator", 1000000, false, false, "");
 	RTB_registerPref("Max Bricks (Player)",        "New Duplicator | Settings", "$Pref::Server::ND::MaxBricksPlayer",     "int 1000 1000000", "Tool_NewDuplicator", 50000,   false, false, "");
-	RTB_registerPref("Max Box Size (Admin)",       "New Duplicator | Settings", "$Pref::Server::ND::MaxBoxSizeAdmin",     "int 1 50000",      "Tool_NewDuplicator", 256,     false, false, "");
-	RTB_registerPref("Max Box Size (Player)",      "New Duplicator | Settings", "$Pref::Server::ND::MaxBoxSizePlayer",    "int 1 50000",      "Tool_NewDuplicator", 32,      false, false, "");
+	RTB_registerPref("Max Box Size (Admin)",       "New Duplicator | Settings", "$Pref::Server::ND::MaxBoxSizeAdmin",     "int 1 50000",      "Tool_NewDuplicator", 1024,    false, false, "");
+	RTB_registerPref("Max Box Size (Player)",      "New Duplicator | Settings", "$Pref::Server::ND::MaxBoxSizePlayer",    "int 1 50000",      "Tool_NewDuplicator", 64,      false, false, "");
 
 	RTB_registerPref("Selecting Timeout (Player)", "New Duplicator | Settings", "$Pref::Server::ND::SelectTimeout",       "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
 	RTB_registerPref("Planting Timeout (Player)",  "New Duplicator | Settings", "$Pref::Server::ND::PlantTimeout",        "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
@@ -82,8 +82,8 @@ function ndExtendDefaultPrefs()
 
 	if($Pref::Server::ND::MaxBricksAdmin      $= "") $Pref::Server::ND::MaxBricksAdmin      = 1000000;
 	if($Pref::Server::ND::MaxBricksPlayer     $= "") $Pref::Server::ND::MaxBricksPlayer     = 10000;
-	if($Pref::Server::ND::MaxBoxSizeAdmin     $= "") $Pref::Server::ND::MaxBoxSizeAdmin     = 256;
-	if($Pref::Server::ND::MaxBoxSizePlayer    $= "") $Pref::Server::ND::MaxBoxSizePlayer    = 32;
+	if($Pref::Server::ND::MaxBoxSizeAdmin     $= "") $Pref::Server::ND::MaxBoxSizeAdmin     = 1024;
+	if($Pref::Server::ND::MaxBoxSizePlayer    $= "") $Pref::Server::ND::MaxBoxSizePlayer    = 64;
 
 	if($Pref::Server::ND::SelectTimeout       $= "") $Pref::Server::ND::SelectTimeout       = 1;
 	if($Pref::Server::ND::PlantTimeout        $= "") $Pref::Server::ND::PlantTimeout        = 1;
@@ -124,8 +124,8 @@ function ndApplyDefaultPrefs(%this)
 
 	$Pref::Server::ND::MaxBricksAdmin      = 1000000;
 	$Pref::Server::ND::MaxBricksPlayer     = 10000;
-	$Pref::Server::ND::MaxBoxSizeAdmin     = 256;
-	$Pref::Server::ND::MaxBoxSizePlayer    = 32;
+	$Pref::Server::ND::MaxBoxSizeAdmin     = 1024;
+	$Pref::Server::ND::MaxBoxSizePlayer    = 64;
 
 	$Pref::Server::ND::SelectTimeout       = 1;
 	$Pref::Server::ND::PlantTimeout        = 1;
