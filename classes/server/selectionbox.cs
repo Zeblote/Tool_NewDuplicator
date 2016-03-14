@@ -15,25 +15,25 @@ function ND_SelectionBox(%shapeName)
 		%this = new ScriptObject(ND_SelectionBox)
 	);
 
-	%this.innerCube = new StaticShape(){datablock = ND_SelectionCubeInner;};
-	%this.outerCube = new StaticShape(){datablock = ND_SelectionCubeOuter;};
-	%this.shapeName = new StaticShape(){datablock = ND_SelectionCubeShapeName;};
+	%this.innerBox = new StaticShape(){datablock = ND_SelectionBoxInner;};
+	%this.outerBox = new StaticShape(){datablock = ND_SelectionBoxOuter;};
+	%this.shapeName = new StaticShape(){datablock = ND_SelectionBoxShapeName;};
 
-	%this.corner1 = new StaticShape(){datablock = ND_SelectionCubeOuter;};
-	%this.corner2 = new StaticShape(){datablock = ND_SelectionCubeOuter;};
+	%this.corner1 = new StaticShape(){datablock = ND_SelectionBoxOuter;};
+	%this.corner2 = new StaticShape(){datablock = ND_SelectionBoxOuter;};
 	%this.selectedCorner = true;
 
-	%this.innerCube.setScopeAlways();
-	%this.outerCube.setScopeAlways();
+	%this.innerBox.setScopeAlways();
+	%this.outerBox.setScopeAlways();
 	%this.shapeName.setScopeAlways();
 	%this.corner1.setScopeAlways();
 	%this.corner2.setScopeAlways();
 
 	for(%i = 0; %i < 4; %i++)
 	{
-		%this.border_x[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
-		%this.border_y[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
-		%this.border_z[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
+		%this.border_x[%i] = new StaticShape(){datablock = ND_SelectionBoxBorder;};
+		%this.border_y[%i] = new StaticShape(){datablock = ND_SelectionBoxBorder;};
+		%this.border_z[%i] = new StaticShape(){datablock = ND_SelectionBoxBorder;};
 
 		%this.border_x[%i].setScopeAlways();
 		%this.border_y[%i].setScopeAlways();
@@ -62,8 +62,8 @@ function ND_SelectionBox(%shapeName)
 //Destroy static shapes when selection box is removed
 function ND_SelectionBox::onRemove(%this)
 {
-	%this.innerCube.delete();
-	%this.outerCube.delete();
+	%this.innerBox.delete();
+	%this.outerBox.delete();
 	%this.shapeName.delete();
 
 	%this.corner1.delete();
@@ -80,8 +80,8 @@ function ND_SelectionBox::onRemove(%this)
 //Apply color changes to the selection box
 function ND_SelectionBox::applyColors(%this)
 {
-	%this.innerCube.setNodeColor("ALL", %this.innerColor);
-	%this.outerCube.setNodeColor("ALL", %this.outerColor);
+	%this.innerBox.setNodeColor("ALL", %this.innerColor);
+	%this.outerBox.setNodeColor("ALL", %this.outerColor);
 
 	%this.shapeName.setShapeNameColor(%this.outerColor);
 
@@ -120,7 +120,7 @@ function ND_SelectionBox::applyColors(%this)
 	%corner1.setNodeColor("out+Z", %this.cornerColor2);
 	%corner1.setNodeColor("out-Z", %this.cornerColor2);
 
-	//Illusion of shaded cube
+	//Illusion of shaded box
 	%corner2.setNodeColor("out+X", %this.borderColorSelected);
 	%corner2.setNodeColor("out-X", %this.borderColorSelected);
 	%corner2.setNodeColor("out+Y", %this.cornerColorSelected1);
@@ -178,8 +178,8 @@ function ND_SelectionBox::setSize(%this, %point1, %point2)
 	%rot_y = "1 0 0 1.57079";
 	%rot_z = "0 0 1 0";
 
-	%this.innerCube.setTransform(%center_x SPC %center_y SPC %center_z);
-	%this.outerCube.setTransform(%center_x SPC %center_y SPC %center_z);
+	%this.innerBox.setTransform(%center_x SPC %center_y SPC %center_z);
+	%this.outerBox.setTransform(%center_x SPC %center_y SPC %center_z);
 	%this.shapeName.setTransform(%center_X SPC %center_y SPC %z2);
 
 	%this.border_x0.setTransform(%center_x SPC %y1 SPC %z1 SPC %rot_x);
@@ -200,8 +200,8 @@ function ND_SelectionBox::setSize(%this, %point1, %point2)
 	%this.corner1.setTransform(%x1 SPC %y1 SPC %z1);
 	%this.corner2.setTransform(%x2 SPC %y2 SPC %z2);
 
-	%this.innerCube.setScale(%len_x - 0.02 SPC %len_y - 0.02 SPC %len_z - 0.02);
-	%this.outerCube.setScale(%len_x + 0.02 SPC %len_y + 0.02 SPC %len_z + 0.02);
+	%this.innerBox.setScale(%len_x - 0.02 SPC %len_y - 0.02 SPC %len_z - 0.02);
+	%this.outerBox.setScale(%len_x + 0.02 SPC %len_y + 0.02 SPC %len_z + 0.02);
 
 	%maxLen = getMax(getMax(%len_x, %len_y), %len_z);
 	%width = (7 / 1024) * %maxLen + 1;

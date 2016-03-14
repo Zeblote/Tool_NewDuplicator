@@ -31,8 +31,8 @@ exec($ND::ClassPath @ "server/undogrouppaint.cs");
 exec($ND::ClassPath @ "server/undogroupplant.cs");
 exec($ND::ClassPath @ "server/undogroupwrench.cs");
 
-exec($ND::ClassPath @ "server/duplimode/cubeselect.cs");
-exec($ND::ClassPath @ "server/duplimode/cubeselectprogress.cs");
+exec($ND::ClassPath @ "server/duplimode/boxselect.cs");
+exec($ND::ClassPath @ "server/duplimode/boxselectprogress.cs");
 exec($ND::ClassPath @ "server/duplimode/cutprogress.cs");
 exec($ND::ClassPath @ "server/duplimode/fillcolor.cs");
 exec($ND::ClassPath @ "server/duplimode/fillcolorprogress.cs");

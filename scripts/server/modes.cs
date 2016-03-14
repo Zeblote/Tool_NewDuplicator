@@ -50,8 +50,8 @@ function NewDuplicatorMode::getBottomPrint(%this, %client){}
 
 //Possible mode indices
 $NDM::Disabled            =  0;
-$NDM::CubeSelect          =  1;
-$NDM::CubeSelectProgress  =  2;
+$NDM::BoxSelect           =  1;
+$NDM::BoxSelectProgress   =  2;
 $NDM::CutProgress         =  3;
 $NDM::FillColor           =  4;
 $NDM::FillColorProgress   =  5;
@@ -82,13 +82,13 @@ function ndRegisterDuplicatorModes()
 		}
 	);
 
-	//Cube Select duplicator mode
+	//Box Select duplicator mode
 	ND_ServerGroup.add(
-		new ScriptObject(NDM_CubeSelect)
+		new ScriptObject(NDM_BoxSelect)
 		{
 			class = "NewDuplicatorMode";
-			index = $NDM::CubeSelect;
-			image = "ND_Image_Cube";
+			index = $NDM::BoxSelect;
+			image = "ND_Image_Box";
 			spin = false;
 
 			allowSelecting = true;
@@ -96,13 +96,13 @@ function ndRegisterDuplicatorModes()
 		}
 	);
 
-	//Cube Select Progress duplicator mode
+	//Box Select Progress duplicator mode
 	ND_ServerGroup.add(
-		new ScriptObject(NDM_CubeSelectProgress)
+		new ScriptObject(NDM_BoxSelectProgress)
 		{
 			class = "NewDuplicatorMode";
-			index = $NDM::CubeSelectProgress;
-			image = "ND_Image_Cube";
+			index = $NDM::BoxSelectProgress;
+			image = "ND_Image_Box";
 			spin = true;
 
 			allowSelecting = false;

@@ -17,9 +17,9 @@ function ND_HighlightBox()
 
 	for(%i = 0; %i < 4; %i++)
 	{
-		%this.border_x[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
-		%this.border_y[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
-		%this.border_z[%i] = new StaticShape(){datablock = ND_SelectionCubeBorder;};
+		%this.border_x[%i] = new StaticShape(){datablock = ND_SelectionBoxBorder;};
+		%this.border_y[%i] = new StaticShape(){datablock = ND_SelectionBoxBorder;};
+		%this.border_z[%i] = new StaticShape(){datablock = ND_SelectionBoxBorder;};
 
 		%this.border_x[%i].setScopeAlways();
 		%this.border_y[%i].setScopeAlways();

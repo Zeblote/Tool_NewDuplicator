@@ -1,7 +1,7 @@
 // * ######################################################################
 // *
 // *    New Duplicator - Classes - Server
-// *    NDM_CubeSelectProgress
+// *    NDM_BoxSelectProgress
 // *
 // *    -------------------------------------------------------------------
 // *    Handles inputs for stack selection mode (in progress)
@@ -12,7 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 //Kill this mode
-function NDM_CubeSelectProgress::onKillMode(%this, %client)
+function NDM_BoxSelectProgress::onKillMode(%this, %client)
 {
 	//Destroy the selection
 	%client.ndSelection.delete();
@@ -27,12 +27,12 @@ function NDM_CubeSelectProgress::onKillMode(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Cancel Brick
-function NDM_CubeSelectProgress::onCancelBrick(%this, %client)
+function NDM_BoxSelectProgress::onCancelBrick(%this, %client)
 {
 	commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection canceled!", 4);
 	
-	%client.ndSelection.cancelCubeSelection();
-	%client.ndSetMode(NDM_CubeSelect);
+	%client.ndSelection.cancelBoxSelection();
+	%client.ndSetMode(NDM_BoxSelect);
 }
 
 
@@ -41,7 +41,7 @@ function NDM_CubeSelectProgress::onCancelBrick(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Create bottomprint for client
-function NDM_CubeSelectProgress::getBottomPrint(%this, %client)
+function NDM_BoxSelectProgress::getBottomPrint(%this, %client)
 {
 	%qCount = %client.ndSelection.queueCount;
 	%bCount = %client.ndSelection.brickCount;

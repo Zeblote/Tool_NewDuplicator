@@ -445,7 +445,7 @@ package NewDuplicator_Server
 	{
 		%mode = %client.ndModeIndex;
 
-		if(%mode == $NDM::StackSelect || %mode == $NDM::CubeSelect)
+		if(%mode == $NDM::StackSelect || %mode == $NDM::BoxSelect)
 		{
 			if(isObject(%client.ndSelection) && %client.ndSelection.brickCount)
 			{
@@ -471,7 +471,7 @@ package NewDuplicator_Server
 	{
 		%mode = %client.ndModeIndex;
 
-		if(%mode == $NDM::StackSelect || %mode == $NDM::CubeSelect)
+		if(%mode == $NDM::StackSelect || %mode == $NDM::BoxSelect)
 		{
 			if(isObject(%client.ndSelection) && %client.ndSelection.brickCount)
 			{
@@ -520,7 +520,7 @@ function serverCmdFillWrench(%client)
 	}
 
 	//Check mode
-	if(%client.ndModeIndex != $NDM::StackSelect && %client.ndModeIndex != $NDM::CubeSelect)
+	if(%client.ndModeIndex != $NDM::StackSelect && %client.ndModeIndex != $NDM::BoxSelect)
 	{
 		messageClient(%client, '', "\c6Fill Wrench can only be used in Selection Mode.");
 		return;
@@ -551,7 +551,7 @@ function serverCmdNdStartFillWrench(%client, %data)
 	}
 
 	//Check mode
-	if(%client.ndModeIndex != $NDM::StackSelect && %client.ndModeIndex != $NDM::CubeSelect)
+	if(%client.ndModeIndex != $NDM::StackSelect && %client.ndModeIndex != $NDM::BoxSelect)
 	{
 		messageClient(%client, '', "\c6Fill Wrench can only be used in Selection Mode.");
 		return;
@@ -693,7 +693,7 @@ package NewDuplicator_Server_Final
 		//Check mode
 		%mode = %client.ndModeIndex;
 
-		if(%mode != $NDM::StackSelect && %mode != $NDM::CubeSelect && %mode != $NDM::PlantCopy)
+		if(%mode != $NDM::StackSelect && %mode != $NDM::BoxSelect && %mode != $NDM::PlantCopy)
 		{
 			messageClient(%client, '', "\c6Loading duplications can only be used in Plant or Selection Mode.");
 			return;

@@ -25,7 +25,7 @@ function ndCreateSymmetryTable()
 	$ND::SymmetryTableCreating = true;
 	$ND::SymmetryTableStarted = getRealTime();
 
-	$NDT::CubicCount = 0;
+	$NDT::SimpleCount = 0;
 	$NDT::MeshCount = 0;
 
 	$NDT::AsymXCountTotal = 0;
@@ -59,14 +59,14 @@ function ndTickCreateSymmetryTable(%lastIndex, %max)
 		}
 	}
 
-	%cubic = $NDT::CubicCount;
+	%simple = $NDT::SimpleCount;
 	%mesh = $NDT::MeshCount;
 
 	%asymx = $NDT::AsymXCountTotal;
 	%asymz = $NDT::AsymZCountTotal;
 
 	echo("==========================================================================");
-	echo("ND: Finished basic symmetry tests: " @ %cubic @ " cubic, " @ %mesh @ " with mesh, " @ %asymx @ " asymmetric, " @ %asymz @ " z-asymmetric");
+	echo("ND: Finished basic symmetry tests: " @ %simple @ " simple, " @ %mesh @ " with mesh, " @ %asymx @ " asymmetric, " @ %asymz @ " z-asymmetric");
 
 	ndFindSymmetricPairs();
 }
@@ -123,10 +123,10 @@ function ndTestBrickSymmetry(%datablock)
 	//Skip brick size - irrelevant
 	%file.readLine();
 
-	//Cubic bricks are always fully symmetric
+	//Simple bricks are always fully symmetric
 	if(%file.readLine() $= "BRICK")
 	{
-		$NDT::CubicCount++;
+		$NDT::SimpleCount++;
 
 		$ND::Symmetry[%datablock] = 1;
 		$ND::SymmetryZ[%datablock] = true;
@@ -136,7 +136,7 @@ function ndTestBrickSymmetry(%datablock)
 		return;
 	}
 
-	//Not cubic, get mesh data index in temp arrays
+	//Not simple, get mesh data index in temp arrays
 	%dbi = $NDT::MeshCount;
 	$NDT::MeshCount++;
 	

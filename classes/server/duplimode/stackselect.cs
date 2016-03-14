@@ -21,7 +21,7 @@ function NDM_StackSelect::onStartMode(%this, %client, %lastMode)
 //Switch away from this mode
 function NDM_StackSelect::onChangeMode(%this, %client, %nextMode)
 {
-	if(%nextMode == $NDM::CubeSelect)
+	if(%nextMode == $NDM::BoxSelect)
 	{
 		if(%client.ndSelection.brickCount)
 		{
@@ -31,9 +31,9 @@ function NDM_StackSelect::onChangeMode(%this, %client, %nextMode)
 			%max = vectorAdd(%s.rootPosition, %s.maxSize);
 
 			if(%client.isAdmin)
-				%limit = $Pref::Server::ND::MaxCubeSizeAdmin;
+				%limit = $Pref::Server::ND::MaxBoxSizeAdmin;
 			else
-				%limit = $Pref::Server::ND::MaxCubeSizePlayer;
+				%limit = $Pref::Server::ND::MaxBoxSizePlayer;
 
 			if((getWord(%max, 0) - getWord(%min, 0) <= %limit)
 			&& (getWord(%max, 1) - getWord(%min, 1) <= %limit)
@@ -42,9 +42,9 @@ function NDM_StackSelect::onChangeMode(%this, %client, %nextMode)
 				%name = %client.name;
 
 				if(getSubStr(%name, strLen(%name - 1), 1) $= "s")
-					%shapeName = %name @ "' Selection Cube";
+					%shapeName = %name @ "' Selection Box";
 				else
-					%shapeName = %name @ "'s Selection Cube";
+					%shapeName = %name @ "'s Selection Box";
 
 				%client.ndSelectionBox = ND_SelectionBox(%shapeName);
 				%client.ndSelectionBox.setSize(%min, %max);
@@ -133,7 +133,7 @@ function NDM_StackSelect::onLight(%this, %client)
 	if($Pref::Server::ND::PlayMenuSounds)
 		%client.play2d(lightOnSound);
 
-	%client.ndSetMode(NDM_CubeSelect);
+	%client.ndSetMode(NDM_BoxSelect);
 }
 
 //Next Seat

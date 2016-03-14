@@ -450,11 +450,11 @@ function ND_Selection::cancelStackSelection(%this)
 
 
 
-//Cube Selection
+//Box Selection
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//Begin cube selection
-function ND_Selection::startCubeSelection(%this, %box, %limited)
+//Begin box selection
+function ND_Selection::startBoxSelection(%this, %box, %limited)
 {
 	//Ensure there is no highlight group
 	%this.deHighlight();
@@ -467,7 +467,7 @@ function ND_Selection::startCubeSelection(%this, %box, %limited)
 	%this.chunkY2 = getWord(%box, 4);
 	%this.chunkZ2 = getWord(%box, 5);
 
-	%this.chunkSize = $Pref::Server::ND::CubeSelectChunkDim;
+	%this.chunkSize = $Pref::Server::ND::BoxSelectChunkDim;
 
 	%this.numChunksX = mCeil((%this.chunkX2 - %this.chunkX1) / %this.chunkSize);
 	%this.numChunksY = mCeil((%this.chunkY2 - %this.chunkY1) / %this.chunkSize);
@@ -497,13 +497,13 @@ function ND_Selection::startCubeSelection(%this, %box, %limited)
 	if($Pref::Server::ND::PlayMenuSounds)
 		messageClient(%this.client, 'MsgUploadStart', "");
 
-	%this.tickCubeSelectionChunk(%limited, %brickLimit);
+	%this.tickBoxSelectionChunk(%limited, %brickLimit);
 }
 
 //Queue all bricks in a chunk
-function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
+function ND_Selection::tickBoxSelectionChunk(%this, %limited, %brickLimit)
 {
-	cancel(%this.cubeSelectSchedule);
+	cancel(%this.boxSelectSchedule);
 
 	//Restore chunk variables (scopes and slow object fields suck)
 	%chunkSize = %this.chunkSize;
@@ -651,7 +651,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 	{
 		%this.brickLimitReached = true;
 		%this.rootPosition = $NS[%this, "B", 0].getPosition();
-		%this.cubeSelectSchedule = %this.schedule(30, tickCubeSelectionProcess);
+		%this.boxSelectSchedule = %this.schedule(30, tickBoxSelectionProcess);
 
 		return;
 	}
@@ -667,7 +667,7 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 
 			//Start processing bricks
 			%this.rootPosition = $NS[%this, "B", 0].getPosition();
-			%this.cubeSelectSchedule = %this.schedule(30, tickCubeSelectionProcess);
+			%this.boxSelectSchedule = %this.schedule(30, tickBoxSelectionProcess);
 		}
 		else
 		{
@@ -680,8 +680,8 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 
 			commandToClient(%this.client, 'centerPrint', %m, 5);
 
-			%this.cancelCubeSelection();
-			%this.client.ndSetMode(NDM_CubeSelect);
+			%this.cancelBoxSelection();
+			%this.client.ndSetMode(NDM_BoxSelect);
 		}
 
 		return;
@@ -695,13 +695,13 @@ function ND_Selection::tickCubeSelectionChunk(%this, %limited, %brickLimit)
 	}
 
 	//Schedule next chunk
-	%this.cubeSelectSchedule = %this.schedule(30, tickCubeSelectionChunk, %limited, %brickLimit);
+	%this.boxSelectSchedule = %this.schedule(30, tickBoxSelectionChunk, %limited, %brickLimit);
 }
 
 //Save connections between bricks and highlight them
-function ND_Selection::tickCubeSelectionProcess(%this)
+function ND_Selection::tickBoxSelectionProcess(%this)
 {
-	cancel(%this.cubeSelectSchedule);
+	cancel(%this.boxSelectSchedule);
 	%highlightGroup = %this.highlightGroup;
 
 	//Get bounds for this tick
@@ -721,8 +721,8 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 		{
 			messageClient(%this.client, 'MsgError', "\c0Error: \c6Queued brick does not exist anymore. Do not modify the build during selection!");
 
-			%this.cancelCubeSelection();
-			%this.client.ndSetMode(NDM_CubeSelect);
+			%this.cancelBoxSelection();
+			%this.client.ndSetMode(NDM_BoxSelect);
 			return;
 		}
 
@@ -779,13 +779,13 @@ function ND_Selection::tickCubeSelectionProcess(%this)
 	}
 
 	if(%i >= %this.queueCount)
-		%this.finishCubeSelection();
+		%this.finishBoxSelection();
 	else
-		%this.cubeSelectSchedule = %this.schedule(30, tickCubeSelectionProcess);
+		%this.boxSelectSchedule = %this.schedule(30, tickBoxSelectionProcess);
 }
 
-//Finish cube selection
-function ND_Selection::finishCubeSelection(%this)
+//Finish box selection
+function ND_Selection::finishBoxSelection(%this)
 {
 	%this.updateSize();
 	%this.updateHighlightBox();
@@ -809,13 +809,13 @@ function ND_Selection::finishCubeSelection(%this)
 	commandToClient(%this.client, 'centerPrint', %msg, 8);
 
 	%this.client.ndSelectionChanged = false;
-	%this.client.ndSetMode(NDM_CubeSelect);
+	%this.client.ndSetMode(NDM_BoxSelect);
 }
 
-//Cancel cube selection
-function ND_Selection::cancelCubeSelection(%this)
+//Cancel box selection
+function ND_Selection::cancelBoxSelection(%this)
 {
-	cancel(%this.cubeSelectSchedule);
+	cancel(%this.boxSelectSchedule);
 	%this.deleteData();
 }
 

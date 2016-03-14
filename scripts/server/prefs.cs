@@ -41,8 +41,8 @@ function ndRegisterRTBPrefs()
 
 	RTB_registerPref("Max Bricks (Admin)",         "New Duplicator | Settings", "$Pref::Server::ND::MaxBricksAdmin",      "int 1000 1000000", "Tool_NewDuplicator", 1000000, false, false, "");
 	RTB_registerPref("Max Bricks (Player)",        "New Duplicator | Settings", "$Pref::Server::ND::MaxBricksPlayer",     "int 1000 1000000", "Tool_NewDuplicator", 50000,   false, false, "");
-	RTB_registerPref("Max Cube Size (Admin)",      "New Duplicator | Settings", "$Pref::Server::ND::MaxCubeSizeAdmin",    "int 1 50000",      "Tool_NewDuplicator", 256,     false, false, "");
-	RTB_registerPref("Max Cube Size (Player)",     "New Duplicator | Settings", "$Pref::Server::ND::MaxCubeSizePlayer",   "int 1 50000",      "Tool_NewDuplicator", 32,      false, false, "");
+	RTB_registerPref("Max Box Size (Admin)",       "New Duplicator | Settings", "$Pref::Server::ND::MaxBoxSizeAdmin",     "int 1 50000",      "Tool_NewDuplicator", 256,     false, false, "");
+	RTB_registerPref("Max Box Size (Player)",      "New Duplicator | Settings", "$Pref::Server::ND::MaxBoxSizePlayer",    "int 1 50000",      "Tool_NewDuplicator", 32,      false, false, "");
 
 	RTB_registerPref("Selecting Timeout (Player)", "New Duplicator | Settings", "$Pref::Server::ND::SelectTimeout",       "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
 	RTB_registerPref("Planting Timeout (Player)",  "New Duplicator | Settings", "$Pref::Server::ND::PlantTimeout",        "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
@@ -54,7 +54,7 @@ function ndRegisterRTBPrefs()
 	RTB_registerPref("Instant Ghost Bricks",       "New Duplicator | Advanced", "$Pref::Server::ND::InstantGhostBricks",  "int 1 50000",      "Tool_NewDuplicator", 150,     false, false, "");
 	RTB_registerPref("Scatter Ghost Bricks",       "New Duplicator | Advanced", "$Pref::Server::ND::ScatterGhostBricks",  "bool",             "Tool_NewDuplicator", true,    false, false, "");
 	RTB_registerPref("Process Bricks per Tick",    "New Duplicator | Advanced", "$Pref::Server::ND::ProcessPerTick",      "int 1 50000",      "Tool_NewDuplicator", 300,     false, false, "");
-	RTB_registerPref("Cube Selection Chunk Size",  "New Duplicator | Advanced", "$Pref::Server::ND::CubeSelectChunkDim",  "int 1 50000",      "Tool_NewDuplicator", 6,       false, false, "");
+	RTB_registerPref("Box Selection Chunk Size",   "New Duplicator | Advanced", "$Pref::Server::ND::BoxSelectChunkDim",   "int 1 50000",      "Tool_NewDuplicator", 6,       false, false, "");
 
 	//Restore default prefs
 	RTB_registerPref("Check to restore defaults", "New Duplicator | Reset Prefs", "$ND::RestoreDefaultPrefs", "bool", "Tool_NewDuplicator", false, false, false, "ndResetPrefs");
@@ -82,8 +82,8 @@ function ndExtendDefaultPrefs()
 
 	if($Pref::Server::ND::MaxBricksAdmin      $= "") $Pref::Server::ND::MaxBricksAdmin      = 1000000;
 	if($Pref::Server::ND::MaxBricksPlayer     $= "") $Pref::Server::ND::MaxBricksPlayer     = 10000;
-	if($Pref::Server::ND::MaxCubeSizeAdmin    $= "") $Pref::Server::ND::MaxCubeSizeAdmin    = 256;
-	if($Pref::Server::ND::MaxCubeSizePlayer   $= "") $Pref::Server::ND::MaxCubeSizePlayer   = 32;
+	if($Pref::Server::ND::MaxBoxSizeAdmin     $= "") $Pref::Server::ND::MaxBoxSizeAdmin     = 256;
+	if($Pref::Server::ND::MaxBoxSizePlayer    $= "") $Pref::Server::ND::MaxBoxSizePlayer    = 32;
 
 	if($Pref::Server::ND::SelectTimeout       $= "") $Pref::Server::ND::SelectTimeout       = 1;
 	if($Pref::Server::ND::PlantTimeout        $= "") $Pref::Server::ND::PlantTimeout        = 1;
@@ -95,7 +95,7 @@ function ndExtendDefaultPrefs()
 	if($Pref::Server::ND::InstantGhostBricks  $= "") $Pref::Server::ND::InstantGhostBricks  = 150;
 	if($Pref::Server::ND::ScatterGhostBricks  $= "") $Pref::Server::ND::ScatterGhostBricks  = true;
 	if($Pref::Server::ND::ProcessPerTick      $= "") $Pref::Server::ND::ProcessPerTick      = 300;
-	if($Pref::Server::ND::CubeSelectChunkDim  $= "") $Pref::Server::ND::CubeSelectChunkDim  = 6;
+	if($Pref::Server::ND::BoxSelectChunkDim   $= "") $Pref::Server::ND::BoxSelectChunkDim   = 6;
 
 	//Always set this to false
 	$ND::RestoreDefaultPrefs = false;
@@ -124,8 +124,8 @@ function ndApplyDefaultPrefs(%this)
 
 	$Pref::Server::ND::MaxBricksAdmin      = 1000000;
 	$Pref::Server::ND::MaxBricksPlayer     = 10000;
-	$Pref::Server::ND::MaxCubeSizeAdmin    = 256;
-	$Pref::Server::ND::MaxCubeSizePlayer   = 32;
+	$Pref::Server::ND::MaxBoxSizeAdmin     = 256;
+	$Pref::Server::ND::MaxBoxSizePlayer    = 32;
 
 	$Pref::Server::ND::SelectTimeout       = 1;
 	$Pref::Server::ND::PlantTimeout        = 1;
@@ -137,7 +137,7 @@ function ndApplyDefaultPrefs(%this)
 	$Pref::Server::ND::InstantGhostBricks  = 150;
 	$Pref::Server::ND::ScatterGhostBricks  = true;
 	$Pref::Server::ND::ProcessPerTick      = 300;
-	$Pref::Server::ND::CubeSelectChunkDim  = 6;
+	$Pref::Server::ND::BoxSelectChunkDim   = 6;
 
 	//Always set this to false
 	$ND::RestoreDefaultPrefs = false;

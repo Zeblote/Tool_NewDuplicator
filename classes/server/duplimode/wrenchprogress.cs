@@ -15,7 +15,7 @@
 function NDM_WrenchProgress::onChangeMode(%this, %client, %nextMode)
 {
 	//Restore selection box
-	if(%nextMode == $NDM::CubeSelect)
+	if(%nextMode == $NDM::BoxSelect)
 	{
 		%s = %client.ndSelection;
 

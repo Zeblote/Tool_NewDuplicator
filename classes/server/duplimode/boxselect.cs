@@ -1,10 +1,10 @@
 // * ######################################################################
 // *
 // *    New Duplicator - Classes - Server
-// *    NDM_CubeSelect
+// *    NDM_BoxSelect
 // *
 // *    -------------------------------------------------------------------
-// *    Handles inputs for cubic selection mode
+// *    Handles inputs for box selection mode
 // *
 // * ######################################################################
 
@@ -12,17 +12,17 @@
 ///////////////////////////////////////////////////////////////////////////
 
 //Switch to this mode
-function NDM_CubeSelect::onStartMode(%this, %client, %lastMode)
+function NDM_BoxSelect::onStartMode(%this, %client, %lastMode)
 {
 	%client.ndLastSelectMode = %this;
 	%client.ndUpdateBottomPrint();
 
-	if(%lastMode != $NDM::CubeSelectProgress && %lastMode != $NDM::FillColor)
+	if(%lastMode != $NDM::BoxSelectProgress && %lastMode != $NDM::FillColor)
 		%client.ndSelectionChanged = true;
 }
 
 //Switch away from this mode
-function NDM_CubeSelect::onChangeMode(%this, %client, %nextMode)
+function NDM_BoxSelect::onChangeMode(%this, %client, %nextMode)
 {
 	if(%nextMode == $NDM::StackSelect)
 	{
@@ -76,7 +76,7 @@ function NDM_CubeSelect::onChangeMode(%this, %client, %nextMode)
 }
 
 //Kill this mode
-function NDM_CubeSelect::onKillMode(%this, %client)
+function NDM_BoxSelect::onKillMode(%this, %client)
 {
 	//Destroy selection
 	if(isObject(%client.ndSelection))
@@ -93,7 +93,7 @@ function NDM_CubeSelect::onKillMode(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Selecting an object with the duplicator
-function NDM_CubeSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
+function NDM_BoxSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 {
 	if((%obj.getType() & $TypeMasks::FxBrickAlwaysObjectType) == 0)
 		return;
@@ -115,9 +115,9 @@ function NDM_CubeSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 		%name = %client.name;
 
 		if(getSubStr(%name, strLen(%name - 1), 1) $= "s")
-			%shapeName = %name @ "' Selection Cube";
+			%shapeName = %name @ "' Selection Box";
 		else
-			%shapeName = %name @ "'s Selection Cube";				
+			%shapeName = %name @ "'s Selection Box";				
 
 		%client.ndSelectionBox = ND_SelectionBox(%shapeName);
 	}
@@ -132,7 +132,7 @@ function NDM_CubeSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 ///////////////////////////////////////////////////////////////////////////
 
 //Light key
-function NDM_CubeSelect::onLight(%this, %client)
+function NDM_BoxSelect::onLight(%this, %client)
 {
 	if($Pref::Server::ND::PlayMenuSounds)
 		%client.play2d(lightOffSound);
@@ -141,7 +141,7 @@ function NDM_CubeSelect::onLight(%this, %client)
 }
 
 //Prev Seat
-function NDM_CubeSelect::onPrevSeat(%this, %client)
+function NDM_BoxSelect::onPrevSeat(%this, %client)
 {
 	if(!%client.ndSelectionChanged)
 	{
@@ -160,7 +160,7 @@ function NDM_CubeSelect::onPrevSeat(%this, %client)
 }
 
 //Shift Brick
-function NDM_CubeSelect::onShiftBrick(%this, %client, %x, %y, %z)
+function NDM_BoxSelect::onShiftBrick(%this, %client, %x, %y, %z)
 {
 	if(!isObject(%client.ndSelectionBox))
 		return;
@@ -189,22 +189,22 @@ function NDM_CubeSelect::onShiftBrick(%this, %client, %x, %y, %z)
 	%z    = mFloor(%z   ) / 5;
 
 	if(%client.isAdmin)
-		%limit = $Pref::Server::ND::MaxCubeSizeAdmin;
+		%limit = $Pref::Server::ND::MaxBoxSizeAdmin;
 	else
-		%limit = $Pref::Server::ND::MaxCubeSizePlayer;
+		%limit = $Pref::Server::ND::MaxBoxSizePlayer;
 
 	if(%client.ndSelectionBox.shiftCorner(%newX SPC %newY SPC %z, %limit))
 		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Oops!\n<font:Verdana:17>\c6Your selection box is limited to \c3" @ mFloor(%limit * 2) @ " \c6studs.", 5);
 }
 
 //Super Shift Brick
-function NDM_CubeSelect::onSuperShiftBrick(%this, %client, %x, %y, %z)
+function NDM_BoxSelect::onSuperShiftBrick(%this, %client, %x, %y, %z)
 {
 	%this.onShiftBrick(%client, %x * 8, %y * 8, %z * 20);
 }
 
 //Rotate Brick
-function NDM_CubeSelect::onRotateBrick(%this, %client, %direction)
+function NDM_BoxSelect::onRotateBrick(%this, %client, %direction)
 {
 	if(!isObject(%client.ndSelectionBox))
 		return;
@@ -213,7 +213,7 @@ function NDM_CubeSelect::onRotateBrick(%this, %client, %direction)
 }
 
 //Plant Brick
-function NDM_CubeSelect::onPlantBrick(%this, %client)
+function NDM_BoxSelect::onPlantBrick(%this, %client)
 {
 	if(!isObject(%client.ndSelectionBox))
 		return;
@@ -244,15 +244,15 @@ function NDM_CubeSelect::onPlantBrick(%this, %client)
 		//Start selection
 		%box = %client.ndSelectionBox.getSize();
 
-		%client.ndSetMode(NDM_CubeSelectProgress);
-		%client.ndSelection.startCubeSelection(%box, %client.ndLimited);
+		%client.ndSetMode(NDM_BoxSelectProgress);
+		%client.ndSelection.startBoxSelection(%box, %client.ndLimited);
 	}
 	else
 		%client.ndSetMode(NDM_PlantCopy);
 }
 
 //Cancel Brick
-function NDM_CubeSelect::onCancelBrick(%this, %client)
+function NDM_BoxSelect::onCancelBrick(%this, %client)
 {
 	if(!isObject(%client.ndSelectionBox))
 		return;
@@ -266,13 +266,13 @@ function NDM_CubeSelect::onCancelBrick(%this, %client)
 }
 
 //Copy Selection
-function NDM_CubeSelect::onCopy(%this, %client)
+function NDM_BoxSelect::onCopy(%this, %client)
 {
 	%this.onPlantBrick(%client);
 }
 
 //Cut Selection
-function NDM_CubeSelect::onCut(%this, %client)
+function NDM_BoxSelect::onCut(%this, %client)
 {
 	if(!isObject(%client.ndSelectionBox))
 		return;
@@ -293,7 +293,7 @@ function NDM_CubeSelect::onCut(%this, %client)
 ///////////////////////////////////////////////////////////////////////////
 
 //Create bottomprint for client
-function NDM_CubeSelect::getBottomPrint(%this, %client)
+function NDM_BoxSelect::getBottomPrint(%this, %client)
 {		
 	if(isObject(%client.ndSelection) && %client.ndSelection.brickCount)
 	{
@@ -303,7 +303,7 @@ function NDM_CubeSelect::getBottomPrint(%this, %client)
 	else
 		%title = "Selection Mode";
 
-	%l0 = "Type: \c3Cubic \c6[Light]";
+	%l0 = "Type: \c3Box \c6[Light]";
 	%l1 = "Limited: " @ (%client.ndLimited ? "\c3Yes" : "\c0No") @ " \c6[Prev Seat]";
 	%l2 = "";
 
@@ -319,7 +319,7 @@ function NDM_CubeSelect::getBottomPrint(%this, %client)
 	}
 	else
 	{
-		%r0 = "Click Brick: Place selection cube";
+		%r0 = "Click Brick: Place selection box";
 		%r1 = "";
 		%r2 = "";
 	}

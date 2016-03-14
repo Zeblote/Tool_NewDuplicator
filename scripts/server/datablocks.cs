@@ -243,11 +243,11 @@ datablock ShapeBaseImageData(ND_Image)
 };
 
 
-//Spinning selection cube for cubic mode
+//Spinning selection box for box mode
 ///////////////////////////////////////////////////////////////////////////
 
 //Duplicator image
-datablock ShapeBaseImageData(ND_Image_Cube : ND_Image)
+datablock ShapeBaseImageData(ND_Image_Box : ND_Image)
 {
 	shapeFile = $ND::ResourcePath @ "server/duplicator_selection.dts";
 };
@@ -326,26 +326,26 @@ datablock ShapeBaseImageData(ND_Image_Blue : ND_Image)
 //Resizable selection and highlight box
 ///////////////////////////////////////////////////////////////////////////
 
-//Transparent cube to visualize bricks intersecting selection box
-datablock StaticShapeData(ND_SelectionCubeOuter)
+//Transparent box to visualize bricks intersecting selection box
+datablock StaticShapeData(ND_SelectionBoxOuter)
 {
-	shapeFile = $ND::ResourcePath @ "server/selectioncube_outer.dts";
+	shapeFile = $ND::ResourcePath @ "server/selectionbox_outer.dts";
 };
 
-//Inside cube (inverted normals) to visualize backfaces
-datablock StaticShapeData(ND_SelectionCubeInner)
+//Inside box (inverted normals) to visualize backfaces
+datablock StaticShapeData(ND_SelectionBoxInner)
 {
-	shapeFile = $ND::ResourcePath @ "server/selectioncube_inner.dts";
+	shapeFile = $ND::ResourcePath @ "server/selectionbox_inner.dts";
 };
 
-//Small cube to create solid edges
-datablock StaticShapeData(ND_SelectionCubeBorder)
+//Small box to create solid edges
+datablock StaticShapeData(ND_SelectionBoxBorder)
 {
-	shapeFile = $ND::ResourcePath @ "server/selectioncube_border.dts";
+	shapeFile = $ND::ResourcePath @ "server/selectionbox_border.dts";
 };
 
 //Empty shape to hold shapename
-datablock StaticShapeData(ND_SelectionCubeShapeName)
+datablock StaticShapeData(ND_SelectionBoxShapeName)
 {
 	shapeFile = "base/data/shapes/empty.dts";
 };

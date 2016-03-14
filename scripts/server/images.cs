@@ -54,7 +54,7 @@ package NewDuplicator_Server
 		%player.ndEquipped();
 	}
 
-	function ND_Image_Cube::onMount(%this, %player, %slot)
+	function ND_Image_Box::onMount(%this, %player, %slot)
 	{
 		parent::onMount(%this, %player, %slot);
 		%player.ndEquipped();
@@ -73,7 +73,7 @@ package NewDuplicator_Server
 		%player.ndUnEquipped();
 	}
 
-	function ND_Image_Cube::onUnMount(%this, %player, %slot)
+	function ND_Image_Box::onUnMount(%this, %player, %slot)
 	{
 		parent::onUnMount(%this, %player, %slot);
 		%player.ndUnEquipped();
@@ -91,7 +91,7 @@ function ND_Image_Blue::onPreFire(%this, %player, %slot)
 	%player.playThread(2, shiftTo);
 }
 
-function ND_Image_Cube::onPreFire(%this, %player, %slot)
+function ND_Image_Box::onPreFire(%this, %player, %slot)
 {
 	%player.playThread(2, shiftTo);
 }
@@ -107,7 +107,7 @@ function ND_Image_Blue::onFire(%this, %player, %slot)
 	%player.ndFired();
 }
 
-function ND_Image_Cube::onFire(%this, %player, %slot)
+function ND_Image_Box::onFire(%this, %player, %slot)
 {
 	%player.ndFired();
 }
@@ -222,7 +222,7 @@ package NewDuplicator_Server
 		if(%client.ndLastEquipTime + 1.5 > $Sim::Time)
 			return;
 
-		if(%client.ndModeIndex == $NDM::StackSelect || %client.ndModeIndex == $NDM::CubeSelect)
+		if(%client.ndModeIndex == $NDM::StackSelect || %client.ndModeIndex == $NDM::BoxSelect)
 		{
 			%client.ndToolSchedule = %client.schedule(100, ndUnUseTool);
 			return;
