@@ -672,9 +672,9 @@ package NewDuplicator_Server_Final
 	function serverCmdLoadDup(%client, %f0, %f1, %f2, %f3, %f4, %f5, %f6, %f7)
 	{
 		//Check timeout
-		if(!%client.isAdmin && %client.ndLastSaveTime + 5 > $Sim::Time)
+		if(!%client.isAdmin && %client.ndLastLoadTime + 5 > $Sim::Time)
 		{
-			%remain = mCeil(%client.ndLastSaveTime + 5 - $Sim::Time);
+			%remain = mCeil(%client.ndLastLoadTime + 5 - $Sim::Time);
 
 			if(%remain != 1)
 				%s = "s";

@@ -3380,6 +3380,7 @@ function ND_Selection::finishSaving(%this)
 	messageClient(%this.client, 'MsgProcessComplete', "\c6Finished saving selection, wrote \c3"
 		@ %this.brickCount @ "\c6 Brick" @ %s1 @ " with \c3" @ %this.connectionCount @ "\c6 Connection" @ %s2 @ "!");
 
+	%this.client.ndLastSaveTime = $Sim::Time;
 	%this.client.ndSetMode(NDM_PlantCopy);
 }
 
@@ -3393,6 +3394,8 @@ function ND_Selection::cancelSaving(%this)
 
 	if(isFile(%this.saveFilePath))
 		fileDelete(%this.saveFilePath);
+
+	%this.client.ndLastSaveTime = $Sim::Time;
 }
 
 
@@ -3993,6 +3996,7 @@ function ND_Selection::finishLoading(%this)
 	messageClient(%this.client, 'MsgProcessComplete', "\c6Finished loading selection, got \c3"
 		@ %this.brickCount @ "\c6 Brick" @ %s1 @ " with \c3" @ %this.connectionCount @ "\c6 Connection" @ %s2 @ "!");
 
+	%this.client.ndLastLoadTime = $Sim::Time;
 	%this.client.ndSetMode(NDM_PlantCopy);
 }
 
@@ -4003,4 +4007,6 @@ function ND_Selection::cancelLoading(%this)
 
 	%this.loadFile.close();
 	%this.loadFile.delete();
+
+	%this.client.ndLastLoadTime = $Sim::Time;
 }
