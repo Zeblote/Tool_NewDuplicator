@@ -9,76 +9,76 @@
 // * ######################################################################
 
 //Selection data arrays $NS[obj, type{, ...}]
-// -X: Minimum X point
-// -Y: Minimum Y point
-// -Z: Minimum Z point
+// $NS[%s, "-X"] - Minimum X point
+// $NS[%s, "-Y"] - Minimum Y point
+// $NS[%s, "-Z"] - Minimum Z point
 
-// +X: Maximum X point
-// +Y: Maximum Y point
-// +Z: Maximum Z point
+// $NS[%s, "+X"] - Maximum X point
+// $NS[%s, "+Y"] - Maximum Y point
+// $NS[%s, "+Z"] - Maximum Z point
 
-// B[i  ]: Brick object
-// I[b  ]: Index of brick in array
-// N[i  ]: Number of connected bricks
-// C[i,j]: Index of connected brick
+// $NS[%s, "B", %i    ] - Brick object
+// $NS[%s, "I", %b    ] - Index of brick in array
+// $NS[%s, "N", %i    ] - Number of connected bricks
+// $NS[%s, "C", %i, %j] - Index of connected brick
 
-// D[i]: Datablock
-// P[i]: Position
-// R[i]: Rotation
+// $NS[%s, "D", %i] - Datablock
+// $NS[%s, "P", %i] - Position
+// $NS[%s, "R", %i] - Rotation
 
-// NT[i]: Brick name
-// PR[i]: Print
+// $NS[%s, "NT", %i] - Brick name
+// $NS[%s, "PR", %i] - Print
 
-// CO[i]: Color id
-// CF[i]: Color Fx id
-// SF[i]: Shape Fx id
+// $NS[%s, "CO", %i] - Color id
+// $NS[%s, "CF", %i] - Color Fx id
+// $NS[%s, "SF", %i] - Shape Fx id
 
-// NRC[i]: No ray casting
-// NR [i]: No rendering
-// NC [i]: No colliding
+// $NS[%s, "NRC", %i] - No ray casting
+// $NS[%s, "NR",  %i] - No rendering
+// $NS[%s, "NC",  %i] - No colliding
 
-// LD[i]: Light datablock
+// $NS[%s, "LD", %i] - Light datablock
 
-// ED[i]: Emitter datablock
-// ER[i]: Emitter rotation
+// $NS[%s, "ED", %i] - Emitter datablock
+// $NS[%s, "ER", %i] - Emitter rotation
 
-// ID[i]: Item datablock
-// IP[i]: Item position
-// IR[i]: Item rotation
-// IT[i]: Item respawn time
+// $NS[%s, "ID", %i] - Item datablock
+// $NS[%s, "IP", %i] - Item position
+// $NS[%s, "IR", %i] - Item rotation
+// $NS[%s, "IT", %i] - Item respawn time
 
-// VD[i]: Vehicle datablock
-// VC[i]: Vehicle color
+// $NS[%s, "VD", %i] - Vehicle datablock
+// $NS[%s, "VC", %i] - Vehicle color
 
-// MD[i]: Music datablock
+// $NS[%s, "MD", %i] - Music datablock
 
 
-// EN[i]: Number of events on the brick
+// $NS[%s, "EN", %i] - Number of events on the brick
 
-// EE[i,j]: Whether event is enabled
-// ED[i,j]: Event delay
+// $NS[%s, "EE", %i, %j] - Whether event is enabled
+// $NS[%s, "ED", %i, %j] - Event delay
 
-// EI [i,j]: Event input name
-// EII[i,j]: Event input idx
-// EO [i,j]: Event output name
-// EOI[i,j]: Event output idx
-// EOC[i,j]: Event output append client
+// $NS[%s, "EI",  %i, %j] - Event input name
+// $NS[%s, "EII", %i, %j] - Event input idx
+// $NS[%s, "EO",  %i, %j] - Event output name
+// $NS[%s, "EOI", %i, %j] - Event output idx
+// $NS[%s, "EOC", %i, %j] - Event output append client
 
-// ET [i,j]: Event target name
-// ETI[i,j]: Event target idx
-// ENT[i,j]: Event brick named target
+// $NS[%s, "ET",  %i, %j] - Event target name
+// $NS[%s, "ETI", %i, %j] - Event target idx
+// $NS[%s, "ENT", %i, %j] - Event brick named target
 
-// EP[i,j,k]: Event output parameter
+// $NS[%s, "EP", %i, %j, %k] - Event output parameter
 
 
 //Mirror error lists $NS[client, type{, ...}]
-// MXC   : Count of mirror errors on x
-// MXE[i]: Error datablock
-// MXK[d]: Index of datablock in list
+// $NS[%c, "MXC",   ] - Count of mirror errors on x
+// $NS[%c, "MXE", %i] - Error datablock
+// $NS[%c, "MXK", %d] - Index of datablock in list
 
-// MZC  : Count of mirror errors on z
-// MZE[i]: Error datablock
-// MZK[d]: Index of datablock in list
+// $NS[%c, "MZC",   ] - Count of mirror errors on z
+// $NS[%c, "MZE", %i] - Error datablock
+// $NS[%c, "MZK", %d] - Index of datablock in list
 
 
 
