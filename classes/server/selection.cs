@@ -3975,7 +3975,7 @@ function ND_Selection::finishLoading(%this)
 
 	%shiftX = mCeil(getWord(%pos, 0) * 2 - %this.brickSizeX % 2) / 2 + (%this.brickSizeX % 2) / 4  - getWord(%pos, 0);
 	%shiftY = mCeil(getWord(%pos, 1) * 2 - %this.brickSizeY % 2) / 2 + (%this.brickSizeY % 2) / 4  - getWord(%pos, 1);
-	%shiftZ = mCeil(getWord(%pos, 2) * 5 - %this.brickSizeZ % 2) / 5 + (%this.brickSizeZ % 2) / 10 - getWord(%pos, 2);
+	%shiftZ = mCeil(getWord(%pos, 2) * 5 - %this.brickSizeZ % 5) / 5 + (%this.brickSizeZ % 5) / 10 - getWord(%pos, 2);
 
 	%this.rootPosition = vectorAdd(%shiftX SPC %shiftY SPC %shiftZ, %this.rootPosition);
 
