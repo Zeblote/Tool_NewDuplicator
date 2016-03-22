@@ -690,6 +690,15 @@ package NewDuplicator_Server_Final
 			return;
 		}
 
+		//Attempt to get a duplicator
+		if(!%client.ndEquipped)
+		{
+			serverCmdNewDuplicator(%client);
+
+			if(!%client.ndEquipped)
+				return;
+		}
+
 		//Check mode
 		%mode = %client.ndModeIndex;
 
