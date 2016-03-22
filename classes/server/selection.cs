@@ -992,9 +992,9 @@ function ND_Selection::updateSize(%this)
 	%this.minSize = vectorSub($NS[%this, "-X"] SPC $NS[%this, "-Y"] SPC $NS[%this, "-Z"], %this.rootPosition);
 	%this.maxSize = vectorSub($NS[%this, "+X"] SPC $NS[%this, "+Y"] SPC $NS[%this, "+Z"], %this.rootPosition);
 
-	%this.brickSizeX = mFloor(($NS[%this, "+X"] - $NS[%this, "-X"]) * 2);
-	%this.brickSizeY = mFloor(($NS[%this, "+Y"] - $NS[%this, "-Y"]) * 2);
-	%this.brickSizeZ = mFloor(($NS[%this, "+Z"] - $NS[%this, "-Z"]) * 5);
+	%this.brickSizeX = mFloatLength(($NS[%this, "+X"] - $NS[%this, "-X"]) * 2, 0);
+	%this.brickSizeY = mFloatLength(($NS[%this, "+Y"] - $NS[%this, "-Y"]) * 2, 0);
+	%this.brickSizeZ = mFloatLength(($NS[%this, "+Z"] - $NS[%this, "-Z"]) * 5, 0);
 
 	%this.rootToCenter = vectorAdd(%this.minSize, vectorScale(vectorSub(%this.maxSize, %this.minSize), 0.5));
 }
@@ -3975,7 +3975,7 @@ function ND_Selection::finishLoading(%this)
 
 	%shiftX = mCeil(getWord(%pos, 0) * 2 - %this.brickSizeX % 2) / 2 + (%this.brickSizeX % 2) / 4  - getWord(%pos, 0);
 	%shiftY = mCeil(getWord(%pos, 1) * 2 - %this.brickSizeY % 2) / 2 + (%this.brickSizeY % 2) / 4  - getWord(%pos, 1);
-	%shiftZ = mCeil(getWord(%pos, 2) * 5 - %this.brickSizeZ % 5) / 5 + (%this.brickSizeZ % 5) / 10 - getWord(%pos, 2);
+	%shiftZ = mCeil(getWord(%pos, 2) * 5 - %this.brickSizeZ % 2) / 5 + (%this.brickSizeZ % 2) / 10 - getWord(%pos, 2);
 
 	%this.rootPosition = vectorAdd(%shiftX SPC %shiftY SPC %shiftZ, %this.rootPosition);
 
