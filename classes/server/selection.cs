@@ -805,10 +805,9 @@ function ND_Selection::finishBoxSelection(%this)
 	if(%this.trustFailCount > 0)
 		%msg = %msg @ "\n<font:Verdana:17>\c3" @ %this.trustFailCount @ "\c6 missing trust.";
 
-	%msg = %msg @ "\n<font:Verdana:17>\c6Press [Plant Brick] again to copy.";
+	%msg = %msg @ "\n<font:Verdana:17>\c6Press [Cancel Brick] to adjust the box.";
 	commandToClient(%this.client, 'centerPrint', %msg, 8);
 
-	%this.client.ndSelectionChanged = false;
 	%this.client.ndSetMode(NDM_BoxSelect);
 }
 

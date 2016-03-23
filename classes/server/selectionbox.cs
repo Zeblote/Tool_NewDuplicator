@@ -40,21 +40,8 @@ function ND_SelectionBox(%shapeName)
 		%this.border_z[%i].setScopeAlways();
 	}
 
-	%this.shapeName.setShapeName(%shapeName);
-
-	%this.innerColor  = "0 0 0 0.75";
-	%this.outerColor  = "1 0.84 0 0.35";
-
-	%this.borderColor = "1 0.84 0 0.99";
-	%this.borderColorSelected = "0 0 1 0.99";
-
-	%this.cornerColor1 = "0.8 0.74 0 0.99";
-	%this.cornerColor2 = "1 0.94 0.1 0.99";
-
-	%this.cornerColorSelected1 = "0 0.2 1 0.99";
-	%this.cornerColorSelected2 = "0 0.1 0.9 0.99";
-
-	%this.applyColors();
+	%this.boxName = %shapeName;
+	%this.setNormalMode();
 
 	return %this;
 }
@@ -75,6 +62,58 @@ function ND_SelectionBox::onRemove(%this)
 		%this.border_y[%i].delete();
 		%this.border_z[%i].delete();
 	}
+}
+
+//Set normal color values and borders
+function ND_SelectionBox::setNormalMode(%this)
+{
+	%this.innerColor  = "0 0 0 0.75";
+	%this.outerColor  = "1 0.84 0 0.35";
+
+	%this.borderColor = "1 0.84 0 0.99";
+	%this.borderColorSelected = "0 0 1 0.99";
+
+	%this.cornerColor1 = "0.8 0.74 0 0.99";
+	%this.cornerColor2 = "1 0.94 0.1 0.99";
+
+	%this.cornerColorSelected1 = "0 0.2 1 0.99";
+	%this.cornerColorSelected2 = "0 0.1 0.9 0.99";
+
+	%this.isNormalMode = true;
+
+	//Hide the corners and inner/outer box (hidden in disabled mode)
+	%this.innerBox.unHideNode("ALL");
+	%this.outerBox.unHideNode("ALL");
+	%this.corner1.unHideNode("ALL");
+	%this.corner2.unHideNode("ALL");
+
+	//Apply changes
+	%this.applyColors();
+	%this.setSize(%this.point1, %this.point2);
+	%this.shapeName.setShapeName(%this.boxName);
+}
+
+//Set grayscale color values and slightly smaller border
+function ND_SelectionBox::setDisabledMode(%this)
+{
+	%this.innerColor  = "0 0 0 0";
+	%this.outerColor  = "0 0 0 0";
+
+	%this.borderColor = "0 0 0 0.4";
+	%this.borderColorSelected = "0 0 0 0.4";
+
+	%this.isNormalMode = false;
+
+	//Hide the corners and inner/outer box (looks better)
+	%this.innerBox.HideNode("ALL");
+	%this.outerBox.HideNode("ALL");
+	%this.corner1.HideNode("ALL");
+	%this.corner2.HideNode("ALL");
+
+	//Apply changes
+	%this.applyColors();
+	%this.setSize(%this.point1, %this.point2);
+	%this.shapeName.setShapeName("");
 }
 
 //Apply color changes to the selection box
@@ -203,41 +242,63 @@ function ND_SelectionBox::setSize(%this, %point1, %point2)
 	%this.innerBox.setScale(%len_x - 0.02 SPC %len_y - 0.02 SPC %len_z - 0.02);
 	%this.outerBox.setScale(%len_x + 0.02 SPC %len_y + 0.02 SPC %len_z + 0.02);
 
-	%maxLen = getMax(getMax(%len_x, %len_y), %len_z);
-	%width = (7 / 1024) * %maxLen + 1;
-
-	if(%this.selectedCorner)
+	if(%this.isNormalMode)
 	{
-		%width1 = %width;
-		%width2 = %width + 0.02;
+		//Normal mode (box with two colored corners)
+		%maxLen = getMax(getMax(%len_x, %len_y), %len_z);
+		%width = (7/1024) * %maxLen + 1;
+
+		for(%i = 0; %i < 4; %i++)
+		{
+			%this.border_x[%i].setScale(%width SPC %width SPC %len_x + %width * 0.05);
+			%this.border_y[%i].setScale(%width SPC %width SPC %len_y + %width * 0.05);
+			%this.border_z[%i].setScale(%width SPC %width SPC %len_z + %width * 0.05);
+		}
+
+		if(%this.selectedCorner)
+		{
+			%width1 = %width;
+			%width2 = %width + 0.02;
+		}
+		else
+		{
+			%width1 = %width + 0.02;
+			%width2 = %width;
+		}	
+
+		//The borders touching the two corners are thicker to prevent Z fighting
+		//with the highlight box if it covers the same area as the selection
+		%this.border_x0.setScale(%width1 SPC %width1 SPC %len_x - %width * 0.05);
+		%this.border_y0.setScale(%width1 SPC %width1 SPC %len_y - %width * 0.05);
+		%this.border_z0.setScale(%width1 SPC %width1 SPC %len_z - %width * 0.05);
+
+		%this.border_x2.setScale(%width2 SPC %width2 SPC %len_x - %width * 0.05);
+		%this.border_y2.setScale(%width2 SPC %width2 SPC %len_y - %width * 0.05);
+		%this.border_z2.setScale(%width2 SPC %width2 SPC %len_z - %width * 0.05);
+
+		//Corners scale with the border width
+		%cs1 = 0.35 * %width1;
+		%cs2 = 0.35 * %width2;
+
+		%this.corner1.setScale(%cs1 SPC %cs1 SPC %cs1);
+		%this.corner2.setScale(%cs2 SPC %cs2 SPC %cs2);
 	}
 	else
 	{
-		%width1 = %width + 0.02;
-		%width2 = %width;
-	}	
+		//Disabled mode (transparent greyscale box)
+		%maxLen = getMax(getMax(%len_x, %len_y), %len_z);
+		%width = (21/5120) * %maxLen + 1;
 
-	for(%i = 0; %i < 4; %i++)
-	{
-		%this.border_x[%i].setScale(%width SPC %width SPC %len_x + %width * 0.05);
-		%this.border_y[%i].setScale(%width SPC %width SPC %len_y + %width * 0.05);
-		%this.border_z[%i].setScale(%width SPC %width SPC %len_z + %width * 0.05);
+		for(%i = 0; %i < 4; %i++)
+		{
+			//Horizontal borders are a bit shorter to prevent z fighting
+			%this.border_x[%i].setScale(%width SPC %width SPC %len_x - %width * 0.05);
+			%this.border_y[%i].setScale(%width SPC %width SPC %len_y - %width * 0.05);
+
+			%this.border_z[%i].setScale(%width SPC %width SPC %len_z + %width * 0.05);
+		}
 	}
-
-	//The borders touching the two corners are shorter to prevent Z fighting 
-	%this.border_x0.setScale(%width1 SPC %width1 SPC %len_x - %width * 0.05);
-	%this.border_y0.setScale(%width1 SPC %width1 SPC %len_y - %width * 0.05);
-	%this.border_z0.setScale(%width1 SPC %width1 SPC %len_z - %width * 0.05);
-	%this.border_x2.setScale(%width2 SPC %width2 SPC %len_x - %width * 0.05);
-	%this.border_y2.setScale(%width2 SPC %width2 SPC %len_y - %width * 0.05);
-	%this.border_z2.setScale(%width2 SPC %width2 SPC %len_z - %width * 0.05);
-
-	//Corners scale with the border width
-	%cs1 = 0.35 * %width1;
-	%cs2 = 0.35 * %width2;
-
-	%this.corner1.setScale(%cs1 SPC %cs1 SPC %cs1);
-	%this.corner2.setScale(%cs2 SPC %cs2 SPC %cs2);
+	
 }
 
 //Select one of the two corners

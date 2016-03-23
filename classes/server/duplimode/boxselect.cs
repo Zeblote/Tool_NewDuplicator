@@ -15,10 +15,16 @@
 function NDM_BoxSelect::onStartMode(%this, %client, %lastMode)
 {
 	%client.ndLastSelectMode = %this;
-	%client.ndUpdateBottomPrint();
 
-	if(%lastMode != $NDM::BoxSelectProgress && %lastMode != $NDM::FillColor)
-		%client.ndSelectionChanged = true;
+	if(%lastMode == $NDM::BoxSelectProgress && %client.ndSelection.brickCount > 0)
+	{
+		%client.ndSelectionAvailable = true;
+		%client.ndSelectionBox.setDisabledMode();
+	}
+	else if(%lastMode != $NDM::FillColor)
+		%client.ndSelectionAvailable = false;
+
+	%client.ndUpdateBottomPrint();
 }
 
 //Switch away from this mode
@@ -101,16 +107,17 @@ function NDM_BoxSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 	if(!ndTrustCheckMessage(%obj, %client))
 		return;
 
-	if(!%client.ndSelectionChanged)
+	if(%client.ndSelectionAvailable)
 	{
 		messageClient(%client, 'MsgError', "");
-		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection Box has been changed!\n<font:Verdana:17>\c6Press [Plant Brick] to select again.", 5);
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection canceled! You can now edit the box again.", 5);
 
-		%client.ndSelectionChanged = true;
+		%client.ndSelectionAvailable = false;
 		%client.ndSelection.deleteData();
+		%client.ndSelectionBox.setNormalMode();
+		%client.ndUpdateBottomPrint();
 	}
-
-	if(!isObject(%client.ndSelectionBox))
+	else if(!isObject(%client.ndSelectionBox))
 	{
 		%name = %client.name;
 
@@ -143,15 +150,6 @@ function NDM_BoxSelect::onLight(%this, %client)
 //Prev Seat
 function NDM_BoxSelect::onPrevSeat(%this, %client)
 {
-	if(!%client.ndSelectionChanged)
-	{
-		messageClient(%client, 'MsgError', "");
-		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection Box has been changed!\n<font:Verdana:17>\c6Press [Plant Brick] to select again.", 5);
-		
-		%client.ndSelectionChanged = true;
-		%client.ndSelection.deleteData();
-	}
-
 	%client.ndLimited = !%client.ndLimited;
 	%client.ndUpdateBottomPrint();
 
@@ -165,14 +163,13 @@ function NDM_BoxSelect::onShiftBrick(%this, %client, %x, %y, %z)
 	if(!isObject(%client.ndSelectionBox))
 		return;
 
-	if(!%client.ndSelectionChanged)
+	//If we have a selection, enter plant mode!
+	if(%client.ndSelectionAvailable)
 	{
-		messageClient(%client, 'MsgError', "");
-		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection Box has been changed!\n<font:Verdana:17>\c6Press [Plant Brick] to select again.", 5);
+		%client.ndSetMode(NDM_PlantCopy);
+		NDM_PlantCopy.onShiftBrick(%client, %x, %y, %z);
 
-		%client.ndSelectionChanged = true;
-		%client.ndSelection.deleteData();
-		%client.ndUpdateBottomPrint();
+		return;
 	}
 
 	//Move the corner
@@ -200,6 +197,15 @@ function NDM_BoxSelect::onShiftBrick(%this, %client, %x, %y, %z)
 //Super Shift Brick
 function NDM_BoxSelect::onSuperShiftBrick(%this, %client, %x, %y, %z)
 {
+	//If we have a selection, enter plant mode!
+	if(%client.ndSelectionAvailable)
+	{
+		%client.ndSetMode(NDM_PlantCopy);
+		NDM_PlantCopy.onSuperShiftBrick(%client, %x, %y, %z);
+
+		return;
+	}
+
 	%this.onShiftBrick(%client, %x * 8, %y * 8, %z * 20);
 }
 
@@ -208,6 +214,15 @@ function NDM_BoxSelect::onRotateBrick(%this, %client, %direction)
 {
 	if(!isObject(%client.ndSelectionBox))
 		return;
+
+	//If we have a selection, enter plant mode!
+	if(%client.ndSelectionAvailable)
+	{
+		%client.ndSetMode(NDM_PlantCopy);
+		NDM_PlantCopy.onRotateBrick(%client, %direction);
+
+		return;
+	}
 
 	%client.ndSelectionBox.switchCorner();
 }
@@ -218,37 +233,39 @@ function NDM_BoxSelect::onPlantBrick(%this, %client)
 	if(!isObject(%client.ndSelectionBox))
 		return;
 
-	if(%client.ndSelectionChanged)	
+	//If we have a selection, enter plant mode!
+	if(%client.ndSelectionAvailable)	
 	{
-		//Check timeout
-		if(!%client.isAdmin && %client.ndLastSelectTime + $Pref::Server::ND::SelectTimeout > $Sim::Time)
-		{
-			%remain = mCeil(%client.ndLastSelectTime + $Pref::Server::ND::SelectTimeout - $Sim::Time);
-
-			if(%remain != 1)
-				%s = "s";
-
-			messageClient(%client, 'MsgError', "");
-			commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You need to wait\c3 " @ %remain @ "\c6 second" @ %s @ " before selecting again!", 5);
-			return;
-		}
-
-		%client.ndLastSelectTime = $Sim::Time;
-
-		//Prepare a selection to copy the bricks
-		if(isObject(%client.ndSelection))
-			%client.ndSelection.deleteData();
-		else
-			%client.ndSelection = ND_Selection(%client);
-
-		//Start selection
-		%box = %client.ndSelectionBox.getSize();
-
-		%client.ndSetMode(NDM_BoxSelectProgress);
-		%client.ndSelection.startBoxSelection(%box, %client.ndLimited);
-	}
-	else
 		%client.ndSetMode(NDM_PlantCopy);
+		return;
+	}
+
+	//Check timeout
+	if(!%client.isAdmin && %client.ndLastSelectTime + $Pref::Server::ND::SelectTimeout > $Sim::Time)
+	{
+		%remain = mCeil(%client.ndLastSelectTime + $Pref::Server::ND::SelectTimeout - $Sim::Time);
+
+		if(%remain != 1)
+			%s = "s";
+
+		messageClient(%client, 'MsgError', "");
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You need to wait\c3 " @ %remain @ "\c6 second" @ %s @ " before selecting again!", 5);
+		return;
+	}
+
+	%client.ndLastSelectTime = $Sim::Time;
+
+	//Prepare a selection to copy the bricks
+	if(isObject(%client.ndSelection))
+		%client.ndSelection.deleteData();
+	else
+		%client.ndSelection = ND_Selection(%client);
+
+	//Start selection
+	%box = %client.ndSelectionBox.getSize();
+
+	%client.ndSetMode(NDM_BoxSelectProgress);
+	%client.ndSelection.startBoxSelection(%box, %client.ndLimited);
 }
 
 //Cancel Brick
@@ -257,11 +274,24 @@ function NDM_BoxSelect::onCancelBrick(%this, %client)
 	if(!isObject(%client.ndSelectionBox))
 		return;
 
+	if(%client.ndSelectionAvailable)
+	{
+		messageClient(%client, 'MsgError', "");
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection canceled! You can now edit the box again.", 5);
+
+		%client.ndSelectionAvailable = false;
+		%client.ndSelection.deleteData();
+		%client.ndSelectionBox.setNormalMode();
+		%client.ndUpdateBottomPrint();
+
+		return;
+	}
+
 	if(isObject(%client.ndSelection))
 		%client.ndSelection.deleteData();
 
 	%client.ndSelectionBox.delete();
-	%client.ndSelectionChanged = true;
+	%client.ndSelectionAvailable = false;
 	%client.ndUpdateBottomPrint();
 }
 
@@ -277,7 +307,7 @@ function NDM_BoxSelect::onCut(%this, %client)
 	if(!isObject(%client.ndSelectionBox))
 		return;
 
-	if(%client.ndSelectionChanged)
+	if(!%client.ndSelectionAvailable)
 	{
 		%this.onPlantBrick(%client);
 		return;
@@ -307,21 +337,22 @@ function NDM_BoxSelect::getBottomPrint(%this, %client)
 	%l1 = "Limited: " @ (%client.ndLimited ? "\c3Yes" : "\c0No") @ " \c6[Prev Seat]";
 	%l2 = "";
 
-	if(isObject(%client.ndSelectionBox))
-	{
-		%r0 = "[Shift Brick]: Move corner";
-		%r1 = "[Rotate Brick]: Switch corner";
-
-		if(%client.ndSelectionChanged)
-			%r2 = "[Plant Brick]: Select bricks";
-		else
-			%r2 = "[Plant Brick]: Plant Mode";
-	}
-	else
+	if(!isObject(%client.ndSelectionBox))
 	{
 		%r0 = "Click Brick: Place selection box";
 		%r1 = "";
 		%r2 = "";
+	}
+	else if(!%client.ndSelectionAvailable)
+	{
+		%r0 = "[Shift Brick]: Move corner";
+		%r1 = "[Rotate Brick]: Switch corner";
+		%r2 = "[Plant Brick]: Select bricks";
+	}
+	else
+	{
+		%r0 = "[Plant Brick]: Plant Mode";
+		%r1 = "[Cancel Brick]: Adjust box";
 	}
 
 	return ndFormatMessage(%title, %l0, %r0, %l1, %r1, %l2, %r2);
