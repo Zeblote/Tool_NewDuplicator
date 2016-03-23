@@ -2349,7 +2349,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 function ND_Selection::finishPlant(%this)
 {
 	//Report mirror errors
-	if($NS[%this.client, "MXE"] > 0 || $NS[%this.client, "MZE"] > 0)
+	if($NS[%this.client, "MXC"] > 0 || $NS[%this.client, "MZC"] > 0)
 		messageClient(%this.client, '', "\c6Some bricks were probably mirrored incorrectly. Say \c3/mirErrors\c6 to find out more.");
 
 	%count = %this.brickCount;
