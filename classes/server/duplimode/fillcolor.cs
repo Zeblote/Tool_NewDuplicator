@@ -21,18 +21,6 @@ function NDM_FillColor::onStartMode(%this, %client, %lastMode)
 //Switch away from this mode
 function NDM_FillColor::onChangeMode(%this, %client, %nextMode)
 {
-	//Restore selection box
-	if(%nextMode == $NDM::BoxSelect)
-	{
-		%s = %client.ndSelection;
-
-		%min = vectorAdd(%s.rootPosition, %s.minSize);
-		%max = vectorAdd(%s.rootPosition, %s.maxSize);
-
-		%client.ndSelectionBox = ND_SelectionBox(%shapeName);
-		%client.ndSelectionBox.setSize(%min, %max);
-	}
-
 	//Hide paint gui
 	if(%nextMode != $NDM::FillColorProgress)
 	{
@@ -50,6 +38,10 @@ function NDM_FillColor::onKillMode(%this, %client)
 {
 	//Destroy the selection
 	%client.ndSelection.delete();
+
+	//Remove the selection box
+	if(isObject(%client.ndSelectionBox))
+		%client.ndSelectionBox.delete();
 }
 
 

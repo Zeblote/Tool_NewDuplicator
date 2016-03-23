@@ -21,7 +21,7 @@ function NDM_BoxSelect::onStartMode(%this, %client, %lastMode)
 		%client.ndSelectionAvailable = true;
 		%client.ndSelectionBox.setDisabledMode();
 	}
-	else if(%lastMode != $NDM::FillColor)
+	else if(%lastMode != $NDM::FillColor && %lastMode != $NDM::WrenchProgress)
 		%client.ndSelectionAvailable = false;
 
 	%client.ndUpdateBottomPrint();
@@ -59,19 +59,11 @@ function NDM_BoxSelect::onChangeMode(%this, %client, %nextMode)
 	{
 		//Start de-highlighting the bricks
 		%client.ndSelection.deHighlight();
-
-		//Remove the selection box
-		if(isObject(%client.ndSelectionBox))
-			%client.ndSelectionBox.delete();
 	}
 	else if(%nextMode == $NDM::WrenchProgress)
 	{
 		//Start de-highlighting the bricks
 		%client.ndSelection.deHighlight();
-
-		//Remove the selection box
-		if(isObject(%client.ndSelectionBox))
-			%client.ndSelectionBox.delete();
 	}
 	else if(%nextMode == $NDM::LoadProgress)
 	{
