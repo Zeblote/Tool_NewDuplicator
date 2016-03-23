@@ -67,8 +67,8 @@ function ND_SelectionBox::onRemove(%this)
 //Set normal color values and borders
 function ND_SelectionBox::setNormalMode(%this)
 {
-	%this.innerColor  = "0 0 0 0.75";
-	%this.outerColor  = "1 0.84 0 0.35";
+	%this.innerColor  = "0 0 0 0.60";
+	%this.outerColor  = "0 0 0 0.35";
 
 	%this.borderColor = "1 0.84 0 0.99";
 	%this.borderColorSelected = "0 0 1 0.99";
@@ -96,11 +96,8 @@ function ND_SelectionBox::setNormalMode(%this)
 //Set grayscale color values and slightly smaller border
 function ND_SelectionBox::setDisabledMode(%this)
 {
-	%this.innerColor  = "0 0 0 0";
-	%this.outerColor  = "0 0 0 0";
-
-	%this.borderColor = "0 0 0 0.4";
-	%this.borderColorSelected = "0 0 0 0.4";
+	%this.borderColor = "0.1 0.1 0.1 0.4";
+	%this.borderColorSelected = "0.1 0.1 0.1 0.4";
 
 	%this.isNormalMode = false;
 
@@ -122,7 +119,7 @@ function ND_SelectionBox::applyColors(%this)
 	%this.innerBox.setNodeColor("ALL", %this.innerColor);
 	%this.outerBox.setNodeColor("ALL", %this.outerColor);
 
-	%this.shapeName.setShapeNameColor(%this.outerColor);
+	%this.shapeName.setShapeNameColor(%this.borderColor);
 
 	for(%i = 0; %i < 4; %i++)
 	{
