@@ -129,43 +129,11 @@ function NDM_BoxSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 		%client.ndSelectionBox = ND_SelectionBox(%shapeName);
 	}
 
-	//Set the selection box to correct orientation
 	%box = %obj.getWorldBox();
-	%x1 = getWord(%box, 0);
-	%y1 = getWord(%box, 1);
-	%z1 = getWord(%box, 2);
+	%p1 = getWords(%box, 0, 2);
+	%p2 = getWords(%box, 3, 5);
 
-	%x2 = getWord(%box, 3);
-	%y2 = getWord(%box, 4);
-	%z2 = getWord(%box, 5);
-
-	switch(getAngleIDFromPlayer(%client.getControlObject()))
-	{
-		case 0:
-			%p1 = %x2 SPC %y1 SPC %z1;
-			%p2 = %x1 SPC %y2 SPC %z2;
-
-		case 1:
-			%p1 = %x2 SPC %y2 SPC %z1;
-			%p2 = %x1 SPC %y1 SPC %z2;
-
-		case 2:
-			%p1 = %x1 SPC %y2 SPC %z1;
-			%p2 = %x2 SPC %y1 SPC %z2;
-
-		case 3:
-			%p1 = %x1 SPC %y1 SPC %z1;
-			%p2 = %x2 SPC %y2 SPC %z2;
-	}
-
-	//Select first corner
-	if(!%client.ndSelectionBox.selectedCorner)
-	{
-		%client.ndSelectionBox.selectedCorner = true;
-		%client.ndSelectionBox.applyColors();
-	}
-
-	%client.ndSelectionBox.setSize(%p1, %p2);
+	%client.ndSelectionBox.setSizeAligned(%p1, %p2, %client.getControlObject());
 	%client.ndUpdateBottomPrint();
 }
 

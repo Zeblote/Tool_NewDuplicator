@@ -47,7 +47,7 @@ function NDM_StackSelect::onChangeMode(%this, %client, %nextMode)
 					%shapeName = %name @ "'s Selection Box";
 
 				%client.ndSelectionBox = ND_SelectionBox(%shapeName);
-				%client.ndSelectionBox.setSize(%min, %max);
+				%client.ndSelectionBox.setSizeAligned(%min, %max, %client.getControlObject());
 			}
 			else
 				commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Oops!\n<font:Verdana:17>\c6Your selection box is limited to \c3" @ mFloor(%limit * 2) @ " \c6studs.", 5);

@@ -295,7 +295,47 @@ function ND_SelectionBox::setSize(%this, %point1, %point2)
 			%this.border_z[%i].setScale(%width SPC %width SPC %len_z + %width * 0.05);
 		}
 	}
-	
+}
+
+//Resize the selection box and align it to a player
+function ND_SelectionBox::setSizeAligned(%this, %point1, %point2, %player)
+{
+	//Set the selection box to correct orientation
+	%x1 = getWord(%point1, 0);
+	%y1 = getWord(%point1, 1);
+	%z1 = getWord(%point1, 2);
+
+	%x2 = getWord(%point2, 0);
+	%y2 = getWord(%point2, 1);
+	%z2 = getWord(%point2, 2);
+
+	switch(getAngleIDFromPlayer(%player))
+	{
+		case 0:
+			%p1 = %x2 SPC %y1 SPC %z1;
+			%p2 = %x1 SPC %y2 SPC %z2;
+
+		case 1:
+			%p1 = %x2 SPC %y2 SPC %z1;
+			%p2 = %x1 SPC %y1 SPC %z2;
+
+		case 2:
+			%p1 = %x1 SPC %y2 SPC %z1;
+			%p2 = %x2 SPC %y1 SPC %z2;
+
+		case 3:
+			%p1 = %x1 SPC %y1 SPC %z1;
+			%p2 = %x2 SPC %y2 SPC %z2;
+	}
+
+	//Select first corner
+	if(!%this.selectedCorner)
+	{
+		%this.selectedCorner = true;
+		%this.applyColors();
+	}
+
+	%this.setSize(%p1, %p2);
 }
 
 //Select one of the two corners
