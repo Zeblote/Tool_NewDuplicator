@@ -1249,17 +1249,6 @@ function ND_Selection::shiftGhostBricks(%this, %offset)
 //Rotate ghost bricks left/right
 function ND_Selection::rotateGhostBricks(%this, %direction, %useSelectionCenter)
 {
-	cancel(%this.ghostMoveSchedule);
-	%max = %this.ghostGroup.getCount();
-
-	if(%max > $Pref::Server::ND::InstantGhostBricks)
-	{
-		%max = $Pref::Server::ND::InstantGhostBricks;
-
-		//Start schedule to move remaining ghost bricks
-		%this.ghostMoveSchedule = %this.schedule(450, updateGhostBricks, %max);
-	}
-
 	//First brick is root brick
 	%rootBrick = %this.ghostGroup.getObject(0);
 
