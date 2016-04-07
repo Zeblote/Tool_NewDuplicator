@@ -3700,7 +3700,12 @@ function ND_Selection::tickLoadBricks(%this)
 						$NS[%this, "SF", %index] = getWord(%line, 8);
 
 						if(%db.hasPrint)
-							$NS[%this, "PR", %index] = $printNameTable[getWord(%line, 6)];
+						{
+							if((%print = $printNameTable[getWord(%line, 6)]) $= "")
+								warn("LOAD DUP: Print texture not found for path \"" @ getWord(%line, 6) @ "\"");
+
+							$NS[%this, "PR", %index] = %print;
+						}
 
 						if(!getWord(%line, 9))
 							$NS[%this, "NRC", %index] = true;
