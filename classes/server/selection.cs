@@ -3501,10 +3501,15 @@ function ND_Selection::tickLoadBricks(%this)
 					%field = getField($OutputEvent_ParameterList[%targetClass, %outputIdx], %j - 1);
 					%dataType = getWord(%field, 0);
 
-					if (%dataType $= "Datablock" && %par[%j] != -1 && !isObject(%par[%j]))
+					if (%dataType $= "Datablock" && %par[%j] !$= "-1")
 					{
-						warn("LOAD DUP: Datablock not found for event " @ %outputName @ " -> " @ %par[%j]);
-						%par[%j] = 0;
+						%par[%j] = nameToId(%par[%j]);
+
+						if(!isObject(%par[%j]))
+						{
+							warn("LOAD DUP: Datablock not found for event " @ %outputName @ " -> " @ %par[%j]);
+							%par[%j] = 0;
+						}
 					}
 				}
 
