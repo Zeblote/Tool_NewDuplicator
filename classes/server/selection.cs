@@ -547,9 +547,9 @@ function ND_Selection::tickBoxSelectionChunk(%this, %limited, %brickLimit)
 		%y1 = %chunkY1 + (%currChunkY * %chunkSize) + 0.05;
 		%z1 = %chunkZ1 + (%currChunkZ * %chunkSize) + 0.05;
 
-		%x2 = getMin(%chunkX2, %x1 + %chunkSize - 0.1);
-		%y2 = getMin(%chunkY2, %y1 + %chunkSize - 0.1);
-		%z2 = getMin(%chunkZ2, %z1 + %chunkSize - 0.1);
+		%x2 = getMin(%chunkX2 - 0.05, %x1 + %chunkSize - 0.1);
+		%y2 = getMin(%chunkY2 - 0.05, %y1 + %chunkSize - 0.1);
+		%z2 = getMin(%chunkZ2 - 0.05, %z1 + %chunkSize - 0.1);
 
 		%size = %x2 - %x1 SPC %y2 - %y1 SPC %z2 - %z1;
 		%pos = vectorAdd(%x1 SPC %y1 SPC %z1, vectorScale(%size, 0.5));
