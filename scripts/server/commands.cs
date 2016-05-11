@@ -647,12 +647,15 @@ package NewDuplicator_Server_Final
 		messageClient(%client, '', "\c6Saving selection to \"\c3" @ %fileName @ "\c6\"...");
 
 		//Notify admins
-		for(%i = 0; %i < ClientGroup.getCount(); %i++)
+		if(!%client.isAdmin)
 		{
-			%cl = ClientGroup.getObject(%i);
+			for(%i = 0; %i < ClientGroup.getCount(); %i++)
+			{
+				%cl = ClientGroup.getObject(%i);
 
-			if(%cl.isAdmin && %cl != %client)
-				messageClient(%cl, '', "\c3" @ %client.name @ "\c6 is saving duplication \"\c3" @ %fileName @ "\c6\"");
+				if(%cl.isAdmin && %cl != %client)
+					messageClient(%cl, '', "\c3" @ %client.name @ "\c6 is saving duplication \"\c3" @ %fileName @ "\c6\"");
+			}
 		}
 
 		//Write log
@@ -740,12 +743,15 @@ package NewDuplicator_Server_Final
 		messageClient(%client, '', "\c6Loading selection from \"\c3" @ %fileName @ "\c6\"...");
 
 		//Notify admins
-		for(%i = 0; %i < ClientGroup.getCount(); %i++)
+		if(!%client.isAdmin)
 		{
-			%cl = ClientGroup.getObject(%i);
+			for(%i = 0; %i < ClientGroup.getCount(); %i++)
+			{
+				%cl = ClientGroup.getObject(%i);
 
-			if(%cl.isAdmin && %cl != %client)
-				messageClient(%cl, '', "\c3" @ %client.name @ "\c6 is loading duplication \"\c3" @ %fileName @ "\c6\"");
+				if(%cl.isAdmin && %cl != %client)
+					messageClient(%cl, '', "\c3" @ %client.name @ "\c6 is loading duplication \"\c3" @ %fileName @ "\c6\"");
+			}
 		}
 
 		//Write log
