@@ -1286,7 +1286,8 @@ function ND_Selection::rotateGhostBricks(%this, %direction, %useSelectionCenter)
 	%pOffset = ndRotateVector(%pOffset, %direction);
 
 	//Add shift correction
-	%pOffset = vectorAdd(%pOffset, %shiftCorrect);
+	if(%direction % 2 != 0)
+		%pOffset = vectorAdd(%pOffset, %shiftCorrect);
 
 	//Update variables
 	%this.ghostAngleID = (%this.ghostAngleID + %direction) % 4;

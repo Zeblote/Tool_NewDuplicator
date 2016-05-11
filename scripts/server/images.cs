@@ -241,6 +241,29 @@ package NewDuplicator_Server
 		else
 			parent::onCollision(%this, %obj, %col, %fade, %pos, %normal);
 	}
+
+	//Handle ghost brick movements from New Brick Tool
+	function placeNewGhostBrick(%client, %pos, %normal, %noOrient)
+	{
+		if(!isObject(%client) || !%client.ndModeIndex)
+			return parent::placeNewGhostBrick(%client, %pos, %normal, %noOrient);
+
+		if(%client.ndModeIndex == $NDM::PlantCopy)
+		{
+			if(!%noOrient)
+			{
+				%angleID = getAngleIDFromPlayer(%client.getControlObject()) - %client.ndSelection.angleIDReference;
+				%rotation = ((4 - %angleID) - %client.ndSelection.ghostAngleID) % 4;
+
+				if(%rotation != 0)
+					%client.ndSelection.rotateGhostBricks(%rotation, %client.ndPivot);
+			}
+
+			return NDM_PlantCopy.moveBricksTo(%client, %pos, %normal);
+		}
+
+		%client.ndMode.onSelectObject(%client, 0, %pos, %normal);
+	}
 };
 
 //Fix for equipping paint can calling unUseTool

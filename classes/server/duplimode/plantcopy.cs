@@ -14,8 +14,14 @@
 //Switch to this mode
 function NDM_PlantCopy::onStartMode(%this, %client, %lastMode)
 {
-	if(%lastMode == $NDM::StackSelect || %lastMode == $NDM::BoxSelect || %lastMode == $NDM::CutProgress || %lastMode == $NDM::LoadProgress)
-		%client.ndSelection.spawnGhostBricks(%client.ndSelection.rootPosition, 0); 
+	if(%lastMode == $NDM::StackSelect
+		|| %lastMode == $NDM::BoxSelect
+		|| %lastMode == $NDM::CutProgress
+		|| %lastMode == $NDM::LoadProgress)
+	{
+		%client.ndSelection.spawnGhostBricks(%client.ndSelection.rootPosition, 0);
+		%client.ndSelection.angleIdReference = getAngleIDFromPlayer(%client.getControlObject());
+	}
 
 	%client.ndUpdateBottomPrint();
 }
@@ -44,60 +50,7 @@ function NDM_PlantCopy::onKillMode(%this, %client)
 //Selecting an object with the duplicator
 function NDM_PlantCopy::onSelectObject(%this, %client, %obj, %pos, %normal)
 {
-	//Get half size of world box for offset
-	if(%client.ndPivot)
-		%box = %client.ndSelection.getGhostWorldBox();
-	else
-		%box = %client.ndSelection.ghostGroup.getObject(0).getWorldBox();
-
-	%half = vectorScale(vectorSub(getWords(%box, 3, 5), getWords(%box, 0, 2)), 0.5);
-	%hX = getWord(%half, 0);
-	%hY = getWord(%half, 1);
-	%hZ = getWord(%half, 2);
-
-	%nX = getWord(%normal, 0);
-	%nY = getWord(%normal, 1);
-	%nZ = getWord(%normal, 2);
-
-	//Point offset in correct direction based on normal
-	if(%nX > 0.1)
-		%offset = %hX @ " 0 0";
-
-	else if(%nX < -0.1)
-		%offset = -%hX @ " 0 0";
-
-	else if(%nY > 0.1)
-		%offset = "0 " @ %hY @ " 0";
-
-	else if(%nY < -0.1)
-		%offset = "0 " @ -%hY @ " 0";
-
-	else if(%nZ > 0.1)
-		%offset = "0 0 " @ %hZ;
-
-	else if(%nZ < -0.1)
-		%offset = "0 0 " @ -%hZ;
-
-	//Get shift vector
-	%pos = vectorSub(vectorAdd(%pos, %offset), %client.ndSelection.ghostPosition);
-
-	if(%client.ndPivot)
-	{
-		%toCenter = %client.ndSelection.rootToCenter;
-
-		//Apply mirror	
-		if(%client.ndSelection.ghostMirrorX)
-			%toCenter = -firstWord(%toCenter) SPC restWords(%toCenter);
-		else if(%client.ndSelection.ghostMirrorY)
-			%toCenter = getWord(%toCenter, 0) SPC -getWord(%toCenter, 1) SPC getWord(%toCenter, 2);
-
-		if(%client.ndSelection.ghostMirrorZ)
-			%toCenter = getWord(%toCenter, 0) SPC getWord(%toCenter, 1) SPC -getWord(%toCenter, 2);
-
-		%pos = vectorSub(%pos, ndRotateVector(%toCenter, %client.ndSelection.ghostAngleID));
-	}
-
-	%client.ndSelection.shiftGhostBricks(%pos);
+	%this.moveBricksTo(%client, %pos, %normal);
 }
 
 
@@ -225,6 +178,51 @@ function NDM_PlantCopy::getBottomPrint(%this, %client)
 
 //Functions
 ///////////////////////////////////////////////////////////////////////////
+
+//Move the bricks to a specific location, like with the brick tool
+function NDM_PlantCopy::moveBricksTo(%his, %client, %pos, %normal)
+{
+	//Get half size of world box for offset
+	if(%client.ndPivot)
+		%box = %client.ndSelection.getGhostWorldBox();
+	else
+		%box = %client.ndSelection.ghostGroup.getObject(0).getWorldBox();
+
+	%halfSize = vectorScale(vectorSub(getWords(%box, 3, 5), getWords(%box, 0, 2)), 0.5);
+
+	//Point offset in correct direction based on normal
+    %offX = getWord(%halfSize, 0) * mFloatLength(getWord(%normal, 0), 0);
+    %offY = getWord(%halfSize, 1) * mFloatLength(getWord(%normal, 1), 0);
+    %offZ = getWord(%halfSize, 2) * mFloatLength(getWord(%normal, 2), 0);
+    %offset = %offX SPC %offY SPC %offZ;
+
+	//Get shift vector
+	%pos = vectorSub(vectorAdd(%pos, %offset), %client.ndSelection.ghostPosition);
+
+	if(%client.ndPivot)
+	{
+		%toCenter = %client.ndSelection.rootToCenter;
+
+		//Apply mirror	
+		if(%client.ndSelection.ghostMirrorX)
+			%toCenter = -firstWord(%toCenter) SPC restWords(%toCenter);
+		else if(%client.ndSelection.ghostMirrorY)
+			%toCenter = getWord(%toCenter, 0) SPC -getWord(%toCenter, 1) SPC getWord(%toCenter, 2);
+
+		if(%client.ndSelection.ghostMirrorZ)
+			%toCenter = getWord(%toCenter, 0) SPC getWord(%toCenter, 1) SPC -getWord(%toCenter, 2);
+
+		%pos = vectorSub(%pos, ndRotateVector(%toCenter, %client.ndSelection.ghostAngleID));
+	}
+
+	%client.ndSelection.shiftGhostBricks(%pos);
+
+	//Offset required for New Brick Tool to display the tracer shape correctly
+	if(%client.ndPivot)
+		return vectorSub(%client.ndSelection.getGhostCenter(), %offset);
+	else
+		return vectorSub(%client.ndSelection.ghostGroup.getObject(0).getWorldBoxCenter(), %offset);
+}
 
 //Check time limit and attempt to plant bricks
 function NDM_PlantCopy::conditionalPlant(%this, %client, %force)
