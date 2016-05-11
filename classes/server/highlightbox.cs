@@ -108,10 +108,7 @@ function ND_HighlightBox::setSize(%this, %point1, %point2)
 	%this.border_z3.setTransform(%x1 SPC %y2 SPC %center_z SPC %rot_z);
 
 	%maxLen = getMax(getMax(%len_x, %len_y), %len_z);
-	%width = (7 / 1024) * %maxLen + 1;
-
-	//Make this slightly smaller than the selection boxes
-	%width -= 0.02;
+	%width = (7 / 1280) * %maxLen + 1;
 
 	for(%i = 0; %i < 4; %i++)
 	{
