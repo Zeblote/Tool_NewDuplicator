@@ -3222,8 +3222,8 @@ function ND_Selection::tickSaveBricks(%this)
 		%this.saveLineBuffer = "ND_TREE\" ";
 
 		//Create byte table
-		if(!$ND::ByteTableCreated)
-			ndCreateByteTable();
+		if(!$ND::Byte241TableCreated)
+			ndCreateByte241Table();
 
 		//Start saving connections
 		%this.connectionCount = 0;
@@ -3822,8 +3822,8 @@ function ND_Selection::tickLoadBricks(%this)
 		}
 
 		//Create byte table
-		if(!$ND::ByteTableCreated)
-			ndCreateByteTable();
+		if(!$ND::Byte241TableCreated)
+			ndCreateByte241Table();
 
 		%this.loadSchedule = %this.schedule(30, tickLoadConnections, %numberSize, %indexSize);
 		return;

@@ -347,7 +347,7 @@ function FxDtsBrick::ndMirrorGhost(%brick, %client, %axis)
 ///////////////////////////////////////////////////////////////////////////
 
 //Creates byte lookup table
-function ndCreateByteTable()
+function ndCreateByte241Table()
 {
 	$ND::Byte241Lookup = "";
 
@@ -362,7 +362,7 @@ function ndCreateByteTable()
 		$ND::Byte241Lookup = $ND::Byte241Lookup @ %char;
 	}
 
-	$ND::ByteTableCreated = true;
+	$ND::Byte241TableCreated = true;
 }
 
 //Packs number in single byte
