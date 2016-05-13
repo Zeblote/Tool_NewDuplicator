@@ -201,14 +201,26 @@ package NewDuplicator_Server
 		|| %type $= "ND_PAINT"
 		|| %type $= "ND_WRENCH")
 		{
-			(getField(%state, 0)).ndStartUndo(%client);
+			%obj = getField(%state, 0);
+
+			if(%obj.brickCount > 10 && %client.ndUndoConfirm != %obj)
+			{
+				messageClient(%client, '', "\c6Next undo will affect \c3" @ %obj.brickCount @ "\c6 bricks. Press undo again to continue.");
+				%client.undoStack.push(%state);
+				%client.ndUndoConfirm = %obj;
+				return;
+			}
+
+			%obj.ndStartUndo(%client);
 
 			if(isObject(%client.player))
 				%client.player.playThread(3, "undo");
 
+			%client.ndUndoConfirm = 0;
 			return;
 		}
 
+		%client.ndUndoConfirm = 0;
 		%client.undoStack.push(%state);
 		parent::serverCmdUndoBrick(%client);
 	}

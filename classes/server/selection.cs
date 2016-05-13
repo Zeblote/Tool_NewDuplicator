@@ -2371,7 +2371,10 @@ function ND_Selection::finishPlant(%this)
 	deleteVariables("$NP" @ %this @ "_*");
 
 	if(%planted)
+	{
+		%this.undoGroup.brickCount = %this.undoGroup.getCount();
 		%this.client.undoStack.push(%this.undoGroup TAB "ND_PLANT");
+	}
 	else
 		%this.undoGroup.delete();
 
@@ -2385,7 +2388,10 @@ function ND_Selection::cancelPlanting(%this)
 	deleteVariables("$NP" @ %this @ "_*");
 
 	if(%this.plantSuccessCount)
+	{
+		%this.undoGroup.brickCount = %this.undoGroup.getCount();
 		%this.client.undoStack.push(%this.undoGroup TAB "ND_PLANT");
+	}
 	else
 		%this.undoGroup.delete();
 }

@@ -11,8 +11,6 @@
 //Start undo bricks
 function SimSet::ndStartUndo(%this, %client)
 {
-	%this.brickCount = %this.getCount();
-
 	if(!%this.brickCount)
 	{
 		%this.delete();
