@@ -137,14 +137,13 @@ function ND_Selection::onRemove(%this)
 //Begin stack selection
 function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 {
-	//Ensure there is no highlight group
-	%this.deHighlight();
+	//Clear previous selection
+	%this.deleteData();
 
 	//Create new highlight group
 	%highlightGroup = ndNewHighlightGroup();
 
 	%this.brickLimitReached = false;
-	%this.trustFailCount = 0;
 
 	if(%this.client.isAdmin)
 		%brickLimit = $Pref::Server::ND::MaxBricksAdmin;
@@ -169,9 +168,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 	%group = %this.client.brickGroup.getId();
 	%bl_id = %this.client.bl_id;
 
-	//Add bricks connected to the first brick to queue
-	%conns = 0;
-
+	//Add bricks connected to the first brick to queue (do not register connections yet)
 	if(%direction == 1)
 	{
 		//Set lower height limit
@@ -182,10 +179,8 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 		{
 			%nextBrick = %brick.getUpBrick(%i);
 
-			//If the brick is not in the list yet, add it to the queue to give it an id
-			%nId = $NS[%this, "I", %nextBrick];
-
-			if(%nId $= "")
+			//If the brick is not in the list yet, add it to the queue
+			if($NS[%this, "I", %nextBrick] $= "")
 			{
 				if(%queueCount >= %brickLimit)
 					continue;
@@ -199,13 +194,8 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 
 				$NS[%this, "B", %queueCount] = %nextBrick;
 				$NS[%this, "I", %nextBrick] = %queueCount;
-				%nId = %queueCount;
-
 				%queueCount++;
 			}
-
-			$NS[%this, "C", 0, %conns] = %nId;
-			%conns++;
 		}
 	}
 	else
@@ -218,10 +208,8 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 		{
 			%nextBrick = %brick.getDownBrick(%i);
 
-			//If the brick is not in the list yet, add it to the queue to give it an id
-			%nId = $NS[%this, "I", %nextBrick];
-
-			if(%nId $= "")
+			//If the brick is not in the list yet, add it to the queue
+			if($NS[%this, "I", %nextBrick] $= "")
 			{
 				if(%queueCount >= %brickLimit)
 					continue;
@@ -235,22 +223,16 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 
 				$NS[%this, "B", %queueCount] = %nextBrick;
 				$NS[%this, "I", %nextBrick] = %queueCount;
-				%nId = %queueCount;
-				
 				%queueCount++;
 			}
-
-			$NS[%this, "C", 0, %conns] = %nId;
-			%conns++;
 		}
 	}
 
 	//Save number of connections
-	$NS[%this, "N", 0] = %conns;
-	%this.maxConnections = %conns;
-	%this.connectionCount = %conns;
+	%this.maxConnections = 0;
+	%this.connectionCount = 0;
 
-	%this.trustFailCount += %trustFailCount;
+	%this.trustFailCount = %trustFailCount;
 	%this.highlightGroup = %highlightGroup;
 	%this.queueCount = %queueCount;
 	%this.brickCount = %brickCount;
@@ -259,6 +241,187 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 		messageClient(%this.client, 'MsgUploadStart', "");
 
 	//First selection tick
+	%this.selectionStart = 1;
+
+	if(%queueCount > %brickCount)
+		%this.tickStackSelection(%direction, %limited, %heightLimit, %brickLimit);
+	else
+		%this.finishStackSelection();
+}
+
+//Begin stack selection (multiselect)
+function ND_Selection::startStackSelectionAdditive(%this, %brick, %direction, %limited)
+{
+	//If we have no bricks, start normal stack selection
+	if(%this.brickCount < 1)
+	{
+		%this.startStackSelection(%brick, %direction, %limited);
+		return;
+	}
+
+	//If we already reched the limit, don't even try
+	if(%this.brickLimitReached)
+	{
+		%this.finishStackSelection();
+		return;
+	}
+
+	%highlightGroup = %this.highlightGroup;
+
+	if(%this.client.isAdmin)
+		%brickLimit = $Pref::Server::ND::MaxBricksAdmin;
+	else
+		%brickLimit = $Pref::Server::ND::MaxBricksPlayer;
+
+	%queueCount = %this.queueCount;
+	%brickCount = %this.brickCount;
+
+	//If the brick is not part of the selection yet, process it
+	if($NS[%this, "I", %brick] $= "")
+	{
+		$NS[%this, "B", %queueCount] = %brick;
+		$NS[%this, "I", %brick] = %queueCount;
+
+		%this.recordBrickData(%queueCount);
+		ndHighlightBrick(%highlightGroup, %brick);
+
+		%brickIsNew = true;
+		%brickIndex = %queueCount;
+		%conns = 0;
+
+		%queueCount++;
+		%brickCount++;
+	}
+
+	//Variables for trust checks
+	%admin = %this.client.isAdmin;
+	%group = %this.client.brickGroup.getId();
+	%bl_id = %this.client.bl_id;
+
+	//Add bricks connected to the first brick to queue (do not register connections yet)
+	if(%direction == 1)
+	{
+		//Set lower height limit
+		%heightLimit = $NS[%this, "-Z"] - 0.01;
+	}
+	else
+	{
+		//Set upper height limit
+		%heightLimit = $NS[%this, "+Z"] + 0.01;
+	}
+
+	//Process all up bricks
+	%upCount = %brick.getNumUpBricks();
+
+	for(%i = 0; %i < %upCount; %i++)
+	{
+		%nextBrick = %brick.getUpBrick(%i);
+
+		//If the brick is not in the list yet, add it to the queue
+		%nId = $NS[%this, "I", %nextBrick];
+
+		if(%nId $= "")
+		{
+			//Don't add up bricks if we're searching down
+			if(%direction != 1)
+				continue;
+
+			if(%queueCount >= %brickLimit)
+				continue;
+
+			//Check trust
+			if(!ndTrustCheckSelect(%nextBrick, %group, %bl_id, %admin))
+			{
+				%trustFailCount++;
+				continue;
+			}
+
+			$NS[%this, "B", %queueCount] = %nextBrick;
+			$NS[%this, "I", %nextBrick] = %queueCount;
+			%queueCount++;
+		}
+		else if(%brickIsNew)
+		{
+			//If this brick already exists, we have to add the connection now
+			//(Start brick won't be processed again unlike the others)
+			$NS[%this, "C", %brickIndex, %conns] = %nId;
+			%conns++;
+
+			%ci = $NS[%this, "N", %nId]++;
+			$NS[%this, "C", %nId, %ci - 1] = %brickIndex;
+
+			if(%ci > %this.maxConnections)
+				%this.maxConnections = %ci;
+
+			%this.connectionCount++;
+		}
+	}
+
+	//Process all down bricks
+	%downCount = %brick.getNumDownBricks();
+
+	for(%i = 0; %i < %downCount; %i++)
+	{
+		%nextBrick = %brick.getDownBrick(%i);
+
+		//If the brick is not in the list yet, add it to the queue
+		%nId = $NS[%this, "I", %nextBrick];
+
+		if(%nId $= "")
+		{
+			//Don't add down bricks if we're searching up
+			if(%direction == 1)
+				continue;
+
+			if(%queueCount >= %brickLimit)
+				continue;
+
+			//Check trust
+			if(!ndTrustCheckSelect(%nextBrick, %group, %bl_id, %admin))
+			{
+				%trustFailCount++;
+				continue;
+			}
+
+			$NS[%this, "B", %queueCount] = %nextBrick;
+			$NS[%this, "I", %nextBrick] = %queueCount;
+			%queueCount++;
+		}
+		else if(%brickIsNew)
+		{
+			//If this brick already exists, we have to add the connection now
+			//(Start brick won't be processed again unlike the others)
+			$NS[%this, "C", %brickIndex, %conns] = %nId;
+			%conns++;
+
+			%ci = $NS[%this, "N", %nId]++;
+			$NS[%this, "C", %nId, %ci - 1] = %brickIndex;
+
+			if(%ci > %this.maxConnections)
+				%this.maxConnections = %ci;
+
+			%this.connectionCount++;
+		}
+	}
+
+	$NS[%this, "N", %brickIndex] = %conns;
+
+	//Inc number of connections
+	%this.connectionCount += %conns;
+
+	if(%conns > %this.maxConnections)
+		%this.maxConnections = %conns;
+
+	%this.trustFailCount += %trustFailCount;
+	%this.queueCount = %queueCount;
+	%this.brickCount = %brickCount;
+
+	if($Pref::Server::ND::PlayMenuSounds)
+		messageClient(%this.client, 'MsgUploadStart', "");
+
+	//First selection tick
+	%this.selectionStart = %queueCount;
+
 	if(%queueCount > %brickCount)
 		%this.tickStackSelection(%direction, %limited, %heightLimit, %brickLimit);
 	else
@@ -271,6 +434,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 	cancel(%this.stackSelectSchedule);
 
 	%highlightGroup = %this.highlightGroup;
+	%selectionStart = %this.selectionStart;
 	%queueCount = %this.queueCount;
 
 	//Continue processing where we left off last tick
@@ -323,7 +487,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 			if(%limited && %direction == 0 && getWord(%nextBrick.getWorldBox(), 5) > %heightLimit)
 				continue;
 
-			//If the brick is not in the selection yet, add it to the queue to give it an i
+			//If the brick is not in the selection yet, add it to the queue to get an id
 			%nId = $NS[%this, "I", %nextBrick];
 
 			if(%nId $= "")
@@ -346,6 +510,19 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 
 			$NS[%this, "C", %i, %conns] = %nId;
 			%conns++;
+
+			//If this brick is from a previous stack selection,
+			//we need to link the connection back as well
+			if(%nId < %selectionStart)
+			{
+				%ci = $NS[%this, "N", %nId]++;
+				$NS[%this, "C", %nId, %ci - 1] = %i;
+
+				if(%ci > %this.maxConnections)
+					%this.maxConnections = %ci;
+
+				%this.connectionCount++;
+			}
 		}
 
 		//Queue all down bricks
@@ -359,7 +536,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 			if(%limited && %direction == 1 && getWord(%nextBrick.getWorldBox(), 2) < %heightLimit)
 				continue;
 
-			//If the brick is not in the selection yet, add it to the queue to give it an id
+			//If the brick is not in the selection yet, add it to the queue to get an id
 			%nId = $NS[%this, "I", %nextBrick];
 
 			if(%nId $= "")
@@ -382,6 +559,19 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 
 			$NS[%this, "C", %i, %conns] = %nId;
 			%conns++;
+
+			//If this brick is from a previous stack selection,
+			//we need to link the connection back as well
+			if(%nId < %selectionStart)
+			{
+				%ci = $NS[%this, "N", %nId]++;
+				$NS[%this, "C", %nId, %ci - 1] = %i;
+
+				if(%ci > %this.maxConnections)
+					%this.maxConnections = %ci;
+
+				%this.connectionCount++;
+			}
 		}
 
 		$NS[%this, "N", %i] = %conns;
@@ -422,7 +612,7 @@ function ND_Selection::finishStackSelection(%this)
 	%this.updateHighlightBox();
 
 	//De-highlight the bricks after a few seconds
-	ndDeHighlightDelayed(%this.highlightGroup, $Pref::Server::ND::HighlightDelay * 1000);
+	//ndDeHighlightDelayed(%this.highlightGroup, $Pref::Server::ND::HighlightDelay * 1000);
 
 	if($Pref::Server::ND::PlayMenuSounds)
 		messageClient(%this.client, 'MsgUploadEnd', "");

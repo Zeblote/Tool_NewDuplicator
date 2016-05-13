@@ -16,6 +16,9 @@ function NDM_StackSelect::onStartMode(%this, %client, %lastMode)
 {
 	%client.ndLastSelectMode = %this;
 	%client.ndUpdateBottomPrint();
+
+	if(%lastMode != $NDM::StackSelectProgress)
+		%client.ndMultiSelect = false;
 }
 
 //Switch away from this mode
@@ -112,14 +115,16 @@ function NDM_StackSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 		return;
 	
 	//Prepare selection to copy the bricks
-	if(isObject(%client.ndSelection))
-		%client.ndSelection.deleteData();
-	else
+	if(!isObject(%client.ndSelection))
 		%client.ndSelection = ND_Selection(%client);
 
 	//Start selection
 	%client.ndSetMode(NDM_StackSelectProgress);
-	%client.ndSelection.startStackSelection(%obj, %client.ndDirection, %client.ndLimited);
+
+	if(%client.ndMultiSelect)
+		%client.ndSelection.startStackSelectionAdditive(%obj, %client.ndDirection, %client.ndLimited);
+	else
+		%client.ndSelection.startStackSelection(%obj, %client.ndDirection, %client.ndLimited);
 }
 
 
@@ -246,7 +251,7 @@ function NDM_StackSelect::getBottomPrint(%this, %client)
 		%r1 = "[Plant Brick]: Plant Mode";
 	}
 
-	%l0 = "Type: \c3Stack \c6[Light]";
+	%l0 = "Type: \c3" @ (%client.ndMultiSelect ? "Multi-" : "") @ "Stack \c6[Light]";
 	%l1 = "Limited: " @ (%client.ndLimited ? "\c3Yes" : "\c0No") @ " \c6[Prev Seat]";
 	%l2 = "Direction: \c3" @ (%client.ndDirection ? "Up" : "Down") @ " \c6[Next Seat]";
 

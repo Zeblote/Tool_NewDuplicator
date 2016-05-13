@@ -30,6 +30,10 @@ function ndRegisterKeybinds()
 	$RemapCmd[$RemapCount]      = "ndHandleCut";
 	$RemapCount++;
 
+	$RemapName[$RemapCount]     = "Multiselect (Hold to use)";
+	$RemapCmd[$RemapCount]      = "ndHandleMultiSelect";
+	$RemapCount++;
+
 	$ND::KeybindsRegistered = true;
 }
 
@@ -42,6 +46,7 @@ function clientCmdNdEnableKeybinds(%bool)
 			return;
 
 		%map = new ActionMap(ND_KeyMap);
+		%map.bind("keyboard", "lcontrol", "ndHandleMultiSelect");
 
 		if(isWindows())
 		{
@@ -93,3 +98,10 @@ function ndHandleCut(%bool)
 
 	commandToServer('ndCut');	
 }
+
+//Client pressed ctrl
+function ndHandleMultiSelect(%bool)
+{
+	commandToServer('ndMultiSelect', %bool);	
+}
+
