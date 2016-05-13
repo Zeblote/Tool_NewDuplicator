@@ -28,3 +28,4 @@ exec($ND::ScriptPath @ "client/wrench.cs");
 
 echo(" \n--- Initializing Client ---");
 activatePackage(NewDuplicator_Client);
+ndRegisterKeybinds();

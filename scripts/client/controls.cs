@@ -8,11 +8,39 @@
 // *
 // * ######################################################################
 
+//Register rebind-able controls
+function ndRegisterKeybinds()
+{
+	if(!$Pref::ND::ManualKeybinds)
+		return;
+
+	if($ND::KeybindsRegistered)
+		return;
+
+	$RemapDivision[$RemapCount] = "New Duplicator";
+	$RemapName[$RemapCount]     = "Copy Selection";
+	$RemapCmd[$RemapCount]      = "ndHandleCopy";
+	$RemapCount++;
+
+	$RemapName[$RemapCount]     = "Paste Selection";
+	$RemapCmd[$RemapCount]      = "ndHandlePaste";
+	$RemapCount++;
+
+	$RemapName[$RemapCount]     = "Cut Selection";
+	$RemapCmd[$RemapCount]      = "ndHandleCut";
+	$RemapCount++;
+
+	$ND::KeybindsRegistered = true;
+}
+
 //Enable the copy, paste, cut keybinds
 function clientCmdNdEnableKeybinds(%bool)
 {
 	if(%bool && !$ND::KeybindsEnabled)
 	{
+		if($Pref::ND::ManualKeybinds)
+			return;
+
 		%map = new ActionMap(ND_KeyMap);
 
 		if(isWindows())
