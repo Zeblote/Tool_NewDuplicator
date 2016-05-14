@@ -46,19 +46,20 @@ function clientCmdNdEnableKeybinds(%bool)
 			return;
 
 		%map = new ActionMap(ND_KeyMap);
-		%map.bind("keyboard", "lcontrol", "ndHandleMultiSelect");
 
 		if(isWindows())
 		{
 			%map.bind("keyboard", "ctrl c", "ndHandleCopy");
 			%map.bind("keyboard", "ctrl v", "ndHandlePaste");
 			%map.bind("keyboard", "ctrl x", "ndHandleCut");
+			%map.bind("keyboard", "lcontrol", "ndHandleMultiSelect");
 		}
 		else
 		{
 			%map.bind("keyboard", "cmd c", "ndHandleCopy");
 			%map.bind("keyboard", "cmd v", "ndHandlePaste");
 			%map.bind("keyboard", "cmd x", "ndHandleCut");
+			%map.bind("keyboard", "cmd", "ndHandleMultiSelect");
 		}
 
 		%map.push();
