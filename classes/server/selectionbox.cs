@@ -81,11 +81,11 @@ function ND_SelectionBox::setNormalMode(%this)
 
 	%this.isNormalMode = true;
 
-	//Hide the corners and inner/outer box (hidden in disabled mode)
-	%this.innerBox.unHideNode("ALL");
-	%this.outerBox.unHideNode("ALL");
-	%this.corner1.unHideNode("ALL");
-	%this.corner2.unHideNode("ALL");
+	//Unhide the corners and inner/outer box (hidden in disabled mode)
+	%this.innerBox.setHidden(false);
+	%this.outerBox.setHidden(false);
+	%this.corner1.setHidden(false);
+	%this.corner2.setHidden(false);
 
 	//Apply changes
 	%this.applyColors();
@@ -102,10 +102,10 @@ function ND_SelectionBox::setDisabledMode(%this)
 	%this.isNormalMode = false;
 
 	//Hide the corners and inner/outer box (looks better)
-	%this.innerBox.HideNode("ALL");
-	%this.outerBox.HideNode("ALL");
-	%this.corner1.HideNode("ALL");
-	%this.corner2.HideNode("ALL");
+	%this.innerBox.setHidden(true);
+	%this.outerBox.setHidden(true);
+	%this.corner1.setHidden(true);
+	%this.corner2.setHidden(true);
 
 	//Apply changes
 	%this.applyColors();
