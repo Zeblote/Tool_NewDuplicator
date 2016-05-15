@@ -282,7 +282,7 @@ function serverCmdCut(%client)
 //MultiSelect toggle (ctrl)
 function serverCmdNdMultiSelect(%client, %bool)
 {
-	if(%client.ndModeIndex == $NDM::StackSelect)
+	if(%client.ndModeIndex == $NDM::StackSelect || %client.ndModeIndex == $NDM::BoxSelect)
 	{
 		%client.ndMultiSelect = !!%bool;
 		%client.ndUpdateBottomPrint();

@@ -109,7 +109,30 @@ function NDM_BoxSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 		%client.ndSelectionBox.setNormalMode();
 		%client.ndUpdateBottomPrint();
 	}
-	else if(!isObject(%client.ndSelectionBox))
+
+	if(isObject(%client.ndSelectionBox))
+	{
+		if(%client.ndMultiSelect)
+		{
+			%box1 = %client.ndSelectionBox.getSize();
+			%box2 = %obj.getWorldBox();
+
+			%p1 = getMin(getWord(%box1, 0), getWord(%box2, 0))
+				SPC getMin(getWord(%box1, 1), getWord(%box2, 1))
+				SPC getMin(getWord(%box1, 2), getWord(%box2, 2));
+
+			%p2 = getMax(getWord(%box1, 3), getWord(%box2, 3))
+				SPC getMax(getWord(%box1, 4), getWord(%box2, 4))
+				SPC getMax(getWord(%box1, 5), getWord(%box2, 5));
+		}
+		else
+		{
+			%box = %obj.getWorldBox();
+			%p1 = getWords(%box, 0, 2);
+			%p2 = getWords(%box, 3, 5);
+		}
+	}
+	else
 	{
 		%name = %client.name;
 
@@ -119,11 +142,11 @@ function NDM_BoxSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 			%shapeName = %name @ "'s Selection Box";				
 
 		%client.ndSelectionBox = ND_SelectionBox(%shapeName);
-	}
 
-	%box = %obj.getWorldBox();
-	%p1 = getWords(%box, 0, 2);
-	%p2 = getWords(%box, 3, 5);
+		%box = %obj.getWorldBox();
+		%p1 = getWords(%box, 0, 2);
+		%p2 = getWords(%box, 3, 5);
+	}
 
 	%client.ndSelectionBox.setSizeAligned(%p1, %p2, %client.getControlObject());
 	%client.ndUpdateBottomPrint();
