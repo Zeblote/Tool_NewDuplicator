@@ -38,6 +38,10 @@ function serverCmdDupClients(%client)
 	}
 }
 
+//Alternative short commands
+function serverCmdDV(%client){serverCmdDupVersion(%client);}
+function serverCmdDC(%client){serverCmdDupClients(%client);}
+
 
 
 //Equip commands
