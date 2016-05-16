@@ -302,12 +302,12 @@ function ND_Selection::startStackSelectionAdditive(%this, %brick, %direction, %l
 	if(%direction == 1)
 	{
 		//Set lower height limit
-		%heightLimit = $NS[%this, "-Z"] - 0.01;
+		%heightLimit = getWord(%brick.getWorldBox(), 2) - 0.01;
 	}
 	else
 	{
 		//Set upper height limit
-		%heightLimit = $NS[%this, "+Z"] + 0.01;
+		%heightLimit = getWord(%brick.getWorldBox(), 5) + 0.01;
 	}
 
 	//Process all up bricks
