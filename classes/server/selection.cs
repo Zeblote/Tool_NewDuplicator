@@ -1896,7 +1896,7 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 			{
 				%id = $NS[%this, "C", %i, %j];
 
-				if(!$NP[%this, %id])
+				if(%id < %i && !$NP[%this, %id])
 				{
 					%found = true;
 
@@ -1969,6 +1969,8 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 	%qCount = %this.plantQueueCount;
 	%numClients = %this.numClients;
 
+	%searchIndex = %this.plantSearchIndex;
+
 	for(%i = %start; %i < %end; %i++)
 	{
 		//The queue is empty! Switch back to plant search.
@@ -2009,7 +2011,7 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 			{
 				%id = $NS[%this, "C", %bId, %j];
 
-				if(!$NP[%this, %id])
+				if(%id < %searchIndex && !$NP[%this, %id])
 				{
 					$NS[%this, "PQueue", %qCount] = %id;
 					$NP[%this, %id] = true;
