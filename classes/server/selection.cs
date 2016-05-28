@@ -9,14 +9,6 @@
 // * ######################################################################
 
 //Selection data arrays $NS[obj, type{, ...}]
-// $NS[%s, "-X"] - Minimum X point
-// $NS[%s, "-Y"] - Minimum Y point
-// $NS[%s, "-Z"] - Minimum Z point
-
-// $NS[%s, "+X"] - Maximum X point
-// $NS[%s, "+Y"] - Maximum Y point
-// $NS[%s, "+Z"] - Maximum Z point
-
 // $NS[%s, "B", %i    ] - Brick object
 // $NS[%s, "I", %b    ] - Index of brick in array
 // $NS[%s, "N", %i    ] - Number of connected bricks
@@ -102,15 +94,15 @@ function ND_Selection(%client)
 function ND_Selection::deleteData(%this)
 {
 	//If count isn't at least 1, assume there is no data
-	if(%this.queueCount < 1 && %this.brickCount < 1)
-		return;
+	if(%this.queueCount >= 1 || %this.brickCount >= 1)
+	{
+		//Variables follow the pattern $NS[object]_[type]_[...], allowing a single iteration to remove all
+		deleteVariables("$NS" @ %this @ "_*");
+	}
 
 	%this.rootPosition = "0 0 0";
 	%this.queueCount = 0;
 	%this.brickCount = 0;
-
-	//Variables follow the pattern $NS[object]_[type]_[...], allowing a single iteration to remove all
-	deleteVariables("$NS" @ %this @ "_*");
 
 	%this.deHighlight();
 	%this.deleteHighlightBox();
@@ -122,7 +114,7 @@ function ND_Selection::deleteData(%this)
 
 //Remove data when selection is deleted
 function ND_Selection::onRemove(%this)
-{	
+{
 	%this.deleteData();
 
 	if(isEventPending(%this.plantSchedule))
@@ -172,7 +164,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 	if(%direction == 1)
 	{
 		//Set lower height limit
-		%heightLimit = $NS[%this, "-Z"] - 0.01;
+		%heightLimit = %this.minZ - 0.01;
 		%upCount = %brick.getNumUpBricks();
 
 		for(%i = 0; %i < %upCount; %i++)
@@ -201,7 +193,7 @@ function ND_Selection::startStackSelection(%this, %brick, %direction, %limited)
 	else
 	{
 		//Set upper height limit
-		%heightLimit = $NS[%this, "+Z"] + 0.01;
+		%heightLimit = %this.maxZ + 0.01;
 		%downCount = %brick.getNumDownBricks();
 
 		for(%i = 0; %i < %downCount; %i++)
@@ -445,7 +437,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 	%admin = %this.client.isAdmin;
 	%group = %this.client.brickGroup.getId();
 	%bl_id = %this.client.bl_id;
-	
+
 	for(%i = %start; %i < %end; %i++)
 	{
 		//If no more bricks are queued, we're done!
@@ -504,7 +496,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 
 				$NS[%this, "B", %queueCount] = %nextBrick;
 				$NS[%this, "I", %nextBrick] = %queueCount;
-				%nId = %queueCount;				
+				%nId = %queueCount;
 				%queueCount++;
 			}
 
@@ -543,7 +535,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 			{
 				if(%queueCount >= %brickLimit)
 					continue;
-					
+
 				//Check trust
 				if(!ndTrustCheckSelect(%nextBrick, %group, %bl_id, %admin))
 				{
@@ -553,7 +545,7 @@ function ND_Selection::tickStackSelection(%this, %direction, %limited, %heightLi
 
 				$NS[%this, "B", %queueCount] = %nextBrick;
 				$NS[%this, "I", %nextBrick] = %queueCount;
-				%nId = %queueCount;				
+				%nId = %queueCount;
 				%queueCount++;
 			}
 
@@ -876,7 +868,7 @@ function ND_Selection::tickBoxSelectionChunk(%this, %limited, %brickLimit)
 
 		return;
 	}
-		
+
 	//Tell the client which chunks we just processed
 	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
 	{
@@ -1086,7 +1078,7 @@ function ND_Selection::recordBrickData(%this, %i)
 	if(!%brick.isRaycasting())
 		$NS[%this, "NRC", %i] = true;
 
-	if(!%brick.isColliding())	
+	if(!%brick.isColliding())
 		$NS[%this, "NC", %i] = true;
 
 	if(!%brick.isRendering())
@@ -1139,32 +1131,32 @@ function ND_Selection::recordBrickData(%this, %i)
 
 	if(%i)
 	{
-		if(%minX < $NS[%this, "-X"])
-			$NS[%this, "-X"] = %minX;
+		if(%minX < %this.minX)
+			%this.minX = %minX;
 
-		if(%minY < $NS[%this, "-Y"])
-			$NS[%this, "-Y"] = %minY;
+		if(%minY < %this.minY)
+			%this.minY = %minY;
 
-		if(%minZ < $NS[%this, "-Z"])
-			$NS[%this, "-Z"] = %minZ;
+		if(%minZ < %this.minZ)
+			%this.minZ = %minZ;
 
-		if(%maxX > $NS[%this, "+X"])
-			$NS[%this, "+X"] = %maxX;
+		if(%maxX > %this.maxX)
+			%this.maxX = %maxX;
 
-		if(%maxY > $NS[%this, "+Y"])
-			$NS[%this, "+Y"] = %maxY;
+		if(%maxY > %this.maxY)
+			%this.maxY = %maxY;
 
-		if(%maxZ > $NS[%this, "+Z"])
-			$NS[%this, "+Z"] = %maxZ;
+		if(%maxZ > %this.maxZ)
+			%this.maxZ = %maxZ;
 	}
 	else
 	{
-		$NS[%this, "-X"] = %minX;
-		$NS[%this, "-Y"] = %minY;
-		$NS[%this, "-Z"] = %minZ;
-		$NS[%this, "+X"] = %maxX;
-		$NS[%this, "+Y"] = %maxY;
-		$NS[%this, "+Z"] = %maxZ;
+		%this.minX = %minX;
+		%this.minY = %minY;
+		%this.minZ = %minZ;
+		%this.maxX = %maxX;
+		%this.maxY = %maxY;
+		%this.maxZ = %maxZ;
 	}
 
 	return %brick;
@@ -1178,12 +1170,12 @@ function ND_Selection::recordBrickData(%this, %i)
 //Set the size variables after selecting bricks
 function ND_Selection::updateSize(%this)
 {
-	%this.minSize = vectorSub($NS[%this, "-X"] SPC $NS[%this, "-Y"] SPC $NS[%this, "-Z"], %this.rootPosition);
-	%this.maxSize = vectorSub($NS[%this, "+X"] SPC $NS[%this, "+Y"] SPC $NS[%this, "+Z"], %this.rootPosition);
+	%this.minSize = vectorSub(%this.minX SPC %this.minY SPC %this.minZ, %this.rootPosition);
+	%this.maxSize = vectorSub(%this.maxX SPC %this.maxY SPC %this.maxZ, %this.rootPosition);
 
-	%this.brickSizeX = mFloatLength(($NS[%this, "+X"] - $NS[%this, "-X"]) * 2, 0);
-	%this.brickSizeY = mFloatLength(($NS[%this, "+Y"] - $NS[%this, "-Y"]) * 2, 0);
-	%this.brickSizeZ = mFloatLength(($NS[%this, "+Z"] - $NS[%this, "-Z"]) * 5, 0);
+	%this.brickSizeX = mFloatLength((%this.maxX - %this.minX) * 2, 0);
+	%this.brickSizeY = mFloatLength((%this.maxY - %this.minY) * 2, 0);
+	%this.brickSizeZ = mFloatLength((%this.maxZ - %this.minZ) * 5, 0);
 
 	%this.rootToCenter = vectorAdd(%this.minSize, vectorScale(vectorSub(%this.maxSize, %this.minSize), 0.5));
 }
@@ -1459,7 +1451,7 @@ function ND_Selection::rotateGhostBricks(%this, %direction, %useSelectionCenter)
 	}
 
 	//Even x odd sized rectangles can't be rotated around their center to stay in the grid
-	%shiftCorrect = "0 0 0";	
+	%shiftCorrect = "0 0 0";
 
 	if((%brickSizeX % 2) != (%brickSizeY % 2))
 	{
@@ -1619,14 +1611,14 @@ function ND_Selection::updateGhostBricks(%this, %start, %count, %wait)
 				case 4:
 					if(%bAngle % 2 == 0)
 						%bAngle = (%bAngle + 1) % 4;
-					else						
+					else
 						%bAngle = (%bAngle + 3) % 4;
 
 				//X-Y symmetric - rotate -90 degrees
 				case 5:
 					if(%bAngle % 2 == 0)
 						%bAngle = (%bAngle + 3) % 4;
-					else						
+					else
 						%bAngle = (%bAngle + 1) % 4;
 			}
 		}
@@ -1666,14 +1658,14 @@ function ND_Selection::updateGhostBricks(%this, %start, %count, %wait)
 				case 4:
 					if(%bAngle % 2 == 1)
 						%bAngle = (%bAngle + 1) % 4;
-					else						
+					else
 						%bAngle = (%bAngle + 3) % 4;
 
 				//X-Y symmetric - rotate -90 degrees
 				case 5:
 					if(%bAngle % 2 == 1)
 						%bAngle = (%bAngle + 3) % 4;
-					else						
+					else
 						%bAngle = (%bAngle + 1) % 4;
 			}
 		}
@@ -1698,7 +1690,7 @@ function ND_Selection::updateGhostBricks(%this, %start, %count, %wait)
 		if(%brick.getDatablock() != %datablock)
 			%brick.setDatablock(%datablock);
 
-		//Rotate and add offset		
+		//Rotate and add offset
 		%bAngle = (%bAngle + %angle) % 4;
 		%bPos = vectorAdd(%pos, ndRotateVector(%bPos, %angle));
 
@@ -1717,7 +1709,7 @@ function ND_Selection::updateGhostBricks(%this, %start, %count, %wait)
 
 //Delete ghost bricks
 function ND_Selection::deleteGhostBricks(%this)
-{	
+{
 	if(!isObject(%this.ghostGroup))
 		return;
 
@@ -2122,14 +2114,14 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 			case 4:
 				if(%bAngle % 2 == 0)
 					%bAngle = (%bAngle + 1) % 4;
-				else						
+				else
 					%bAngle = (%bAngle + 3) % 4;
 
 			//X-Y symmetric - rotate -90 degrees
 			case 5:
 				if(%bAngle % 2 == 0)
 					%bAngle = (%bAngle + 3) % 4;
-				else						
+				else
 					%bAngle = (%bAngle + 1) % 4;
 		}
 	}
@@ -2181,14 +2173,14 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 			case 4:
 				if(%bAngle % 2 == 1)
 					%bAngle = (%bAngle + 1) % 4;
-				else						
+				else
 					%bAngle = (%bAngle + 3) % 4;
 
 			//X-Y symmetric - rotate -90 degrees
 			case 5:
 				if(%bAngle % 2 == 1)
 					%bAngle = (%bAngle + 3) % 4;
-				else						
+				else
 					%bAngle = (%bAngle + 1) % 4;
 		}
 	}
@@ -2236,7 +2228,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	//Somehow quota applies to bricks?????
 	//clearCurrentQuotaObject();
 
-	//Attempt to plant brick	
+	//Attempt to plant brick
 	%brick = new FxDTSBrick()
 	{
 		datablock = %datablock;
@@ -2288,7 +2280,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	}
 	else if(%error)
 	{
-		%brick.delete();		
+		%brick.delete();
 		return -1;
 	}
 
@@ -2416,7 +2408,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 
 			if(%targetIdx == -1)
 				%brick.eventNT[%j] = $NS[%this, "ENT", %i, %j];
-			
+
 			%brick.eventTarget[%j] = %target;
 			%brick.eventTargetIdx[%j] = %targetIdx;
 
@@ -2425,7 +2417,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 				%targetClass = getWord($InputEvent_TargetListfxDtsBrick_[%inputIdx], %targetIdx * 2 + 1);
 			else
 				%targetClass = "FxDTSBrick";
-				
+
 			%paramList = $OutputEvent_ParameterList[%targetClass, %outputIdx];
 			%paramCount = getFieldCount(%paramList);
 
@@ -3682,7 +3674,7 @@ function ND_Selection::tickLoadBricks(%this)
 
 				%targetIdx = inputEvent_GetTargetIndex("FxDTSBrick", %inputIdx, %targetName);
 
-				if (%targetName == -1)
+				if(%targetName == -1)
 					%targetClass = "FxDTSBrick";
 				else
 				{
@@ -3695,12 +3687,12 @@ function ND_Selection::tickLoadBricks(%this)
 				if(%outputIdx == -1)
 					warn("LOAD DUP: Output Event not found for name \"" @ %outputName @ "\"");
 
-				for (%j = 1; %j < 5; %j++)
+				for(%j = 1; %j < 5; %j++)
 				{
 					%field = getField($OutputEvent_ParameterList[%targetClass, %outputIdx], %j - 1);
 					%dataType = getWord(%field, 0);
 
-					if (%dataType $= "Datablock" && %par[%j] !$= "-1")
+					if(%dataType $= "Datablock" && %par[%j] !$= "-1")
 					{
 						%par[%j] = nameToId(%par[%j]);
 
@@ -3742,7 +3734,7 @@ function ND_Selection::tickLoadBricks(%this)
 				%pos = strStr(%line, "\"");
 				%dbName = getSubStr(%line, 0, %pos);
 
-				if (%dbName !$= "NONE")
+				if(%dbName !$= "NONE")
 				{
 					%db = $UINameTable_Emitters[%dbName];
 
@@ -3777,7 +3769,7 @@ function ND_Selection::tickLoadBricks(%this)
 				}
 				else
 					$NS[%this, "LD", %index] = %db;
-			
+
 			//Line is item
 			case "+-ITEM":
 
@@ -3786,7 +3778,7 @@ function ND_Selection::tickLoadBricks(%this)
 				%pos = strStr(%line, "\"");
 				%dbName = getSubStr(%line, 0, %pos);
 
-				if (%dbName !$= "NONE")
+				if(%dbName !$= "NONE")
 				{
 					%db = $UINameTable_Items[%dbName];
 
@@ -3806,7 +3798,7 @@ function ND_Selection::tickLoadBricks(%this)
 				$NS[%this, "IP", %index] = getWord(%line, 0);
 				$NS[%this, "IR", %index] = getWord(%line, 1);
 				$NS[%this, "IT", %index] = getWord(%line, 2);
-			
+
 			//Line is music
 			case "+-AUDIOEMITTER":
 
@@ -3825,7 +3817,7 @@ function ND_Selection::tickLoadBricks(%this)
 				}
 				else
 					$NS[%this, "MD", %index] = %db;
-			
+
 			//Line is vehicle
 			case "+-VEHICLE":
 
@@ -3834,7 +3826,7 @@ function ND_Selection::tickLoadBricks(%this)
 				%pos = strStr(%line, "\"");
 				%dbName = getSubStr(%line, 0, %pos);
 
-				if (%dbName !$= "NONE")
+				if(%dbName !$= "NONE")
 				{
 					%db = $UINameTable_Vehicle[%dbName];
 
@@ -3869,7 +3861,7 @@ function ND_Selection::tickLoadBricks(%this)
 			//Line is irrelevant
 			case "+-OWNER":
 
-				%nothing = "";				
+				%nothing = "";
 
 			//Line is brick
 			default:
@@ -3878,7 +3870,7 @@ function ND_Selection::tickLoadBricks(%this)
 				%index++;
 				%quotePos = strstr(%line, "\"");
 
-				if (%quotePos >= 0)
+				if(%quotePos >= 0)
 				{
 					//Get datablock
 					%uiName = getSubStr(%line, 0, %quotePos);
@@ -3943,37 +3935,37 @@ function ND_Selection::tickLoadBricks(%this)
 
 						if(%loadCount)
 						{
-							if(%minX < $NS[%this, "-X"])
-								$NS[%this, "-X"] = %minX;
+							if(%minX < %this.minX)
+								%this.minX = %minX;
 
-							if(%minY < $NS[%this, "-Y"])
-								$NS[%this, "-Y"] = %minY;
+							if(%minY < %this.minY)
+								%this.minY = %minY;
 
-							if(%minZ < $NS[%this, "-Z"])
-								$NS[%this, "-Z"] = %minZ;
+							if(%minZ < %this.minZ)
+								%this.minZ = %minZ;
 
-							if(%maxX > $NS[%this, "+X"])
-								$NS[%this, "+X"] = %maxX;
+							if(%maxX > %this.maxX)
+								%this.maxX = %maxX;
 
-							if(%maxY > $NS[%this, "+Y"])
-								$NS[%this, "+Y"] = %maxY;
+							if(%maxY > %this.maxY)
+								%this.maxY = %maxY;
 
-							if(%maxZ > $NS[%this, "+Z"])
-								$NS[%this, "+Z"] = %maxZ;
+							if(%maxZ > %this.maxZ)
+								%this.maxZ = %maxZ;
 						}
 						else
 						{
-							$NS[%this, "-X"] = %minX;
-							$NS[%this, "-Y"] = %minY;
-							$NS[%this, "-Z"] = %minZ;
-							$NS[%this, "+X"] = %maxX;
-							$NS[%this, "+Y"] = %maxY;
-							$NS[%this, "+Z"] = %maxZ;
+							%this.minX = %minX;
+							%this.minY = %minY;
+							%this.minZ = %minZ;
+							%this.maxX = %maxX;
+							%this.maxY = %maxY;
+							%this.maxZ = %maxZ;
 						}
 
 						%loadCount++;
 					}
-					else	
+					else
 					{
 						warn("LOAD DUP: Brick datablock not found for uiName \"" @ %uiName @ "\"");
 						$NS[%this, "D", %index] = 0;
@@ -4176,12 +4168,12 @@ function ND_Selection::finishLoading(%this)
 
 	%this.rootPosition = vectorAdd(%shiftX SPC %shiftY SPC %shiftZ, %this.rootPosition);
 
-	$NS[%this, "-X"] = $NS[%this, "-X"] + %shiftX;
-	$NS[%this, "+X"] = $NS[%this, "+X"] + %shiftX;
-	$NS[%this, "-Y"] = $NS[%this, "-Y"] + %shiftY;
-	$NS[%this, "+Y"] = $NS[%this, "+Y"] + %shiftY;
-	$NS[%this, "-Z"] = $NS[%this, "-Z"] + %shiftZ;
-	$NS[%this, "+Z"] = $NS[%this, "+Z"] + %shiftZ;
+	%this.minX = %this.minX + %shiftX;
+	%this.maxX = %this.maxX + %shiftX;
+	%this.minY = %this.minY + %shiftY;
+	%this.maxY = %this.maxY + %shiftY;
+	%this.minZ = %this.minZ + %shiftZ;
+	%this.maxZ = %this.maxZ + %shiftZ;
 
 	%this.updateSize();
 	%this.updateHighlightBox();

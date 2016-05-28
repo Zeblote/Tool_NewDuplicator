@@ -15,7 +15,7 @@ package NewDuplicator_Server
 	{
 		%this.ndClient = false;
 		%this.ndVersion = "0.0.0";
-	
+
 		commandToClient(%this, 'ndHandshake', $ND::Version);
 
 		//Client has 5 seconds to respond

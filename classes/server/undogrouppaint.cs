@@ -37,7 +37,7 @@ function ND_UndoGroupPaint::ndTickUndo(%this, %mode, %start, %client)
 
 		if(!isObject(%brick))
 			continue;
-			
+
 		%colorID = $NU[%client, %this, "V", %i];
 
 		switch(%mode)
@@ -77,6 +77,6 @@ function ND_UndoGroupPaint::ndTickUndo(%this, %mode, %start, %client)
 
 		return;
 	}
-	
+
 	%this.schedule(30, ndTickUndo, %mode, %end, %client);
 }

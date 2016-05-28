@@ -18,7 +18,7 @@ function NDM_StackSelect::onStartMode(%this, %client, %lastMode)
 
 	if(%lastMode != $NDM::StackSelectProgress)
 		%client.ndMultiSelect = false;
-		
+
 	%client.ndUpdateBottomPrint();
 }
 
@@ -114,7 +114,7 @@ function NDM_StackSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 
 	if(!ndTrustCheckMessage(%obj, %client))
 		return;
-	
+
 	//Prepare selection to copy the bricks
 	if(!isObject(%client.ndSelection))
 		%client.ndSelection = ND_Selection(%client);

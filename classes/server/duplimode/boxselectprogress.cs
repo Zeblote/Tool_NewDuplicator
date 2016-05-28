@@ -30,7 +30,7 @@ function NDM_BoxSelectProgress::onKillMode(%this, %client)
 function NDM_BoxSelectProgress::onCancelBrick(%this, %client)
 {
 	commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection canceled!", 4);
-	
+
 	%client.ndSelection.cancelBoxSelection();
 	%client.ndSetMode(NDM_BoxSelect);
 }

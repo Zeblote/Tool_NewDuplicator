@@ -31,7 +31,7 @@ package NewDuplicator_Client
 
 		//Disable the keybinds
 		clientCmdNdEnableKeybinds(false);
-		
+
 		parent::disconnectedCleanup(%bool);
 	}
 };

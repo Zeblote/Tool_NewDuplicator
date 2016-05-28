@@ -13,7 +13,7 @@
 
 //Switch away from this mode
 function NDM_CutProgress::onChangeMode(%this, %client, %nextMode)
-{	
+{
 	if(%nextMode != $NDM::PlantCopy)
 		%client.ndSelection.deleteData();
 }

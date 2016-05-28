@@ -139,7 +139,7 @@ function NDM_BoxSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 		if(getSubStr(%name, strLen(%name - 1), 1) $= "s")
 			%shapeName = %name @ "' Selection Box";
 		else
-			%shapeName = %name @ "'s Selection Box";				
+			%shapeName = %name @ "'s Selection Box";
 
 		%client.ndSelectionBox = ND_SelectionBox(%shapeName);
 
@@ -253,7 +253,7 @@ function NDM_BoxSelect::onPlantBrick(%this, %client)
 		return;
 
 	//If we have a selection, enter plant mode!
-	if(%client.ndSelectionAvailable)	
+	if(%client.ndSelectionAvailable)
 	{
 		%client.ndSetMode(NDM_PlantCopy);
 		return;
@@ -343,7 +343,7 @@ function NDM_BoxSelect::onCut(%this, %client)
 
 //Create bottomprint for client
 function NDM_BoxSelect::getBottomPrint(%this, %client)
-{		
+{
 	if(isObject(%client.ndSelection) && %client.ndSelection.brickCount)
 	{
 		%count = %client.ndSelection.brickCount;

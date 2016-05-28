@@ -88,7 +88,7 @@ function ndHandlePaste(%bool)
 	if(!%bool)
 		return;
 
-	commandToServer('ndPaste');	
+	commandToServer('ndPaste');
 }
 
 //Client pressed ctrl x
@@ -97,12 +97,12 @@ function ndHandleCut(%bool)
 	if(!%bool)
 		return;
 
-	commandToServer('ndCut');	
+	commandToServer('ndCut');
 }
 
 //Client pressed ctrl
 function ndHandleMultiSelect(%bool)
 {
-	commandToServer('ndMultiSelect', %bool);	
+	commandToServer('ndMultiSelect', %bool);
 }
 

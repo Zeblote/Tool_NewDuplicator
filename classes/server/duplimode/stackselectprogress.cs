@@ -27,7 +27,7 @@ function NDM_StackSelectProgress::onKillMode(%this, %client)
 function NDM_StackSelectProgress::onCancelBrick(%this, %client)
 {
 	commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection canceled!", 4);
-	
+
 	%client.ndSelection.cancelStackSelection();
 	%client.ndSetMode(NDM_StackSelect);
 }

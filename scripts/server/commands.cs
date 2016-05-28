@@ -93,7 +93,7 @@ function serverCmdNewDuplicator(%client, %cmd)
 		messageClient(%client, '', "\c6You must be spawned to equip the new duplicator.");
 		return;
 	}
-	
+
 	//Hide brick selector and tool gui
 	%client.ndLastEquipTime = $Sim::Time;
 	commandToClient(%client, 'setScrollMode', 3);
@@ -103,7 +103,7 @@ function serverCmdNewDuplicator(%client, %cmd)
 
 	if(!isObject(%image))
 		%image = ND_Image;
-		
+
 	%player.updateArm(%image);
 	%player.mountImage(%image, 0);
 	%client.ndEquippedFromItem = false;
@@ -162,7 +162,7 @@ package NewDuplicator_Server
 	{
 		if(%client.ndModeIndex)
 			%client.ndMode.onShiftBrick(%client, %x, %y, %z);
-		
+
 		//Call parent to play animation
 		parent::serverCmdShiftBrick(%client, %x, %y, %z);
 	}
@@ -172,7 +172,7 @@ package NewDuplicator_Server
 	{
 		if(%client.ndModeIndex)
 			%client.ndMode.onSuperShiftBrick(%client, %x, %y, %z);
-		
+
 		//Call parent to play animation
 		parent::serverCmdSuperShiftBrick(%client, %x, %y, %z);
 	}
@@ -182,7 +182,7 @@ package NewDuplicator_Server
 	{
 		if(%client.ndModeIndex)
 			%client.ndMode.onRotateBrick(%client, %direction);
-		
+
 		//Call parent to play animation
 		parent::serverCmdRotateBrick(%client, %direction);
 	}
@@ -371,7 +371,7 @@ function GameConnection::ndMirror(%client, %axis)
 		%client.player.tempBrick.ndMirrorGhost(%client, %axis);
 		return;
 	}
-	
+
 	//We didn't mirror anything
 	messageClient(%client, '', "\c6The mirror command can only be used in plant mode or with a ghost brick.");
 }
@@ -403,7 +403,7 @@ function serverCmdMirErrors(%client)
 		{
 			%db = $NS[%client, "MZE", %i];
 			messageClient(%client, '', "\c7 -" @ %i + 1 @ "- \c6" @ %db.category @ "/" @ %db.subCategory @ "/" @ %db.uiName);
-		}		
+		}
 	}
 
 	if(!%xerr && !%zerr)
@@ -689,7 +689,7 @@ package NewDuplicator_Server_Final
 
 		//Change mode
 		%client.ndSetMode(NDM_SaveProgress);
-		
+
 		if(!%client.ndSelection.startSaving(%filePath))
 		{
 			messageClient(%client, '', "\c6Failed to write save \"\c3" @ %fileName @ "\c6\". Ask the host for help.");
@@ -785,7 +785,7 @@ package NewDuplicator_Server_Final
 
 		//Change mode
 		%client.ndSetMode(NDM_LoadProgress);
-		
+
 		if(!%client.ndSelection.startLoading(%filePath))
 		{
 			messageClient(%client, '', "\c6Failed to read save \"\c3" @ %fileName @ "\c6\". Ask the host for help.");

@@ -183,7 +183,7 @@ function Player::ndFired(%this)
 
 	if(!isObject(%obj = firstWord(%ray)))
 		return;
-	
+
 	%position = posFromRaycast(%ray);
 	%normal = normalFromRaycast(%ray);
 

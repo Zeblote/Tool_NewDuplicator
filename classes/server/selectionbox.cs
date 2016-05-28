@@ -261,7 +261,7 @@ function ND_SelectionBox::setSize(%this, %point1, %point2)
 		{
 			%width1 = %width + 0.02;
 			%width2 = %width;
-		}	
+		}
 
 		//The borders touching the two corners are thicker to prevent Z fighting
 		//with the highlight box if it covers the same area as the selection
@@ -358,59 +358,59 @@ function ND_SelectionBox::shiftCorner(%this, %offset, %limit)
 	%oldP1 = %this.point1;
 	%oldP2 = %this.point2;        
 	%limitReached = false;
-	
+
 	//Size of a plate in TU
 	%unit[0] = 0.5;
 	%unit[1] = 0.5;
 	%unit[2] = 0.2;
-	
+
 	for(%dim = 0; %dim < 3; %dim++)
 	{
 		//Copy current
 		%point1[%dim] = getWord(%this.point1, %dim);
 		%point2[%dim] = getWord(%this.point2, %dim);
-		
+
 		//Get the size of the box in the current axis after resizing
 		%ds = getWord(%this.point2, %dim) - getWord(%this.point1, %dim);
-		
+
 		if(%this.selectedCorner)
 			%ds += getWord(%offset, %dim);
 		else
 			%ds -= getWord(%offset, %dim);
-				
+
 		//update the point being controlled
 		if(%this.selectedCorner)
 			%point2[%dim] += getWord(%offset, %dim);
 		else
 			%point1[%dim] += getWord(%offset, %dim);
-		
+
 		//Check limits
 		if(mAbs(%ds) > %limit)
 		{
 			%limitReached = true;
-			
+
 			if(%this.selectedCorner)
 				%point2[%dim] -= %ds - %limit * (mAbs(%ds) / %ds);
 			else
 				%point1[%dim] += %ds - %limit * (mAbs(%ds) / %ds);
 		}
 	}
-	
+
 	//Update corner positions
 	%point1 = %point1[0] SPC %point1[1] SPC %point1[2];
 	%point2 = %point2[0] SPC %point2[1] SPC %point2[2];
 	%this.setSize(%point1, %point2);
-	
+
 	//Play sounds
 	if(%this.selectedCorner)
 		%soundPoint = %this.point2;
 	else
 		%soundPoint = %this.point1;
-	
+
 	if(%this.point1 !$= %oldP1 || %this.point2 !$= %oldP2)
 		serverPlay3d(BrickMoveSound, %soundPoint);
 	else
 		serverPlay3d(errorSound, %soundPoint);
-	
+
 	return %limitReached;
 }

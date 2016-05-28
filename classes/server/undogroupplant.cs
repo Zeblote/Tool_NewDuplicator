@@ -57,12 +57,12 @@ function SimSet::ndTickUndo(%this, %count, %client)
 	{
 		%this.delete();
 		%client.ndUndoInProgress = false;
-		
+
 		if(%start != 0)
 			commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Undo finished.", 2);
 
 		return;
 	}
-	
+
 	%this.schedule(30, ndTickUndo, %end, %client);
 }

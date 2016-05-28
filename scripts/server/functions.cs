@@ -247,14 +247,14 @@ function FxDtsBrick::ndMirrorGhost(%brick, %client, %axis)
 			case 4:
 				if(%bAngle % 2 == 0)
 					%bAngle = (%bAngle + 1) % 4;
-				else						
+				else
 					%bAngle = (%bAngle + 3) % 4;
 
 			//X-Y symmetric - rotate -90 degrees
 			case 5:
 				if(%bAngle % 2 == 0)
 					%bAngle = (%bAngle + 3) % 4;
-				else						
+				else
 					%bAngle = (%bAngle + 1) % 4;
 		}
 	}
@@ -296,14 +296,14 @@ function FxDtsBrick::ndMirrorGhost(%brick, %client, %axis)
 			case 4:
 				if(%bAngle % 2 == 1)
 					%bAngle = (%bAngle + 1) % 4;
-				else						
+				else
 					%bAngle = (%bAngle + 3) % 4;
 
 			//X-Y symmetric - rotate -90 degrees
 			case 5:
 				if(%bAngle % 2 == 1)
 					%bAngle = (%bAngle + 3) % 4;
-				else						
+				else
 					%bAngle = (%bAngle + 1) % 4;
 		}
 	}

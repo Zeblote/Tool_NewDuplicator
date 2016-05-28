@@ -199,6 +199,6 @@ function ND_UndoGroupWrench::ndTickUndo(%this, %start, %client)
 
 		return;
 	}
-	
+
 	%this.schedule(30, ndTickUndo, %end, %client);
 }

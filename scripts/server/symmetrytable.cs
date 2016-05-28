@@ -97,7 +97,7 @@ function ndFindSymmetricPairs()
 		if(!$NDT::SkipAsymZ[%index])
 			ndFindSymmetricPairZ(%index);
 	}
-	
+
 	//Delete temporary arrays
 	deleteVariables("$NDT::*");
 
@@ -139,7 +139,7 @@ function ndTestBrickSymmetry(%datablock)
 	//Not simple, get mesh data index in temp arrays
 	%dbi = $NDT::MeshCount;
 	$NDT::MeshCount++;
-	
+
 	//Load mesh from blb file
 	%faces = 0;
 	%points = 0;
@@ -152,7 +152,7 @@ function ndTestBrickSymmetry(%datablock)
 		if(getSubStr(%line, 0, 4) $= "TEX:")
 		{
 			%tex = trim(getSubStr(%line, 4, strLen(%line)));
-			
+
 			//Top and bottom faces have different topology, skip
 			if(%tex $= "TOP" || %tex $= "BOTTOMLOOP" || %tex $= "BOTTOMEDGE")
 				continue;
@@ -404,7 +404,7 @@ function ndFindSymmetricPairX(%dbi)
 	if(%off != -1)
 	{
 		%otherdb = $NDT::Datablock[%other];
-		
+
 		//Save symmetry
 		$ND::SymmetryXDatablock[%datablock] = %otherdb;
 		$ND::SymmetryXOffset[%datablock] = %off;

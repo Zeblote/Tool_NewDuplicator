@@ -28,7 +28,7 @@ function NDM_PlantCopy::onStartMode(%this, %client, %lastMode)
 
 //Switch away from this mode
 function NDM_PlantCopy::onChangeMode(%this, %client, %nextMode)
-{	
+{
 	if(%nextMode == $NDM::StackSelect || %nextMode == $NDM::BoxSelect)
 	{
 		%client.ndSelection.deleteData();
@@ -203,7 +203,7 @@ function NDM_PlantCopy::moveBricksTo(%his, %client, %pos, %normal)
 	{
 		%toCenter = %client.ndSelection.rootToCenter;
 
-		//Apply mirror	
+		//Apply mirror
 		if(%client.ndSelection.ghostMirrorX)
 			%toCenter = -firstWord(%toCenter) SPC restWords(%toCenter);
 		else if(%client.ndSelection.ghostMirrorY)
