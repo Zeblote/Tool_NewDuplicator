@@ -288,7 +288,10 @@ function GameConnection::ndSetMode(%this, %newMode)
 
 	//Enable keybinds
 	if(!%oldMode.index)
+	{
 		commandToClient(%this, 'ndEnableKeybinds', true);
+		%client.ndMultiselect = false;
+	}
 
 	//Change image
 	if(%newMode.image !$= "any")

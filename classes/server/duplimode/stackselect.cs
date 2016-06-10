@@ -15,10 +15,6 @@
 function NDM_StackSelect::onStartMode(%this, %client, %lastMode)
 {
 	%client.ndLastSelectMode = %this;
-
-	if(%lastMode != $NDM::StackSelectProgress)
-		%client.ndMultiSelect = false;
-
 	%client.ndUpdateBottomPrint();
 }
 
