@@ -23,8 +23,9 @@ exec($ND::ScriptPath @ "client/guis/fillwrench.gui");
 echo(" \n--- Loading Client Scripts ---");
 exec($ND::ScriptPath @ "client/controls.cs");
 exec($ND::ScriptPath @ "client/handshake.cs");
-exec($ND::ScriptPath @ "client/updater.cs");
 exec($ND::ScriptPath @ "client/wrench.cs");
+if(!$Pref::ND::DisableUpdater)
+	exec($ND::ScriptPath @ "client/updater.cs");
 
 echo(" \n--- Initializing Client ---");
 activatePackage(NewDuplicator_Client);
