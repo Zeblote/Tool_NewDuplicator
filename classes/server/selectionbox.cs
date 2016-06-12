@@ -312,20 +312,20 @@ function ND_SelectionBox::setSizeAligned(%this, %point1, %point2, %player)
 	switch(getAngleIDFromPlayer(%player))
 	{
 		case 0:
-			%p1 = %x2 SPC %y1 SPC %z1;
-			%p2 = %x1 SPC %y2 SPC %z2;
-
-		case 1:
-			%p1 = %x2 SPC %y2 SPC %z1;
-			%p2 = %x1 SPC %y1 SPC %z2;
-
-		case 2:
 			%p1 = %x1 SPC %y2 SPC %z1;
 			%p2 = %x2 SPC %y1 SPC %z2;
 
-		case 3:
+		case 1:
 			%p1 = %x1 SPC %y1 SPC %z1;
 			%p2 = %x2 SPC %y2 SPC %z2;
+
+		case 2:
+			%p1 = %x2 SPC %y1 SPC %z1;
+			%p2 = %x1 SPC %y2 SPC %z2;
+
+		case 3:
+			%p1 = %x2 SPC %y2 SPC %z1;
+			%p2 = %x1 SPC %y1 SPC %z2;
 	}
 
 	//Select first corner
