@@ -9,7 +9,7 @@
 // * ######################################################################
 
 //Highlight group data $NDH::*
-// $NDH::NextId : Next free id to use for new highlight group
+// $NDH::LastId : The id of the last created highlight group
 // $NDH::Count : Total number of active highlight groups
 //
 // $NDHN[brick] : Number of groups a brick is in
@@ -74,7 +74,7 @@ function ndHighlightBrick(%group, %brick)
 	$NDH[%group, ($NDH[%group]++) - 1] = %brick;
 }
 
-//Immediately start de-highlighting bricks
+//Start de-highlighting bricks
 function ndStartDeHighlight(%group)
 {
 	//Don't do this if already de-highlighting
@@ -85,15 +85,6 @@ function ndStartDeHighlight(%group)
 		cancel($NDHS[%group]);
 		ndTickDeHighlight(%group, 0);
 	}
-}
-
-//De-highglight bricks after some time
-function ndDeHighlightDelayed(%group, %delay)
-{
-	if(isEventPending($NDHS[%group]))
-		return;
-
-	$NDHS[%group] = schedule(%delay, 0, ndTickDeHighlight, %group, 0);
 }
 
 //Tick de-highlighting bricks

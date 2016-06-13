@@ -49,7 +49,6 @@ function ndRegisterRTBPrefs()
 
 	//Advanced
 	RTB_registerPref("Enable Menu Sounds",         "New Duplicator | Advanced", "$Pref::Server::ND::PlayMenuSounds",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
-	RTB_registerPref("Highlight Time",             "New Duplicator | Advanced", "$Pref::Server::ND::HighlightDelay",      "int 1 60",         "Tool_NewDuplicator", 8,       false, false, "");
 	RTB_registerPref("Max Ghost Bricks",           "New Duplicator | Advanced", "$Pref::Server::ND::MaxGhostBricks",      "int 1 50000",      "Tool_NewDuplicator", 1500,    false, false, "");
 	RTB_registerPref("Instant Ghost Bricks",       "New Duplicator | Advanced", "$Pref::Server::ND::InstantGhostBricks",  "int 1 50000",      "Tool_NewDuplicator", 150,     false, false, "");
 	RTB_registerPref("Scatter Ghost Bricks",       "New Duplicator | Advanced", "$Pref::Server::ND::ScatterGhostBricks",  "bool",             "Tool_NewDuplicator", true,    false, false, "");
@@ -90,7 +89,6 @@ function ndExtendDefaultPrefs()
 
 	//Advanced
 	if($Pref::Server::ND::PlayMenuSounds      $= "") $Pref::Server::ND::PlayMenuSounds      = true;
-	if($Pref::Server::ND::HighlightDelay      $= "") $Pref::Server::ND::HighlightDelay      = 8;
 	if($Pref::Server::ND::MaxGhostBricks      $= "") $Pref::Server::ND::MaxGhostBricks      = 1500;
 	if($Pref::Server::ND::InstantGhostBricks  $= "") $Pref::Server::ND::InstantGhostBricks  = 150;
 	if($Pref::Server::ND::ScatterGhostBricks  $= "") $Pref::Server::ND::ScatterGhostBricks  = true;
@@ -132,7 +130,6 @@ function ndApplyDefaultPrefs(%this)
 
 	//Advanced
 	$Pref::Server::ND::PlayMenuSounds      = true;
-	$Pref::Server::ND::HighlightDelay      = 8;
 	$Pref::Server::ND::MaxGhostBricks      = 1500;
 	$Pref::Server::ND::InstantGhostBricks  = 150;
 	$Pref::Server::ND::ScatterGhostBricks  = true;

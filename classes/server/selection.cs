@@ -603,9 +603,6 @@ function ND_Selection::finishStackSelection(%this)
 	%this.updateSize();
 	%this.updateHighlightBox();
 
-	//De-highlight the bricks after a few seconds
-	//ndDeHighlightDelayed(%this.highlightGroup, $Pref::Server::ND::HighlightDelay * 1000);
-
 	if($Pref::Server::ND::PlayMenuSounds)
 		messageClient(%this.client, 'MsgUploadEnd', "");
 
@@ -971,9 +968,6 @@ function ND_Selection::finishBoxSelection(%this)
 {
 	%this.updateSize();
 	%this.updateHighlightBox();
-
-	//De-highlight the bricks after a few seconds
-	ndDeHighlightDelayed(%this.highlightGroup, $Pref::Server::ND::HighlightDelay * 1000);
 
 	if($Pref::Server::ND::PlayMenuSounds)
 		messageClient(%this.client, 'MsgUploadEnd', "");
