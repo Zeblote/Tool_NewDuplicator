@@ -173,15 +173,27 @@ function Player::ndFired(%this)
 		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Oops! Building is disabled.", 5);
 		return;
 	}
-
-	//Fire raycast in the direction the player is looking, from his camera position
-	%start = %this.getEyePoint();
-	%end = vectorAdd(%start, vectorScale(%this.getEyeVector(), 1000));
-
 	%mask = $TypeMasks::FxBrickAlwaysObjectType | $TypeMasks::TerrainObjectType;
-	%ray = containerRaycast(%start, %end, %mask, %this);
+	%start = %this.getEyePoint();
+	%dir = %this.getEyeVector();
 
-	if(!isObject(%obj = firstWord(%ray)))
+	//Octree::Raycast fails to detect close bricks (~1TU) with a long raycast, so we'll do 3.
+	//First a very short one of 1 TU to detect very close bricks, then a slightly longer one
+	//of 10 TU, and finally the long range one of 1000.
+	%len[0] = 1;
+	%len[1] = 10;
+	%len[2] = 1000;
+
+	for(%i = 0; %i < 3; %i++)
+	{
+		%end = vectorAdd(%start, vectorScale(%dir, %len[%i]));
+		%ray = containerRaycast(%start, %end, %mask, %this);
+
+		if(isObject(%obj = firstWord(%ray)))
+			break;
+	}
+
+	if(!isObject(%obj))
 		return;
 
 	%position = posFromRaycast(%ray);
