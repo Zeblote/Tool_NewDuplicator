@@ -71,7 +71,7 @@ function serverCmdOldDup(%client)
 }
 
 //Command to equip the new duplicator
-function serverCmdNewDuplicator(%client, %cmd)
+function serverCmdNewDuplicator(%client)
 {
 	//Check admin
 	if($Pref::Server::ND::AdminOnly && !%client.isAdmin)

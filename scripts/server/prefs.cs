@@ -25,35 +25,36 @@ function ndRegisterRTBPrefs()
 	%trustDropDown = "list None 0 Build 1 Full 2 Self 3";
 
 	//Limits
-	RTB_registerPref("Admin Only",                 "New Duplicator | Limits",   "$Pref::Server::ND::AdminOnly",           "bool",             "Tool_NewDuplicator", false,   false, false, "");
-	RTB_registerPref("Fill Paint Admin Only",      "New Duplicator | Limits",   "$Pref::Server::ND::PaintAdminOnly",      "bool",             "Tool_NewDuplicator", false,   false, false, "");
-	RTB_registerPref("Fill Paint Fx Admin Only",   "New Duplicator | Limits",   "$Pref::Server::ND::PaintFxAdminOnly",    "bool",             "Tool_NewDuplicator", true,    false, false, "");
-	RTB_registerPref("Fill Wrench Admin Only",     "New Duplicator | Limits",   "$Pref::Server::ND::WrenchAdminOnly",     "bool",             "Tool_NewDuplicator", true,    false, false, "");
-	RTB_registerPref("Floating Bricks Admin Only", "New Duplicator | Limits",   "$Pref::Server::ND::FloatAdminOnly",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
-	RTB_registerPref("Save Admin Only",            "New Duplicator | Limits",   "$Pref::Server::ND::SaveAdminOnly",       "bool",             "Tool_NewDuplicator", true,    false, false, "");
-	RTB_registerPref("Load Admin Only",            "New Duplicator | Limits",   "$Pref::Server::ND::LoadAdminOnly",       "bool",             "Tool_NewDuplicator", false,   false, false, "");
-	RTB_registerPref("Client Load Admin Only",     "New Duplicator | Limits",   "$Pref::Server::ND::ClientLoadAdminOnly", "bool",             "Tool_NewDuplicator", true,    false, false, "");
+	RTB_registerPref("Admin Only",                  "New Duplicator | Limits",   "$Pref::Server::ND::AdminOnly",           "bool",             "Tool_NewDuplicator", false,   false, false, "");
+	RTB_registerPref("Fill Paint Admin Only",       "New Duplicator | Limits",   "$Pref::Server::ND::PaintAdminOnly",      "bool",             "Tool_NewDuplicator", false,   false, false, "");
+	RTB_registerPref("Fill Paint Fx Admin Only",    "New Duplicator | Limits",   "$Pref::Server::ND::PaintFxAdminOnly",    "bool",             "Tool_NewDuplicator", true,    false, false, "");
+	RTB_registerPref("Fill Wrench Admin Only",      "New Duplicator | Limits",   "$Pref::Server::ND::WrenchAdminOnly",     "bool",             "Tool_NewDuplicator", true,    false, false, "");
+	RTB_registerPref("Floating Bricks Admin Only",  "New Duplicator | Limits",   "$Pref::Server::ND::FloatAdminOnly",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
+	RTB_registerPref("Save Admin Only",             "New Duplicator | Limits",   "$Pref::Server::ND::SaveAdminOnly",       "bool",             "Tool_NewDuplicator", true,    false, false, "");
+	RTB_registerPref("Load Admin Only",             "New Duplicator | Limits",   "$Pref::Server::ND::LoadAdminOnly",       "bool",             "Tool_NewDuplicator", false,   false, false, "");
+	RTB_registerPref("Client Load Admin Only",      "New Duplicator | Limits",   "$Pref::Server::ND::ClientLoadAdminOnly", "bool",             "Tool_NewDuplicator", true,    false, false, "");
 
 	//Settings
-	RTB_RegisterPref("Trust Limit",                "New Duplicator | Settings", "$Pref::Server::ND::TrustLimit",          %trustDropDown,     "Tool_NewDuplicator", 2,       false, false, "");
-	RTB_RegisterPref("Admin Trust Required",       "New Duplicator | Settings", "$Pref::Server::ND::AdminTrustRequired",  "bool",             "Tool_NewDuplicator", false,   false, false, "");
-	RTB_RegisterPref("Select Public Bricks",       "New Duplicator | Settings", "$Pref::Server::ND::SelectPublicBricks",  "bool",             "Tool_NewDuplicator", true,    false, false, "");
+	RTB_RegisterPref("Trust Limit",                 "New Duplicator | Settings", "$Pref::Server::ND::TrustLimit",          %trustDropDown,     "Tool_NewDuplicator", 2,       false, false, "");
+	RTB_RegisterPref("Admin Trust Bypass (Select)", "New Duplicator | Settings", "$Pref::Server::ND::AdminTrustBypass1",   "bool",             "Tool_NewDuplicator", true,    false, false, "");
+	RTB_RegisterPref("Admin Trust Bypass (Edit)",   "New Duplicator | Settings", "$Pref::Server::ND::AdminTrustBypass2",   "bool",             "Tool_NewDuplicator", false,   false, false, "");
+	RTB_RegisterPref("Select Public Bricks",        "New Duplicator | Settings", "$Pref::Server::ND::SelectPublicBricks",  "bool",             "Tool_NewDuplicator", true,    false, false, "");
 
-	RTB_registerPref("Max Bricks (Admin)",         "New Duplicator | Settings", "$Pref::Server::ND::MaxBricksAdmin",      "int 1000 1000000", "Tool_NewDuplicator", 1000000, false, false, "");
-	RTB_registerPref("Max Bricks (Player)",        "New Duplicator | Settings", "$Pref::Server::ND::MaxBricksPlayer",     "int 1000 1000000", "Tool_NewDuplicator", 50000,   false, false, "");
-	RTB_registerPref("Max Box Size (Admin)",       "New Duplicator | Settings", "$Pref::Server::ND::MaxBoxSizeAdmin",     "int 1 50000",      "Tool_NewDuplicator", 1024,    false, false, "");
-	RTB_registerPref("Max Box Size (Player)",      "New Duplicator | Settings", "$Pref::Server::ND::MaxBoxSizePlayer",    "int 1 50000",      "Tool_NewDuplicator", 64,      false, false, "");
+	RTB_registerPref("Max Bricks (Admin)",          "New Duplicator | Settings", "$Pref::Server::ND::MaxBricksAdmin",      "int 1000 1000000", "Tool_NewDuplicator", 1000000, false, false, "");
+	RTB_registerPref("Max Bricks (Player)",         "New Duplicator | Settings", "$Pref::Server::ND::MaxBricksPlayer",     "int 1000 1000000", "Tool_NewDuplicator", 50000,   false, false, "");
+	RTB_registerPref("Max Box Size (Admin)",        "New Duplicator | Settings", "$Pref::Server::ND::MaxBoxSizeAdmin",     "int 1 50000",      "Tool_NewDuplicator", 1024,    false, false, "");
+	RTB_registerPref("Max Box Size (Player)",       "New Duplicator | Settings", "$Pref::Server::ND::MaxBoxSizePlayer",    "int 1 50000",      "Tool_NewDuplicator", 64,      false, false, "");
 
-	RTB_registerPref("Selecting Timeout (Player)", "New Duplicator | Settings", "$Pref::Server::ND::SelectTimeout",       "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
-	RTB_registerPref("Planting Timeout (Player)",  "New Duplicator | Settings", "$Pref::Server::ND::PlantTimeout",        "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
+	RTB_registerPref("Selecting Timeout (Player)",  "New Duplicator | Settings", "$Pref::Server::ND::SelectTimeout",       "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
+	RTB_registerPref("Planting Timeout (Player)",   "New Duplicator | Settings", "$Pref::Server::ND::PlantTimeout",        "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
 
 	//Advanced
-	RTB_registerPref("Enable Menu Sounds",         "New Duplicator | Advanced", "$Pref::Server::ND::PlayMenuSounds",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
-	RTB_registerPref("Max Ghost Bricks",           "New Duplicator | Advanced", "$Pref::Server::ND::MaxGhostBricks",      "int 1 50000",      "Tool_NewDuplicator", 1500,    false, false, "");
-	RTB_registerPref("Instant Ghost Bricks",       "New Duplicator | Advanced", "$Pref::Server::ND::InstantGhostBricks",  "int 1 50000",      "Tool_NewDuplicator", 150,     false, false, "");
-	RTB_registerPref("Scatter Ghost Bricks",       "New Duplicator | Advanced", "$Pref::Server::ND::ScatterGhostBricks",  "bool",             "Tool_NewDuplicator", true,    false, false, "");
-	RTB_registerPref("Process Bricks per Tick",    "New Duplicator | Advanced", "$Pref::Server::ND::ProcessPerTick",      "int 1 50000",      "Tool_NewDuplicator", 300,     false, false, "");
-	RTB_registerPref("Box Selection Chunk Size",   "New Duplicator | Advanced", "$Pref::Server::ND::BoxSelectChunkDim",   "int 1 50000",      "Tool_NewDuplicator", 6,       false, false, "");
+	RTB_registerPref("Enable Menu Sounds",          "New Duplicator | Advanced", "$Pref::Server::ND::PlayMenuSounds",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
+	RTB_registerPref("Max Ghost Bricks",            "New Duplicator | Advanced", "$Pref::Server::ND::MaxGhostBricks",      "int 1 50000",      "Tool_NewDuplicator", 1500,    false, false, "");
+	RTB_registerPref("Instant Ghost Bricks",        "New Duplicator | Advanced", "$Pref::Server::ND::InstantGhostBricks",  "int 1 50000",      "Tool_NewDuplicator", 150,     false, false, "");
+	RTB_registerPref("Scatter Ghost Bricks",        "New Duplicator | Advanced", "$Pref::Server::ND::ScatterGhostBricks",  "bool",             "Tool_NewDuplicator", true,    false, false, "");
+	RTB_registerPref("Process Bricks per Tick",     "New Duplicator | Advanced", "$Pref::Server::ND::ProcessPerTick",      "int 1 50000",      "Tool_NewDuplicator", 300,     false, false, "");
+	RTB_registerPref("Box Selection Chunk Size",    "New Duplicator | Advanced", "$Pref::Server::ND::BoxSelectChunkDim",   "int 1 50000",      "Tool_NewDuplicator", 6,       false, false, "");
 
 	//Restore default prefs
 	RTB_registerPref("Check to restore defaults", "New Duplicator | Reset Prefs", "$ND::RestoreDefaultPrefs", "bool", "Tool_NewDuplicator", false, false, false, "ndResetPrefs");
@@ -76,7 +77,8 @@ function ndExtendDefaultPrefs()
 
 	//Settings
 	if($Pref::Server::ND::TrustLimit          $= "") $Pref::Server::ND::TrustLimit          = 2;
-	if($Pref::Server::ND::AdminTrustRequired  $= "") $Pref::Server::ND::AdminTrustRequired  = false;
+	if($Pref::Server::ND::AdminTrustBypass1   $= "") $Pref::Server::ND::AdminTrustBypass1   = true;
+	if($Pref::Server::ND::AdminTrustBypass2   $= "") $Pref::Server::ND::AdminTrustBypass2   = false;
 	if($Pref::Server::ND::SelectPublicBricks  $= "") $Pref::Server::ND::SelectPublicBricks  = true;
 
 	if($Pref::Server::ND::MaxBricksAdmin      $= "") $Pref::Server::ND::MaxBricksAdmin      = 1000000;
@@ -117,7 +119,8 @@ function ndApplyDefaultPrefs(%this)
 
 	//Settings
 	$Pref::Server::ND::TrustLimit          = 2;
-	$Pref::Server::ND::AdminTrustRequired  = false;
+	$Pref::Server::ND::AdminTrustBypass1   = true;
+	$Pref::Server::ND::AdminTrustBypass2   = false;
 	$Pref::Server::ND::SelectPublicBricks  = true;
 
 	$Pref::Server::ND::MaxBricksAdmin      = 1000000;

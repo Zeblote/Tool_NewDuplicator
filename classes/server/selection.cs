@@ -1242,6 +1242,7 @@ function ND_Selection::tickCutting(%this)
 	%cutSuccessCount = %this.cutSuccessCount;
 	%cutFailCount = %this.cutFailCount;
 
+	%admin = %this.client.isAdmin;
 	%group = %this.client.brickGroup.getId();
 	%bl_id = %this.client.bl_id;
 
@@ -1253,7 +1254,7 @@ function ND_Selection::tickCutting(%this)
 		if(!isObject(%brick))
 			continue;
 
-		if(!ndTrustCheckModify(%brick, %group, %bl_id))
+		if(!ndTrustCheckModify(%brick, %group, %bl_id, %admin))
 		{
 			%cutFailCount++;
 			continue;
@@ -2610,6 +2611,7 @@ function ND_Selection::tickFillColor(%this, %mode, %colorID)
 	if(%end > %this.brickCount)
 		%end = %this.brickCount;
 
+	%admin = %this.client.isAdmin;
 	%group2 = %this.client.brickGroup.getId();
 	%bl_id = %this.client.bl_id;
 
@@ -2625,7 +2627,7 @@ function ND_Selection::tickFillColor(%this, %mode, %colorID)
 	{
 		if(isObject(%brick = $NS[%this, "B", %i]))
 		{
-			if(ndTrustCheckModify(%brick, %group2, %bl_id))
+			if(ndTrustCheckModify(%brick, %group2, %bl_id, %admin))
 			{
 				//Color brick
 				switch(%mode)
@@ -2915,6 +2917,7 @@ function ND_Selection::tickFillWrench(%this)
 
 	%client = %this.client;
 
+	%admin = %this.client.isAdmin;
 	%group2 = %client.brickGroup.getId();
 	%bl_id = %client.bl_id;
 
@@ -2956,7 +2959,7 @@ function ND_Selection::tickFillWrench(%this)
 	{
 		if(isObject(%brick = $NS[%this, "B", %i]))
 		{
-			if(ndTrustCheckModify(%brick, %group2, %bl_id))
+			if(ndTrustCheckModify(%brick, %group2, %bl_id, %admin))
 			{
 				%undoRequired = false;
 

@@ -158,7 +158,7 @@ function ndTrustCheckSelect(%obj, %group2, %bl_id, %admin)
 		return true;
 
 	//Client is admin
-	if(%admin && !$Pref::Server::ND::AdminTrustRequired)
+	if(%admin && $Pref::Server::ND::AdminTrustBypass1)
 		return true;
 
 	//Client can duplicate public bricks
@@ -169,7 +169,7 @@ function ndTrustCheckSelect(%obj, %group2, %bl_id, %admin)
 }
 
 //Check whether a client has enough trust to modify a brick
-function ndTrustCheckModify(%obj, %group2, %bl_id)
+function ndTrustCheckModify(%obj, %group2, %bl_id, %admin)
 {
 	%group1 = %obj.getGroup();
 
@@ -187,6 +187,10 @@ function ndTrustCheckModify(%obj, %group2, %bl_id)
 
 	//Client has trust to the stack of the brick
 	if(%group2.Trust[%obj.stackBL_ID] >= 2)
+		return true;
+
+	//Client is admin
+	if(%admin && $Pref::Server::ND::AdminTrustBypass2)
 		return true;
 
 	return false;
