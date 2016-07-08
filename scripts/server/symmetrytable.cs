@@ -103,7 +103,7 @@ function ndFindSymmetricPairs()
 
 	echo("==========================================================================");
 	echo("ND: Finished finding Z symmetric pairs");
-	echo("ND: Symmetry table complete in " @ (getRealTime() - $ND::SymmetryTableStart) / 1000 @ " seconds");
+	echo("ND: Symmetry table complete in " @ (getRealTime() - $ND::SymmetryTableStarted) / 1000 @ " seconds");
 
 	$ND::SymmetryTableCreated = true;
 	$ND::SymmetryTableCreating = false;
