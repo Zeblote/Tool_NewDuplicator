@@ -16,8 +16,8 @@ datablock ItemData(ND_Item)
 {
 	cameraMaxDist   = 0.1;
 	canDrop         = 1;
-	category        = "Weapon";
-	className       = "Tool";
+	category        = "Tools";
+	className       = "Weapon";
 	density         = 0.2;
 	doColorShift    = false;
 	colorShiftColor = "1 0.84 0 1";
