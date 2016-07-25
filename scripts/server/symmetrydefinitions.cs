@@ -177,3 +177,11 @@ $ND::ManualSymmetryZOffset["2x3x2 Octo Offset"] = 2;
 
 //Brick_Fence
 $ND::ManualSymmetry["1x4 Fence"] = 3;
+
+//Brick_SmallBricks
+$ND::ManualSymmetry["0.25x0.25 Corner"] = 4;
+$ND::ManualSymmetry["0.25x0.25F Corner"] = 4;
+$ND::ManualSymmetry["0.5x0.5 Corner"] = 4;
+$ND::ManualSymmetry["0.5x0.5F Corner"] = 4;
+$ND::ManualSymmetry["0.75x0.75 Corner"] = 4;
+$ND::ManualSymmetry["0.75x0.75F Corner"] = 4;
