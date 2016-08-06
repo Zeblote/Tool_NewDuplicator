@@ -11,6 +11,9 @@
 //Begin generating the symmetry table
 function ndCreateSymmetryTable()
 {
+	if($ND::SymmetryTableCreating)
+		return;
+
 	//Tell everyone what is happening
 	messageAll('', "\c6(\c3New Duplicator\c6) \c6Creating brick symmetry table...");
 

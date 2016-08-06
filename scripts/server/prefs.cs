@@ -55,6 +55,7 @@ function ndRegisterRTBPrefs()
 	RTB_registerPref("Scatter Ghost Bricks",        "New Duplicator | Advanced", "$Pref::Server::ND::ScatterGhostBricks",  "bool",             "Tool_NewDuplicator", true,    false, false, "");
 	RTB_registerPref("Process Bricks per Tick",     "New Duplicator | Advanced", "$Pref::Server::ND::ProcessPerTick",      "int 1 50000",      "Tool_NewDuplicator", 300,     false, false, "");
 	RTB_registerPref("Box Selection Chunk Size",    "New Duplicator | Advanced", "$Pref::Server::ND::BoxSelectChunkDim",   "int 1 50000",      "Tool_NewDuplicator", 6,       false, false, "");
+	RTB_registerPref("Create Sym Table on Start",   "New Duplicator | Advanced", "$Pref::Server::ND::SymTableOnStart",     "bool",             "Tool_NewDuplicator", false,   false, false, "");
 
 	//Restore default prefs
 	RTB_registerPref("Check to restore defaults", "New Duplicator | Reset Prefs", "$ND::RestoreDefaultPrefs", "bool", "Tool_NewDuplicator", false, false, false, "ndResetPrefs");
@@ -96,6 +97,7 @@ function ndExtendDefaultPrefs()
 	if($Pref::Server::ND::ScatterGhostBricks  $= "") $Pref::Server::ND::ScatterGhostBricks  = true;
 	if($Pref::Server::ND::ProcessPerTick      $= "") $Pref::Server::ND::ProcessPerTick      = 300;
 	if($Pref::Server::ND::BoxSelectChunkDim   $= "") $Pref::Server::ND::BoxSelectChunkDim   = 6;
+	if($Pref::Server::ND::SymTableOnStart     $= "") $Pref::Server::ND::SymTableOnStart     = false;
 
 	//Always set this to false
 	$ND::RestoreDefaultPrefs = false;
@@ -138,6 +140,7 @@ function ndApplyDefaultPrefs(%this)
 	$Pref::Server::ND::ScatterGhostBricks  = true;
 	$Pref::Server::ND::ProcessPerTick      = 300;
 	$Pref::Server::ND::BoxSelectChunkDim   = 6;
+	$Pref::Server::ND::SymTableOnStart     = false;
 
 	//Always set this to false
 	$ND::RestoreDefaultPrefs = false;
