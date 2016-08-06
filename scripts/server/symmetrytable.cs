@@ -12,7 +12,7 @@
 function ndCreateSymmetryTable()
 {
 	//Tell everyone what is happening
-	messageAll('', "\c6(\c3New Duplicator\c6) \c6Begin creating brick symmetry table...");
+	messageAll('', "\c6(\c3New Duplicator\c6) \c6Creating brick symmetry table...");
 
 	//Make sure we have the uiname table for manual symmetry
 	if(!$UINameTableCreated)
@@ -41,6 +41,7 @@ function ndCreateSymmetryTable()
 function ndTickCreateSymmetryTable(%lastIndex, %max)
 {
 	%processed = 0;
+	%limit = $Server::Dedicated ? 400 : 200;
 
 	for(%i = %lastIndex; %i < %max; %i++)
 	{
@@ -48,10 +49,9 @@ function ndTickCreateSymmetryTable(%lastIndex, %max)
 
 		if(%db.getClassName() $= "FxDtsBrickData")
 		{
-			ndTestBrickSymmetry(%db);
-			%processed++;
+			%processed += ndTestBrickSymmetry(%db);
 
-			if(%processed > 5)
+			if(%processed > %limit)
 			{
 				schedule(30, 0, ndTickCreateSymmetryTable, %i + 1, %max);
 				return; 
@@ -133,7 +133,7 @@ function ndTestBrickSymmetry(%datablock)
 
 		%file.close();
 		%file.delete();
-		return;
+		return 2;
 	}
 
 	//Not simple, get mesh data index in temp arrays
@@ -339,6 +339,9 @@ function ndTestBrickSymmetry(%datablock)
 	//Save symmetries
 	$ND::Symmetry[%datablock] = %sym;
 	$ND::SymmetryZ[%datablock] = %symZ;
+
+	//Return processed faces
+	return %faces;
 }
 
 //Find symmetric pair between two bricks on X axis
@@ -361,14 +364,11 @@ function ndFindSymmetricPairX(%dbi)
 	}
 
 	%off = -1;
+	$NDT::SkipAsymX[%dbi] = true;
 
 	for(%i = 1; %i <= %count; %i++)
 	{
 		%other = $NDT::AsymXBrick[%faces, %zsym, %i];
-
-		//Don't compare with itself... won't be symmetric
-		if(%other == %dbi)
-			continue;
 
 		//Don't compare with bricks that already have a pair
 		if($NDT::SkipAsymX[%other])
@@ -412,9 +412,8 @@ function ndFindSymmetricPairX(%dbi)
 		$ND::SymmetryXDatablock[%otherdb] = %datablock;
 		$ND::SymmetryXOffset[%otherdb] = -%off;
 
-		//No need to process these bricks again
+		//No need to process the other brick again
 		$NDT::SkipAsymX[%other] = true;
-		$NDT::SkipAsymX[%dbi] = true;
 	}
 	else
 		echo("ND: No X match for " @ %datablock.getName() @ " (" @ %datablock.category @ "/" @ %datablock.subCategory @ "/" @ %datablock.uiname @ ")");
@@ -476,6 +475,10 @@ function ndFindSymmetricPairZ(%dbi)
 		}
 	}
 
+	//It's possible for a brick to match itself rotated
+	//here, so only mark it after the search
+	$NDT::SkipAsymZ[%dbi] = true;
+
 	if(%off != -1)
 	{
 		%otherdb = $NDT::Datablock[%other];
@@ -487,9 +490,8 @@ function ndFindSymmetricPairZ(%dbi)
 		$ND::SymmetryZDatablock[%otherdb] = %datablock;
 		$ND::SymmetryZOffset[%otherdb] = -%off;
 
-		//No need to process these bricks again
+		//No need to process the other brick again
 		$NDT::SkipAsymZ[%other] = true;
-		$NDT::SkipAsymZ[%dbi] = true;
 	}
 	else
 		echo("ND: No Z match for " @ %datablock.getName() @ " (" @ %datablock.category @ "/" @ %datablock.subCategory @ "/" @ %datablock.uiname @ ")");
