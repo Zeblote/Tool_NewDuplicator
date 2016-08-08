@@ -2256,6 +2256,9 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	$Server_LoadFileObj = %prev1;
 	$LastLoadedBrick = %prev2;
 
+	if(!isObject(%brick))
+		return -1;
+
 	if(%error == 2)
 	{
 		//Do we plant floating bricks?
