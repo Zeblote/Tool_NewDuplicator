@@ -2285,41 +2285,46 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 	//Check for trust
 	%downCount = %brick.getNumDownBricks();
 
-	for(%j = 0; %j < %downCount; %j++)
+	if(!%client.isAdmin || !$Pref::Server::ND::AdminTrustBypass2)
 	{
-		%group = %brick.getDownBrick(%j).getGroup();
+		for(%j = 0; %j < %downCount; %j++)
+		{
+			%group = %brick.getDownBrick(%j).getGroup();
 
-		if(%group == %brickGroup)
-			continue;
+			if(%group == %brickGroup)
+				continue;
 
-		if(%group.Trust[%bl_id] > 0)
-			continue;
+			if(%group.Trust[%bl_id] > 0)
+				continue;
 
-		if(%group.bl_id == 888888)
-			continue;
+			if(%group.bl_id == 888888)
+				continue;
 
-		%brick.delete();
-		return -2;
+			%brick.delete();
+			return -2;
+		}
+
+		%upCount = %brick.getNumUpBricks();
+
+		for(%j = 0; %j < %upCount; %j++)
+		{
+			%group = %brick.getUpBrick(%j).getGroup();
+
+			if(%group == %brickGroup)
+				continue;
+
+			if(%group.Trust[%bl_id] > 0)
+				continue;
+
+			if(%group.bl_id == 888888)
+				continue;
+
+			%brick.delete();
+			return -2;
+		}
 	}
-
-	%upCount = %brick.getNumUpBricks();
-
-	for(%j = 0; %j < %upCount; %j++)
-	{
-		%group = %brick.getUpBrick(%j).getGroup();
-
-		if(%group == %brickGroup)
-			continue;
-
-		if(%group.Trust[%bl_id] > 0)
-			continue;
-
-		if(%group.bl_id == 888888)
-			continue;
-
-		%brick.delete();
-		return -2;
-	}
+	else if(!%downCount)
+		%upCount = %brick.getNumUpBricks();
 
 	//Finished trust check
 	if(%downCount)
