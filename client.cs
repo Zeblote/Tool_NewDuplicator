@@ -24,8 +24,14 @@ echo(" \n--- Loading Client Scripts ---");
 exec($ND::ScriptPath @ "client/controls.cs");
 exec($ND::ScriptPath @ "client/handshake.cs");
 exec($ND::ScriptPath @ "client/wrench.cs");
-if(!$Pref::ND::DisableUpdater)
+
+if(!$Pref::ND::DisableUpdater
+	&& !$SupportUpdaterMigration
+	&& !isFile("Add-Ons/Support_Updater.zip"))
+{
+	exec($ND::ScriptPath @ "client/tcpclient.cs");
 	exec($ND::ScriptPath @ "client/updater.cs");
+}
 
 echo(" \n--- Initializing Client ---");
 activatePackage(NewDuplicator_Client);
