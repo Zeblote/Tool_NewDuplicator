@@ -9,7 +9,7 @@
 // * ######################################################################
 
 //Detect pref service and register preferences
-function ndAutoRegisterPrefs(%this)
+function ndAutoRegisterPrefs()
 {
 	if($RTB::Hooks::ServerControl)
 		ndRegisterRTBPrefs();
