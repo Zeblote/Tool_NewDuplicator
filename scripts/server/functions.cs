@@ -23,6 +23,23 @@ function ndRotateVector(%vector, %steps)
 	}
 }
 
+//Rotate and mirror a direction
+function ndTransformDirection(%dir, %steps, %mirrX, %mirrY, %mirrZ)
+{
+	if(%dir > 1)
+	{
+		if(%mirrX && %dir % 2 == 1
+		|| %mirrY && %dir % 2 == 0)
+			%dir += 2;
+
+		%dir = (%dir + %steps - 2) % 4 + 2;
+	}
+	else if(%mirrZ)
+		%dir = !%dir;
+
+	return %dir;
+}
+
 //Get the closest paint color to an rgb value
 function ndGetClosestColorID(%rgb)
 {
