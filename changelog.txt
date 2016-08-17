@@ -1,0 +1,140 @@
+<just:center><color:ffffff><font:Arial Bold:20>New Duplicator Changelog<just:left>
+<br><br><lmargin:20><font:Arial:20>Version 1.4.4    <font:Arial:16>28/05/2016<br>
+•  Added option to create the symmetry table on server start<br>
+•  Creating the symmetry table is now slightly faster<br>
+•  Added manual symmetry definitions for Brick_SmallBricks<br>
+•  Directions in output event parameters are now rotated<br>
+•  Admin trust bypass now allows planting bricks<br>
+•  Added customizable keybinds for all commands<br>
+<br>
+•  Removed /OldDup command as it is no longer necessary<br>
+•  Removed a few mirror commands, use /MirrorX|Y|Z or /MX|Y|Z<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.4.3    <font:Arial:16>06/07/2016<br>
+•  Added option to let admins edit bricks without trust<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.4.2    <font:Arial:16>19/06/2016<br>
+•  Added option to not install the updater (set $Pref::ND::DisableUpdater to 1)<br>
+•  Changed default positions of the selection box corners for faster selecting<br>
+<br>
+•  Fixed: Selecting through bricks if they are close to the camera<br>
+•  Removed unused highlight delay setting from RTB prefs<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.4.1    <font:Arial:16>10/06/2016<br>
+•  Fixed: Multiselect sometimes staying enabled after releasing ctrl<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.4.0    <font:Arial:16>28/05/2016<br>
+•  Added multi-stack selection<br>
+•  Improved placement of ghost selections on ramps<br>
+•  Support moving ghost selection using New Brick Tool<br>
+•  Added warning messages when loading a dup with missing prints<br>
+•  Load/save message no longer shows if loading/saving client is admin<br>
+•  Severely reduced time wasted while "finding next brick" while planting<br>
+•  Now requests confirmation before undoing more than 10 bricks at once<br>
+•  Selection boxes can now be extended by ctrl-clicking a brick to include<br>
+•  Keybinds can now be changed in options if $Pref::ND::ManualKeybinds is set to 1<br>
+<br>
+•  Fixed: Heavy Z-fighting on small selection boxes<br>
+•  Fixed: Loading events with datablock parameters<br>
+•  Fixed: Selecting bricks outside the selection box with limited disabled<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.3.7    <font:Arial:16>24/03/2016<br>
+•  Improved selection box controls<br>
+•  Improved selection box color scheme<br>
+•  Align new selection boxes to face the player<br>
+•  Automatically equip a duplicator when attempting to load a save<br>
+<br>
+•  Fixed: Mirror error message not showing after planting<br>
+•  Fixed: Some saves loading with an incorrect bounding box (again)<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.3.6    <font:Arial:16>19/03/2016<br>
+•  Renamed "cubic selection" to "box selection"<br>
+•  Increased default box size limits to 128 and 1024 studs<br>
+<br>
+•  Fixed: Saving and loading timeouts not working<br>
+•  Fixed: Some saves loading with an incorrect bounding box<br>
+•  Removed .blend source files from the zip, still available on github<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.3.5    <font:Arial:16>09/03/2016<br>
+•  Cubic selection is now several times faster<br>
+•  Removed old highlight method - noone seems to be using it<br>
+<br>
+•  Fixed: Rare bug where highlighted bricks remain forever<br>
+•  Fixed: Highlight clearing restarting after canceling selection<br>
+•  Fixed: Limited mode on cube select not working for small chunks<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.3.4    <font:Arial:16>05/03/2016<br>
+•  Fixed: Print textures not saving correctly<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.3.3    <font:Arial:16>05/03/2016<br>
+•  Now highlights selected bricks with glow fx for better framerate<br>
+•  Small performance improvements (strStr instead of strPos)<br>
+<br>
+•  Fixed: Undoing many bricks blocking schedules (again)<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.3.2    <font:Arial:16>02/02/2016<br>
+•  Performance improvements for loading and saving duplications<br>
+<br>
+•  Fixed: Connections not loading properly until a duplication has been saved<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.3.1    <font:Arial:16>01/02/2016<br>
+•  Can now load saves not aligned to the brick grid properly<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.3.0    <font:Arial:16>31/01/2016<br>
+•  Browse available duplications using /AllDups [filter]<br>
+•  Saving duplications using /SaveDup [name]<br>
+•  Load duplications using /LoadDup [name]<br>
+<br>
+•  Now calls ::onLoadPlant instead of ::onPlant to improve compatibility<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.2.0    <font:Arial:16>14/01/2016<br>
+•  Shifting brick in select mode switches to plant mode<br>
+•  Mirror command now mirrors normal ghost bricks<br>
+•  Force Plant command to place floating bricks<br>
+•  Fill Wrench mode to apply specific settings<br>
+•  Fill Paint mode to color all selected bricks<br>
+<br>
+•  Fixed: Duplicator unusable out of default minigame with building disabled<br>
+•  Fixed: Plant package being broken by bad add-ons - now overrides them<br>
+•  Fixed: Planting duplications not respecting item/light/emitter quotas<br>
+•  Fixed: Symmetry table generation extremely slow on some servers<br>
+•  Fixed: Events that rely on appendClient not duplicating correctly<br>
+•  Fixed: Broken highlighting with multiple players selecting<br>
+•  Fixed: Rotating mirrored selection not working correctly<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.1.2    <font:Arial:16>25/12/2015<br>
+•  New models for the duplicator<br>
+•  Now overrides old duplicator commands, access them with /oldDup<br>
+<br>
+•  Fixed: Brick shifting animations not playing on the duplicator<br>
+<br><br><font:Arial:20>Version 1.1.1    <font:Arial:16>14/12/2015<br>
+•  Instantly ghost duplicated bricks to clients, no more delay<br>
+<br>
+•  Fixed: Shifting the selection not working properly after mirroring it<br>
+•  Fixed: Console spam if client disconnects while planting<br>
+<br><br><font:Arial:20>Version 1.1.0    <font:Arial:16>14/12/2015<br>
+•  Mirroring complete selections on X, Y, Z axis<br>
+  •  Automatically detects symmetry of bricks on first mirror<br>
+  •  Mirrored selection instantly visualized with ghost bricks<br>
+  •  Use /mir [X,Y,Z] in Plant Mode to mirror the selection<br>
+<br>
+•  Fixed: Duplicator still useable in minigames with building disabled<br>
+•  Fixed: Planting not working in combination with specific add-on<br>
+•  Fixed: Debug logs during handshake with connecting clients<br>
+•  Fixed: Undoing large selections blocking schedules (again)<br>
+•  Fixed: Trust check for cube selection not working properly<br>
+<br>
+•  Removed advertisement shown to new clients on connection<br>
+<br><br><font:Arial:20>Version 1.0.4    <font:Arial:16>28/11/2015<br>
+•  Command to show versions used by clients (/dup clients)<br>
+•  Improved: Simplified RTB preferences<br>
+<br>
+•  Fixed: Bricks being de-highlighted right before being cut<br>
+•  Fixed: OnBotSpawn event not called on duplicated bot spawns<br>
+<br><br><font:Arial:20>Version 1.0.3    <font:Arial:16>26/11/2015<br>
+•  Cut and paste mode<br>
+•  Additional keybinds<br>
+  •  Ctrl C to select/switch to plant mode<br>
+  •  Ctrl V to place bricks in plant mode<br>
+  •  Ctrl X to cut bricks<br>
+<br>
+•  Fixed: Output event parameters for the named brick target not being duplicated<br>
+•  Fixed: Duplicator not getting canceled when entering a minigame<br>
+•  Fixed: Brick not being in a brick group during onPlant<br>
+•  Fixed: Brick.client not being assigned during onPlant<br>
+•  Fixed: Selecting public bricks not working correctly<br>
+<br><br><font:Arial:20>Version 1.0.2    <font:Arial:16>24/11/2015<br>
+•  Fixed: Messages "Selected 1 Bricks" and "Planted 1 Bricks"<br>
+•  Fixed: Clients not reconnecting after game mode change<br>
+•  Fixed: Shapefx and wrench settings on water bricks<br>
+•  Fixed: Slow planting for specific builds<br>
+<br><br><font:Arial:20>Version 1.0.1    <font:Arial:16>23/11/2015<br>
+•  Fixed: Undo not finishing for large selections<br>
+<br><br><font:Arial:20>Version 1.0.0    <font:Arial:16>23/11/2015<br>
+•  Initial Release of the New Duplicator!<br>
