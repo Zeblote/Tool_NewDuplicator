@@ -298,28 +298,9 @@ function serverCmdMirrorZ(%client)
 	%client.ndMirror(2);
 }
 
-//Alternative command with space
-function serverCmdMirror(%client, %a)
-{
-	switch$(%a)
-	{
-		case "X": serverCmdMirrorX(%client);
-		case "Y": serverCmdMirrorY(%client);
-		case "Z": serverCmdMirrorZ(%client);
-		default: messageClient(%client, '', "\c6Please specify a mirror axis: \c3/mirror [X, Y, Z]");
-	}
-}
-
-//Alternative shorter commands
-function serverCmdMirX(%client){serverCmdMirrorX(%client);}
-function serverCmdMirY(%client){serverCmdMirrorY(%client);}
-function serverCmdMirZ(%client){serverCmdMirrorZ(%client);}
-function serverCmdMir(%client, %a){serverCmdMirror(%client, %a);}
-
 function serverCmdMX(%client){serverCmdMirrorX(%client);}
 function serverCmdMY(%client){serverCmdMirrorY(%client);}
 function serverCmdMZ(%client){serverCmdMirrorZ(%client);}
-function serverCmdM(%client, %a){serverCmdMirror(%client, %a);}
 
 //Attempt to mirror selection on axis
 function GameConnection::ndMirror(%client, %axis)
