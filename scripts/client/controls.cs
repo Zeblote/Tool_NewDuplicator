@@ -11,27 +11,52 @@
 //Register rebind-able controls
 function ndRegisterKeybinds()
 {
-	if(!$Pref::ND::ManualKeybinds)
-		return;
-
 	if($ND::KeybindsRegistered)
 		return;
 
 	$RemapDivision[$RemapCount] = "New Duplicator";
-	$RemapName[$RemapCount]     = "Copy Selection";
-	$RemapCmd[$RemapCount]      = "ndHandleCopy";
+	$RemapName[$RemapCount]     = "Copy Selection (Ctrl C)";
+	$RemapCmd[$RemapCount]      = "ndInputCopy";
 	$RemapCount++;
 
-	$RemapName[$RemapCount]     = "Paste Selection";
-	$RemapCmd[$RemapCount]      = "ndHandlePaste";
+	$RemapName[$RemapCount]     = "Paste Selection (Ctrl V)";
+	$RemapCmd[$RemapCount]      = "ndInputPaste";
 	$RemapCount++;
 
-	$RemapName[$RemapCount]     = "Cut Selection";
-	$RemapCmd[$RemapCount]      = "ndHandleCut";
+	$RemapName[$RemapCount]     = "Cut Selection (Ctrl X)";
+	$RemapCmd[$RemapCount]      = "ndInputCut";
 	$RemapCount++;
 
-	$RemapName[$RemapCount]     = "Multiselect (Hold to use)";
-	$RemapCmd[$RemapCount]      = "ndHandleMultiSelect";
+	$RemapName[$RemapCount]     = "Multiselect (Ctrl, Hold to use)";
+	$RemapCmd[$RemapCount]      = "ndInputMultiSelect";
+	$RemapCount++;
+
+	$RemapName[$RemapCount]     = "Send /NewDuplicator";
+	$RemapCmd[$RemapCount]      = "ndInputNewDuplicator";
+	$RemapCount++;
+
+	$RemapName[$RemapCount]     = "Send /FillWrench";
+	$RemapCmd[$RemapCount]      = "ndInputFillWrench";
+	$RemapCount++;
+
+	$RemapName[$RemapCount]     = "Send /ForcePlant";
+	$RemapCmd[$RemapCount]      = "ndInputForcePlant";
+	$RemapCount++;
+
+	$RemapName[$RemapCount]     = "Send /ToggleForcePlant";
+	$RemapCmd[$RemapCount]      = "ndInputToggleForcePlant";
+	$RemapCount++;
+
+	$RemapName[$RemapCount]     = "Send /MirrorX";
+	$RemapCmd[$RemapCount]      = "ndInputMirrorX";
+	$RemapCount++;
+
+	$RemapName[$RemapCount]     = "Send /MirrorY";
+	$RemapCmd[$RemapCount]      = "ndInputMirrorY";
+	$RemapCount++;
+
+	$RemapName[$RemapCount]     = "Send /MirrorZ";
+	$RemapCmd[$RemapCount]      = "ndInputMirrorZ";
 	$RemapCount++;
 
 	$ND::KeybindsRegistered = true;
@@ -42,25 +67,19 @@ function clientCmdNdEnableKeybinds(%bool)
 {
 	if(%bool && !$ND::KeybindsEnabled)
 	{
-		if($Pref::ND::ManualKeybinds)
-			return;
-
 		%map = new ActionMap(ND_KeyMap);
 
-		if(isWindows())
-		{
-			%map.bind("keyboard", "ctrl c", "ndHandleCopy");
-			%map.bind("keyboard", "ctrl v", "ndHandlePaste");
-			%map.bind("keyboard", "ctrl x", "ndHandleCut");
-			%map.bind("keyboard", "lcontrol", "ndHandleMultiSelect");
-		}
-		else
-		{
-			%map.bind("keyboard", "cmd c", "ndHandleCopy");
-			%map.bind("keyboard", "cmd v", "ndHandlePaste");
-			%map.bind("keyboard", "cmd x", "ndHandleCut");
-			%map.bind("keyboard", "cmd", "ndHandleMultiSelect");
-		}
+		if(MoveMap.getBinding("ndInputCopy") $= "")
+			%map.bind("keyboard", isWindows() ? "ctrl c" : "cmd c", "ndInputCopy");
+
+		if(MoveMap.getBinding("ndInputPaste") $= "")
+			%map.bind("keyboard", isWindows() ? "ctrl v" : "cmd v", "ndInputPaste");
+
+		if(MoveMap.getBinding("ndInputCut") $= "")
+			%map.bind("keyboard", isWindows() ? "ctrl x" : "cmd x", "ndInputCut");
+
+		if(MoveMap.getBinding("ndInputMultiSelect") $= "")
+			%map.bind("keyboard", isWindows() ? "lcontrol" : "cmd", "ndInputMultiSelect");
 
 		%map.push();
 		$ND::KeybindsEnabled = true;
@@ -73,36 +92,16 @@ function clientCmdNdEnableKeybinds(%bool)
 	}
 }
 
-//Client pressed ctrl c
-function ndHandleCopy(%bool)
-{
-	if(!%bool)
-		return;
+//Input handlers
+function ndInputNewDuplicator   (%bool) {if(!%bool)return; commandToServer('newDuplicator'   );}
+function ndInputCopy            (%bool) {if(!%bool)return; commandToServer('ndCopy'          );}
+function ndInputPaste           (%bool) {if(!%bool)return; commandToServer('ndPaste'         );}
+function ndInputCut             (%bool) {if(!%bool)return; commandToServer('ndCut'           );}
+function ndInputFillWrench      (%bool) {if(!%bool)return; commandToServer('fillWrench'      );}
+function ndInputForcePlant      (%bool) {if(!%bool)return; commandToServer('forcePlant'      );}
+function ndInputToggleForcePlant(%bool) {if(!%bool)return; commandToServer('toggleForcePlant');}
+function ndInputMirrorX         (%bool) {if(!%bool)return; commandToServer('mirrorX'         );}
+function ndInputMirrorY         (%bool) {if(!%bool)return; commandToServer('mirrorY'         );}
+function ndInputMirrorZ         (%bool) {if(!%bool)return; commandToServer('mirrorZ'         );}
 
-	commandToServer('ndCopy');
-}
-
-//Client pressed ctrl v
-function ndHandlePaste(%bool)
-{
-	if(!%bool)
-		return;
-
-	commandToServer('ndPaste');
-}
-
-//Client pressed ctrl x
-function ndHandleCut(%bool)
-{
-	if(!%bool)
-		return;
-
-	commandToServer('ndCut');
-}
-
-//Client pressed ctrl
-function ndHandleMultiSelect(%bool)
-{
-	commandToServer('ndMultiSelect', %bool);
-}
-
+function ndInputMultiSelect(%bool) {commandToServer('ndMultiSelect', %bool);}
