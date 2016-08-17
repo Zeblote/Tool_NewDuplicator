@@ -47,29 +47,6 @@ function serverCmdDC(%client){serverCmdDupClients(%client);}
 //Equip commands
 ///////////////////////////////////////////////////////////////////////////
 
-//Command to equip the old duplicator
-function serverCmdOldDup(%client)
-{
-	if(!isObject(%client.player))
-	{
-		messageClient(%client, '', "\c6You must be spawned to equip the old duplicator.");
-		return;
-	}
-
-	if(isObject(DuplorcatorImage))
-	{
-		%client.player.updateArm(DuplorcatorImage);
-		%client.player.mountImage(DuplorcatorImage, 0);
-	}
-	else if(isObject(DuplicatorImage))
-	{
-		%client.player.updateArm(DuplicatorImage);
-		%client.player.mountImage(DuplicatorImage, 0);
-	}
-	else
-		messageClient(%client, '', "\c6The server does not have an old duplicator installed.");
-}
-
 //Command to equip the new duplicator
 function serverCmdNewDuplicator(%client)
 {
