@@ -48,9 +48,13 @@ function serverCmdNdHandshake(%this, %version)
 			messageClient(%this, '', %m);
 
 		case 2:
-			%m =      "\c6Your version of the \c3New Duplicator\c6 is newer than the server's! Ask the host to update it! ";
-			%m = %m @ "(Server Version: \c0" @ $ND::Version @ "\c6 | Your Version: \c3" @ %version @ "\c6)";
-			messageClient(%this, '', %m);
+			//Hide this message on long-running dedicated servers
+			if($Sim::Time < 86400)
+			{
+				%m =      "\c6Your version of the \c3New Duplicator\c6 is newer than the server's! Ask the host to update it! ";
+				%m = %m @ "(Server Version: \c0" @ $ND::Version @ "\c6 | Your Version: \c3" @ %version @ "\c6)";
+				messageClient(%this, '', %m);
+			}
 	}
 }
 
