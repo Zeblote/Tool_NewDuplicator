@@ -1305,6 +1305,283 @@ function ND_Selection::cancelCutting(%this)
 
 
 
+//Super-Cut
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Begin super-cut
+function ND_Selection::startSuperCut(%this, %box)
+{
+	//Ensure there is no highlight group
+	%this.deHighlight();
+
+	//Save the chunk sizes
+	%this.chunkX1 = getWord(%box, 0);
+	%this.chunkY1 = getWord(%box, 1);
+	%this.chunkZ1 = getWord(%box, 2);
+	%this.chunkX2 = getWord(%box, 3);
+	%this.chunkY2 = getWord(%box, 4);
+	%this.chunkZ2 = getWord(%box, 5);
+
+	%this.chunkSize = $Pref::Server::ND::BoxSelectChunkDim;
+
+	%this.numChunksX = mCeil((%this.chunkX2 - %this.chunkX1) / %this.chunkSize);
+	%this.numChunksY = mCeil((%this.chunkY2 - %this.chunkY1) / %this.chunkSize);
+	%this.numChunksZ = mCeil((%this.chunkZ2 - %this.chunkZ1) / %this.chunkSize);
+	%this.numChunks = %this.numChunksX * %this.numChunksY * %this.numChunksZ;
+
+	%this.currChunkX = 0;
+	%this.currChunkY = 0;
+	%this.currChunkZ = 0;
+	%this.currChunk = 0;
+
+	%this.trustFailCount = 0;
+	%this.superCutCount = 0;
+	%this.superCutDeleteCount = 0;
+	%this.superCutSimplifiedCount = 0;
+
+	//Process first tick
+	if($Pref::Server::ND::PlayMenuSounds)
+		messageClient(%this.client, 'MsgUploadStart', "");
+
+	%this.tickSuperCutChunk();
+}
+
+//Process all bricks in a chunk
+function ND_Selection::tickSuperCutChunk(%this)
+{
+	cancel(%this.superCutSchedule);
+
+	//Restore chunk variables (scopes and slow object fields suck)
+	%chunkSize = %this.chunkSize;
+	%currChunk = %this.currChunk;
+
+	%currChunkX = %this.currChunkX;
+	%currChunkY = %this.currChunkY;
+	%currChunkZ = %this.currChunkZ;
+
+	%numChunksX = %this.numChunksX;
+	%numChunksY = %this.numChunksY;
+	%numChunksZ = %this.numChunksZ;
+
+	%chunkX1 = %this.chunkX1;
+	%chunkY1 = %this.chunkY1;
+	%chunkZ1 = %this.chunkZ1;
+
+	%chunkX2 = %this.chunkX2;
+	%chunkY2 = %this.chunkY2;
+	%chunkZ2 = %this.chunkZ2;
+
+	//Variables for trust checks
+	%admin = %this.client.isAdmin;
+	%group = %this.client.brickGroup.getId();
+	%bl_id = %this.client.bl_id;
+
+	%chunksDone = 0;
+	%bricksFound = 0;
+	%trustFailCount = 0;
+
+	//Set variables for the fill brick function
+	$ND::FillBrickGroup = %group;
+	$ND::FillBrickClient = %this.client;
+	$ND::FillBrickBL_ID = %bl_id;
+
+	//Process chunks until we reach the brick or chunk limit
+	while(%chunksDone < 600 && %bricksFound < 20)
+	{
+		%chunksDone++;
+
+		//Calculate position and size of chunk
+		%x1 = %chunkX1 + (%currChunkX * %chunkSize) + 0.05;
+		%y1 = %chunkY1 + (%currChunkY * %chunkSize) + 0.05;
+		%z1 = %chunkZ1 + (%currChunkZ * %chunkSize) + 0.05;
+
+		%x2 = getMin(%chunkX2 - 0.05, %x1 + %chunkSize - 0.1);
+		%y2 = getMin(%chunkY2 - 0.05, %y1 + %chunkSize - 0.1);
+		%z2 = getMin(%chunkZ2 - 0.05, %z1 + %chunkSize - 0.1);
+
+		%size = %x2 - %x1 SPC %y2 - %y1 SPC %z2 - %z1;
+		%pos = vectorAdd(%x1 SPC %y1 SPC %z1, vectorScale(%size, 0.5));
+
+		//Process all new bricks found in this chunk
+		initContainerBoxSearch(%pos, %size, $TypeMasks::FxBrickAlwaysObjectType);
+
+		while(%obj = containerSearchNext())
+		{
+			%bricksFound++;
+
+			//Check trust
+			if(!ndTrustCheckModify(%obj, %group, %bl_id, %admin))
+			{
+				%trustFailCount++;
+				continue;
+			}
+
+			$ND::FillBrickColorID = %obj.colorID;
+			$ND::FillBrickColorFxID = %obj.colorFxID;
+
+			$ND::FillBrickRendering = %obj.isRendering();
+			$ND::FillBrickColliding = %obj.isColliding();
+			$ND::FillBrickRayCasting = %obj.isRayCasting();
+
+			%db = %obj.getDatablock();
+			%box = %obj.getWorldBox();
+			%boxX1 = getWord(%box, 0);
+			%boxY1 = getWord(%box, 1);
+			%boxZ1 = getWord(%box, 2);
+			%boxX2 = getWord(%box, 3);
+			%boxY2 = getWord(%box, 4);
+			%boxZ2 = getWord(%box, 5);
+			%obj.delete();
+
+			%deleted = true;
+			%cutCount++;
+
+			if((%boxX1 + 0.05) < %chunkX1)
+			{
+				ndFillAreaWithBricks(
+					%boxX1 SPC %boxY1 SPC %boxZ1,
+					%chunkX1 SPC %boxY2 SPC %boxZ2);
+
+				%deleted = false;
+			}
+
+			if((%boxX2 - 0.05) > %chunkX2)
+			{
+				ndFillAreaWithBricks(
+					%chunkX2 SPC %boxY1 SPC %boxZ1,
+					%boxX2 SPC %boxY2 SPC %boxZ2);
+
+				%deleted = false;
+			}
+
+			if((%boxY1 + 0.05) < %chunkY1)
+			{
+				ndFillAreaWithBricks(
+					getMax(%boxX1, %chunkX1) SPC %boxY1 SPC %boxZ1,
+					getMin(%boxX2, %chunkX2) SPC %chunkY1 SPC %boxZ2);
+
+				%deleted = false;
+			}
+
+			if((%boxY2 - 0.05) > %chunkY2)
+			{
+				ndFillAreaWithBricks(
+					getMax(%boxX1, %chunkX1) SPC %chunkY2 SPC %boxZ1,
+					getMin(%boxX2, %chunkX2) SPC %boxY2 SPC %boxZ2);
+
+				%deleted = false;
+			}
+
+			if((%boxZ1 + 0.05) < %chunkZ1)
+			{
+				ndFillAreaWithBricks(
+					getMax(%boxX1, %chunkX1) SPC getMax(%boxY1, %chunkY1) SPC %boxZ1,
+					getMin(%boxX2, %chunkX2) SPC getMin(%boxY2, %chunkY2) SPC %chunkZ1);
+
+				%deleted = false;
+			}
+
+			if((%boxZ2 - 0.05) > %chunkZ2)
+			{
+				ndFillAreaWithBricks(
+					getMax(%boxX1, %chunkX1) SPC getMax(%boxY1, %chunkY1) SPC %chunkZ2,
+					getMin(%boxX2, %chunkX2) SPC getMin(%boxY2, %chunkY2) SPC %boxZ2);
+
+				%deleted = false;
+			}
+
+			if(%deleted)
+				%deleteCount++;
+
+			if(!$ND::SimpleBrickData[%db] && !%deleted)
+				%simplifiedCount++;
+		}
+
+		//Set next chunk index or break
+		%currChunk++;
+
+		if(%currChunkX++ >= %numChunksX)
+		{
+			%currChunkX = 0;
+
+			if(%currChunkY++ >= %numChunksY)
+			{
+				%currChunkY = 0;
+
+				if(%currChunkZ++ >= %numChunksZ)
+				{
+					%searchComplete = true;
+					break;
+				}
+			}
+		}
+	}
+
+	//Save chunk variables (scopes and slow object fields suck)
+	%this.currChunk = %currChunk;
+
+	%this.currChunkX = %currChunkX;
+	%this.currChunkY = %currChunkY;
+	%this.currChunkZ = %currChunkZ;
+
+	%this.numChunksX = %numChunksX;
+	%this.numChunksY = %numChunksY;
+	%this.numChunksZ = %numChunksZ;
+
+	%this.trustFailCount += %trustFailCount;
+	%this.superCutCount += %cutCount;
+	%this.superCutDeleteCount += %deleteCount;
+	%this.superCutSimplifiedCount += %simplifiedCount;
+
+	//If all chunks have been searched, start processing
+	if(%searchComplete)
+	{
+		%this.finishSuperCut(%client);
+		return;
+	}
+
+	//Tell the client which chunks we just processed
+	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
+	{
+		%this.client.ndUpdateBottomPrint();
+		%this.client.ndLastMessageTime = $Sim::Time;
+	}
+
+	//Schedule next chunk
+	%this.superCutSchedule = %this.schedule(30, tickSuperCutChunk);
+}
+
+//Finish super cut
+function ND_Selection::finishSuperCut(%this)
+{
+	if($Pref::Server::ND::PlayMenuSounds)
+		messageClient(%this.client, 'MsgUploadEnd', "");
+
+	%s = %this.superCutCount == 1 ? "" : "s";
+	%msg = "<font:Verdana:20>\c6Modified \c3" @ %this.superCutCount @ "\c6 Brick" @ %s @ "!";
+
+	if(%this.superCutSimplifiedCount > 0)
+		%msg = %msg @ "\n<font:Verdana:17>\c3" @ %this.superCutSimplifiedCount @ "\c6 approximated.";
+
+	if(%this.superCutDeleteCount > 0)
+		%msg = %msg @ "\n<font:Verdana:17>\c3" @ %this.superCutDeleteCount @ "\c6 deleted completely.";
+
+	if(%this.trustFailCount > 0)
+		%msg = %msg @ "\n<font:Verdana:17>\c3" @ %this.trustFailCount @ "\c6 missing trust.";
+
+	commandToClient(%this.client, 'centerPrint', %msg, 12);
+	%this.client.ndSetMode(NDM_BoxSelect);
+}
+
+//Cancel super cut
+function ND_Selection::cancelSuperCut(%this)
+{
+	cancel(%this.superCutSchedule);
+	%this.deleteData();
+}
+
+
+
 //Ghost bricks
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

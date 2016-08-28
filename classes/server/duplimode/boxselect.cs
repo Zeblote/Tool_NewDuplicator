@@ -336,6 +336,28 @@ function NDM_BoxSelect::onCut(%this, %client)
 	%client.ndSelection.startCutting();
 }
 
+//Super-Cut selection
+function NDM_BoxSelect::onSuperCut(%this, %client)
+{
+	if(!isObject(%client.ndSelectionBox))
+		return;
+
+	//Prepare a selection to handle the callback
+	if(isObject(%client.ndSelection))
+		%client.ndSelection.deleteData();
+	else
+		%client.ndSelection = ND_Selection(%client);
+
+	if(!$ND::SimpleBrickTableCreated)
+		ndCreateSimpleBrickTable();
+
+	//Start super-cut
+	%box = %client.ndSelectionBox.getSize();
+
+	%client.ndSetMode(NDM_SuperCutProgress);
+	%client.ndSelection.startSuperCut(%box);
+}
+
 
 
 //Interface

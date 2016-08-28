@@ -449,3 +449,268 @@ function ndUnpack241_4(%subStr)
 		  strStr($ND::Byte241Lookup, getSubStr(%subStr, 2, 1)) *      241       +
 		  strStr($ND::Byte241Lookup, getSubStr(%subStr, 3, 1));
 }
+
+
+
+//Super-Cut helpers
+///////////////////////////////////////////////////////////////////////////
+
+//Creates simple brick lookup table
+function ndCreateSimpleBrickTable()
+{
+	deleteVariables("$ND::SimpleBrick*");
+	%max = getDatablockGroupSize();
+
+	%file = new FileObject();
+	%sorter = new GuiTextListCtrl();
+
+	for(%i = 0; %i < %max; %i++)
+	{
+		%db = getDatablock(%i);
+
+		if(%db.getClassName() $= "FxDtsBrickData")
+		{
+			//Skip zone bricks
+			if(%db.isWaterBrick)
+				continue;
+
+			%file.openForRead(%db.brickFile);
+
+			//Skip brick size
+			%file.readLine();
+
+			//We only want simple bricks here
+			if(%file.readLine() $= "BRICK")
+			{
+				//Skip brick sizes that we already have
+				if(!$ND::SimpleBrickBlock[%db.brickSizeX, %db.brickSizeY, %db.BrickSizeZ])
+				{
+					%sorter.addRow(%db, %db.getVolume());
+					$ND::SimpleBrickData[%db] = true;
+				}
+
+				$ND::SimpleBrickBlock[%db.brickSizeX, %db.brickSizeY, %db.BrickSizeZ] = true;
+			}
+
+			%file.close();
+		}
+	}
+
+	%file.delete();
+
+	//Sort the bricks by volume
+	%sorter.sortNumerical(0, 1);
+
+	//Copy sorted bricks to global variable array
+	$ND::SimpleBrickCount = %sorter.rowCount();
+	for(%i = 0; %i < $ND::SimpleBrickCount; %i++)
+	{
+		%db = %sorter.getRowId(%i);
+		%volume = %sorter.getRowText(%i);
+
+		$ND::SimpleBrick[%i] = %db;
+		$ND::SimpleBrickVolume[%i] = %volume;
+
+		//Ensure X < Y in lookup table
+		if(%db.brickSizeX <= %db.brickSizeY)
+		{
+			$ND::SimpleBrickSizeX[%i] = %db.brickSizeX;
+			$ND::SimpleBrickSizeY[%i] = %db.brickSizeY;
+			$ND::SimpleBrickRotated[%i] = false;
+		}
+		else
+		{
+			$ND::SimpleBrickSizeX[%i] = %db.brickSizeY;
+			$ND::SimpleBrickSizeY[%i] = %db.brickSizeX;
+			$ND::SimpleBrickRotated[%i] = true;
+		}
+
+		$ND::SimpleBrickSizeZ[%i] = %db.brickSizeZ;
+	}
+
+	%sorter.delete();
+	$ND::SimpleBrickTableCreated = true;
+}
+
+//Find the largest (volume) brick that fits inside the area
+function ndGetLargestBrickId(%x, %y, %z)
+{
+	if(!$ND::SimpleBrickTableCreated)
+		ndCreateSimpleBrickTable();
+
+	%maxVolume = %x * %y * %z;
+	%start = $ND::SimpleBrickCount - 1;
+
+	if($ND::SimpleBrickVolume[%start] > %maxVolume)
+	{
+		//Use binary search to find the largest volume that
+		//is smaller or equal to the volume of the area
+		%bound1 = 0;
+		%bound2 = %start;
+
+		while(%bound1 < %bound2)
+		{
+			%i = mCeil((%bound1 + %bound2) / 2);
+			%volume = $ND::SimpleBrickVolume[%i];
+
+			if(%volume > %maxVolume)
+			{
+				%bound2 = %i - 1;
+				continue;
+			}
+
+			if(%volume <= %maxVolume)
+			{
+				%bound1 = %i + 1;
+				continue;
+			}
+		}
+
+		%start = %bound2;
+	}
+
+	//Go down the list until a brick fits on all 3 axis
+	for(%i = %start; %i >= 0; %i--)
+	{
+		if($ND::SimpleBrickSizeX[%i] <= %x
+		&& $ND::SimpleBrickSizeY[%i] <= %y
+		&& $ND::SimpleBrickSizeZ[%i] <= %z)
+			return %i;
+	}
+
+	return -1;
+}
+
+//Fill an area with bricks
+function ndFillAreaWithBricks(%pos1, %pos2)
+{
+	%pos1_x = getWord(%pos1, 0);
+	%pos1_y = getWord(%pos1, 1);
+	%pos1_z = getWord(%pos1, 2);
+
+	%pos2_x = getWord(%pos2, 0);
+	%pos2_y = getWord(%pos2, 1);
+	%pos2_z = getWord(%pos2, 2);
+
+	%size_x = %pos2_x - %pos1_x;
+	%size_y = %pos2_y - %pos1_y;
+	%size_z = %pos2_z - %pos1_z;
+
+	if(%size_x > %size_y)
+	{
+		%tmp = %size_y;
+		%size_y = %size_x;
+		%size_x = %tmp;
+		%rotated = true;
+	}
+
+	%brickId = ndGetLargestBrickId(%size_x * 2 + 0.05, %size_y * 2 + 0.05, %size_z * 5 + 0.02);
+	%rotated = %rotated ^ $ND::SimpleBrickRotated[%brickId];
+
+	if(!%rotated)
+	{
+		%pos3_x = %pos1_x + $ND::SimpleBrickSizeX[%brickId] / 2;
+		%pos3_y = %pos1_y + $ND::SimpleBrickSizeY[%brickId] / 2;
+	}
+	else
+	{
+		%pos3_x = %pos1_x + $ND::SimpleBrickSizeY[%brickId] / 2;
+		%pos3_y = %pos1_y + $ND::SimpleBrickSizeX[%brickId] / 2;
+	}
+
+	%pos3_z = %pos1_z + $ND::SimpleBrickSizeZ[%brickId] / 5;
+	%plantPos = (%pos1_x + %pos3_x) / 2 SPC (%pos1_y + %pos3_y) / 2 SPC (%pos1_z + %pos3_z) / 2;
+
+	if(!isObject($ND::SimpleBrick[%brickId]))
+	{
+		error("did not find matching brick!!!!");
+		talk("did not find matching brick!!!!");
+		return;
+	}
+
+	%brick = new FxDTSBrick()
+	{
+		datablock = $ND::SimpleBrick[%brickId];
+		isPlanted = true;
+		client = $ND::FillBrickClient;
+
+		position = %plantPos;
+		rotation = %rotated ? "0 0 1 90.0002" : "1 0 0 0";
+		angleID = %rotated;
+
+		colorID = $ND::FillBrickColorID;
+		colorFxID = $ND::FillBrickColorFxID;
+
+		printID = 0;
+	};
+
+	//This will call ::onLoadPlant instead of ::onPlant
+	%prev1 = $Server_LoadFileObj;
+	%prev2 = $LastLoadedBrick;
+	$Server_LoadFileObj = %brick;
+	$LastLoadedBrick = %brick;
+
+	//Add to brickgroup
+	$ND::FillBrickGroup.add(%brick);
+
+	//Attempt plant
+	%error = %brick.plant();
+
+	//Restore variable
+	$Server_LoadFileObj = %prev1;
+	$LastLoadedBrick = %prev2;
+
+	if(%error && %error != 2)
+	{
+		error("did not plant brick!!!!");
+		talk("did not plant brick!!!!");
+		%brick.delete();
+	}
+	else
+	{
+		//Set trusted
+		if(%brick.getNumDownBricks())
+			%brick.stackBL_ID = %brick.getDownBrick(0).stackBL_ID;
+		else if(%brick.getNumUpBricks())
+			%brick.stackBL_ID = %brick.getUpBrick(0).stackBL_ID;
+		else
+			%brick.stackBL_ID = $ND::FillBrickBL_ID;
+
+		%brick.trustCheckFinished();
+	}
+
+	%brick.setRendering($ND::FillBrickRendering);
+	%brick.setColliding($ND::FillBrickColliding);
+	%brick.setRayCasting($ND::FillBrickRayCasting);
+
+	if((%pos3_x + 0.05) < %pos2_x)
+		ndFillAreaWithBricks(%pos3_x SPC %pos1_y SPC %pos1_z, %pos2_x SPC %pos2_y SPC %pos2_z);
+
+	if((%pos3_y + 0.05) < %pos2_y)
+		ndFillAreaWithBricks(%pos1_x SPC %pos3_y SPC %pos1_z, %pos3_x SPC %pos2_y SPC %pos2_z);
+
+	if((%pos3_z + 0.02) < %pos2_z)
+		ndFillAreaWithBricks(%pos1_x SPC %pos1_y SPC %pos3_z, %pos3_x SPC %pos3_y SPC %pos2_z);
+
+}
+
+function servercmdfillbricks(%client)
+{
+	if(!isObject(%client.ndSelectionBox))
+		return;
+
+	//Set variables for the fill brick function
+	$ND::FillBrickGroup = %client.brickGroup;
+	$ND::FillBrickClient = %client;
+	$ND::FillBrickBL_ID = %client.bl_id;
+
+	$ND::FillBrickColorID = %client.currentColor;
+	$ND::FillBrickColorFxID = 0;
+
+	$ND::FillBrickRendering = true;
+	$ND::FillBrickColliding = true;
+	$ND::FillBrickRayCasting = true;
+	
+	%box = %client.ndSelectionBox.getSize();
+	ndFillAreaWithBricks(getWords(%box, 0, 2), getWords(%box, 3, 5));
+}

@@ -260,6 +260,45 @@ function serverCmdCut(%client)
 	serverCmdNdCut(%client);
 }
 
+//Super-Cut selection
+function serverCmdSuperCut(%client)
+{
+	if(%client.ndModeIndex != $NDM::BoxSelect)
+	{
+		messageClient(%client, '', "\c6Super-Cut can only be used on box selection mode.");
+		return;
+	}
+
+	if(!isObject(%client.ndSelectionBox))
+	{
+		messageClient(%client, '', "\c6Super-Cut can only be used with a selection box.");
+		return;
+	}
+
+	commandToClient(%client, 'messageBoxOkCancel', "New Duplicator | Super-Cut",
+		"Super-Cut is destructive and does\nNOT support undo at this time." @
+		"\n\nPlease make sure the box is correct,\nthen press OK below.",
+		'ndConfirmSuperCut');
+}
+
+//Confirm Super-Cut selection
+function serverCmdNdConfirmSuperCut(%client)
+{
+	if(%client.ndModeIndex != $NDM::BoxSelect)
+	{
+		messageClient(%client, '', "\c6Super-Cut can only be used on box selection mode.");
+		return;
+	}
+
+	if(!isObject(%client.ndSelectionBox))
+	{
+		messageClient(%client, '', "\c6Super-Cut can only be used with a selection box.");
+		return;
+	}
+
+	%client.ndMode.onSuperCut(%client);
+}
+
 //MultiSelect toggle (ctrl)
 function serverCmdNdMultiSelect(%client, %bool)
 {

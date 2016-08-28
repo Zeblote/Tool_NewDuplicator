@@ -27,6 +27,10 @@ function ndRegisterKeybinds()
 	$RemapCmd[$RemapCount]      = "ndInputCut";
 	$RemapCount++;
 
+	$RemapName[$RemapCount]     = "Super-Cut Bricks (Shift-Ctrl X)";
+	$RemapCmd[$RemapCount]      = "ndInputSuperCut";
+	$RemapCount++;
+
 	$RemapName[$RemapCount]     = "Multiselect (Ctrl, Hold to use)";
 	$RemapCmd[$RemapCount]      = "ndInputMultiSelect";
 	$RemapCount++;
@@ -78,6 +82,9 @@ function clientCmdNdEnableKeybinds(%bool)
 		if(MoveMap.getBinding("ndInputCut") $= "")
 			%map.bind("keyboard", isWindows() ? "ctrl x" : "cmd x", "ndInputCut");
 
+		if(MoveMap.getBinding("ndInputSuperCut") $= "")
+			%map.bind("keyboard", isWindows() ? "shift-ctrl x" : "shift-cmd x", "ndInputSuperCut");
+
 		if(MoveMap.getBinding("ndInputMultiSelect") $= "")
 			%map.bind("keyboard", isWindows() ? "lcontrol" : "cmd", "ndInputMultiSelect");
 
@@ -97,6 +104,7 @@ function ndInputNewDuplicator   (%bool) {if(!%bool)return; commandToServer('newD
 function ndInputCopy            (%bool) {if(!%bool)return; commandToServer('ndCopy'          );}
 function ndInputPaste           (%bool) {if(!%bool)return; commandToServer('ndPaste'         );}
 function ndInputCut             (%bool) {if(!%bool)return; commandToServer('ndCut'           );}
+function ndInputSuperCut        (%bool) {if(!%bool)return; commandToServer('superCut'        );}
 function ndInputFillWrench      (%bool) {if(!%bool)return; commandToServer('fillWrench'      );}
 function ndInputForcePlant      (%bool) {if(!%bool)return; commandToServer('forcePlant'      );}
 function ndInputToggleForcePlant(%bool) {if(!%bool)return; commandToServer('toggleForcePlant');}

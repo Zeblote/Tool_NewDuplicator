@@ -4,7 +4,7 @@
 // *    NDM_BoxSelectProgress
 // *
 // *    -------------------------------------------------------------------
-// *    Handles inputs for stack selection mode (in progress)
+// *    Handles inputs for box selection mode (in progress)
 // *
 // * ######################################################################
 

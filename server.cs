@@ -42,6 +42,7 @@ exec($ND::ClassPath @ "server/duplimode/plantcopyprogress.cs");
 exec($ND::ClassPath @ "server/duplimode/saveprogress.cs");
 exec($ND::ClassPath @ "server/duplimode/stackselect.cs");
 exec($ND::ClassPath @ "server/duplimode/stackselectprogress.cs");
+exec($ND::ClassPath @ "server/duplimode/supercutprogress.cs");
 exec($ND::ClassPath @ "server/duplimode/wrenchprogress.cs");
 
 echo(" \n--- Loading Server Scripts ---");

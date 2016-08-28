@@ -62,6 +62,7 @@ $NDM::PlantCopyProgress   =  9;
 $NDM::WrenchProgress      = 10;
 $NDM::SaveProgress        = 11;
 $NDM::LoadProgress        = 12;
+$NDM::SuperCutProgress    = 13;
 
 //Create all the pseudo-classes to handle callbacks
 function ndRegisterDuplicatorModes()
@@ -243,6 +244,20 @@ function ndRegisterDuplicatorModes()
 			class = "NewDuplicatorMode";
 			index = $NDM::LoadProgress;
 			image = "any";
+			spin = true;
+
+			allowSelecting = false;
+			allowUnMount   = false;
+		}
+	);
+
+	//Super-Cut Progress duplicator mode
+	ND_ServerGroup.add(
+		new ScriptObject(NDM_SuperCutProgress)
+		{
+			class = "NewDuplicatorMode";
+			index = $NDM::SuperCutProgress;
+			image = "ND_Image_Box";
 			spin = true;
 
 			allowSelecting = false;
