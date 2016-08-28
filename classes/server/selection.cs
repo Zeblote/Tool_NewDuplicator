@@ -1384,6 +1384,8 @@ function ND_Selection::tickSuperCutChunk(%this)
 	$ND::FillBrickGroup = %group;
 	$ND::FillBrickClient = %this.client;
 	$ND::FillBrickBL_ID = %bl_id;
+	
+	ndUpdateSpawnedClientList();
 
 	//Process chunks until we reach the brick or chunk limit
 	while(%chunksDone < 600 && %bricksFound < 20)
@@ -1596,18 +1598,7 @@ function ND_Selection::spawnGhostBricks(%this, %position, %angleID)
 	%this.ghostGroup = ND_GhostGroup();
 
 	//Scoping is broken for ghost bricks, make temp list of spawned clients to use later
-	%numClients = 0;
-
-	for(%i = 0; %i < ClientGroup.getCount(); %i++)
-	{
-		%cl = ClientGroup.getObject(%i);
-
-		if(%cl.hasSpawnedOnce)
-		{
-			%client[%numClients] = %cl;
-			%numClients++;
-		}
-	}
+	ndUpdateSpawnedClientList();
 
 	//Figure out correct increment to spawn no more than the max number of ghost bricks
 	%max = %this.brickCount;
@@ -1667,8 +1658,8 @@ function ND_Selection::spawnGhostBricks(%this, %position, %angleID)
 		%ghostGroup.add(%brick);
 
 		//Scope ghost brick to all clients we found earlier
-		for(%j = 0; %j < %numClients; %j++)
-			%brick.scopeToClient(%client[%j]);
+		for(%j = 0; %j < $ND::NumSpawnedClients; %j++)
+			%brick.scopeToClient($ND::SpawnedClient[%j]);
 	}
 
 	//Update variables

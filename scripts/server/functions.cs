@@ -218,6 +218,23 @@ function ndTrustCheckModify(%obj, %group2, %bl_id, %admin)
 //General stuff
 ///////////////////////////////////////////////////////////////////////////
 
+//Setup list of spawned clients
+function ndUpdateSpawnedClientList()
+{
+	$ND::NumSpawnedClients = 0;
+
+	for(%i = 0; %i < ClientGroup.getCount(); %i++)
+	{
+		%cl = ClientGroup.getObject(%i);
+
+		if(%cl.hasSpawnedOnce)
+		{
+			$ND::SpawnedClient[$ND::NumSpawnedClients] = %cl;
+			$ND::NumSpawnedClients++;
+		}
+	}
+}
+
 //Applies mirror effect to a single ghost brick
 function FxDtsBrick::ndMirrorGhost(%brick, %client, %axis)
 {
@@ -683,6 +700,14 @@ function ndFillAreaWithBricks(%pos1, %pos2)
 	%brick.setColliding($ND::FillBrickColliding);
 	%brick.setRayCasting($ND::FillBrickRayCasting);
 
+	//Instantly ghost the brick to all spawned clients (wow hacks)
+	for(%j = 0; %j < $ND::NumSpawnedClients; %j++)
+	{
+		%cl = $ND::SpawnedClient[%i];
+		%brick.scopeToClient(%cl);
+		%brick.clearScopeToClient(%cl);
+	}
+
 	if((%pos3_x + 0.05) < %pos2_x)
 		ndFillAreaWithBricks(%pos3_x SPC %pos1_y SPC %pos1_z, %pos2_x SPC %pos2_y SPC %pos2_z);
 
@@ -710,7 +735,9 @@ function servercmdfillbricks(%client)
 	$ND::FillBrickRendering = true;
 	$ND::FillBrickColliding = true;
 	$ND::FillBrickRayCasting = true;
-	
+
 	%box = %client.ndSelectionBox.getSize();
+
+	ndUpdateSpawnedClientList();
 	ndFillAreaWithBricks(getWords(%box, 0, 2), getWords(%box, 3, 5));
 }
