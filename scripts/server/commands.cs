@@ -282,7 +282,7 @@ function serverCmdSuperCut(%client)
 	}
 
 	commandToClient(%client, 'messageBoxOkCancel', "New Duplicator | Super-Cut",
-		"Super-Cut is destructive and does\nNOT support undo at this time." @
+		"Super-Cut is destructive and does\nNOT support undo at all." @
 		"\n\nPlease make sure the box is correct,\nthen press OK below.",
 		'ndConfirmSuperCut');
 }
@@ -314,9 +314,21 @@ function serverCmdNdConfirmSuperCut(%client)
 //Fill volume with bricks
 function serverCmdFillBricks(%client)
 {
+	if($Pref::Server::ND::FillBricksAdminOnly && !%client.isAdmin)
+	{
+		messageClient(%client, '', "\c6Fill Bricks is admin only. Ask an admin for help.");
+		return;
+	}
+
 	if(!isObject(%client.ndSelectionBox))
 	{
 		messageClient(%client, '', "\c6The fillBricks can only be used with a selection box.");
+		return;
+	}
+
+	if(%client.ndSelectionAvailable)
+	{
+		messageClient(%client, '', "\c6Super-Cut can not be used with any bricks selected.");
 		return;
 	}
 
@@ -333,6 +345,7 @@ function serverCmdFillBricks(%client)
 
 	$ND::FillBrickColorID = %client.currentColor;
 	$ND::FillBrickColorFxID = 0;
+	$ND::FillBrickShapeFxID = 0;
 
 	$ND::FillBrickRendering = true;
 	$ND::FillBrickColliding = true;
@@ -340,9 +353,16 @@ function serverCmdFillBricks(%client)
 
 	%box = %client.ndSelectionBox.getSize();
 
+	$ND::FillBrickCount = 0;
 	ndUpdateSpawnedClientList();
 	ndFillAreaWithBricks(getWords(%box, 0, 2), getWords(%box, 3, 5));
+
+	%s = ($ND::FillBrickCount == 1 ? "" : "s");
+	messageClient(%client, '', "\c6Filled in \c3" @ $ND::FillBrickCount @ "\c6 brick" @ %s);
 }
+
+//Alternative short command
+function serverCmdFB(%client){serverCmdFillBricks(%client);}
 
 
 //MultiSelect toggle (ctrl)
@@ -383,6 +403,7 @@ function serverCmdMirrorZ(%client)
 	%client.ndMirror(2);
 }
 
+//Alternative short commands
 function serverCmdMX(%client){serverCmdMirrorX(%client);}
 function serverCmdMY(%client){serverCmdMirrorY(%client);}
 function serverCmdMZ(%client){serverCmdMirrorZ(%client);}

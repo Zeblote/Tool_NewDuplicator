@@ -32,7 +32,7 @@ function ndRegisterRTBPrefs()
 	RTB_registerPref("Floating Bricks Admin Only",  "New Duplicator | Limits",   "$Pref::Server::ND::FloatAdminOnly",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
 	RTB_registerPref("Save Admin Only",             "New Duplicator | Limits",   "$Pref::Server::ND::SaveAdminOnly",       "bool",             "Tool_NewDuplicator", true,    false, false, "");
 	RTB_registerPref("Load Admin Only",             "New Duplicator | Limits",   "$Pref::Server::ND::LoadAdminOnly",       "bool",             "Tool_NewDuplicator", false,   false, false, "");
-	RTB_registerPref("Client Load Admin Only",      "New Duplicator | Limits",   "$Pref::Server::ND::ClientLoadAdminOnly", "bool",             "Tool_NewDuplicator", true,    false, false, "");
+	RTB_registerPref("Fill Bricks Admin Only",      "New Duplicator | Limits",   "$Pref::Server::ND::FillBricksAdminOnly", "bool",             "Tool_NewDuplicator", true,    false, false, "");
 
 	//Settings
 	RTB_RegisterPref("Trust Limit",                 "New Duplicator | Settings", "$Pref::Server::ND::TrustLimit",          %trustDropDown,     "Tool_NewDuplicator", 2,       false, false, "");
@@ -74,7 +74,7 @@ function ndExtendDefaultPrefs()
 	if($Pref::Server::ND::FloatAdminOnly      $= "") $Pref::Server::ND::FloatAdminOnly      = true;
 	if($Pref::Server::ND::SaveAdminOnly       $= "") $Pref::Server::ND::SaveAdminOnly       = true;
 	if($Pref::Server::ND::LoadAdminOnly       $= "") $Pref::Server::ND::LoadAdminOnly       = false;
-	if($Pref::Server::ND::ClientLoadAdminOnly $= "") $Pref::Server::ND::ClientLoadAdminOnly = true;
+	if($Pref::Server::ND::FillBricksAdminOnly $= "") $Pref::Server::ND::FillBricksAdminOnly = true;
 
 	//Settings
 	if($Pref::Server::ND::TrustLimit          $= "") $Pref::Server::ND::TrustLimit          = 2;
@@ -117,7 +117,7 @@ function ndApplyDefaultPrefs(%this)
 	$Pref::Server::ND::FloatAdminOnly      = true;
 	$Pref::Server::ND::SaveAdminOnly       = true;
 	$Pref::Server::ND::LoadAdminOnly       = false;
-	$Pref::Server::ND::ClientLoadAdminOnly = true;
+	$Pref::Server::ND::FillBricksAdminOnly = true;
 
 	//Settings
 	$Pref::Server::ND::TrustLimit          = 2;

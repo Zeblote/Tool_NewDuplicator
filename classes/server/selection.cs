@@ -1336,8 +1336,7 @@ function ND_Selection::startSuperCut(%this, %box)
 
 	%this.trustFailCount = 0;
 	%this.superCutCount = 0;
-	%this.superCutDeleteCount = 0;
-	%this.superCutSimplifiedCount = 0;
+	%this.superCutPlacedCount = 0;
 
 	//Process first tick
 	if($Pref::Server::ND::PlayMenuSounds)
@@ -1378,12 +1377,13 @@ function ND_Selection::tickSuperCutChunk(%this)
 
 	%chunksDone = 0;
 	%bricksFound = 0;
+	%bricksPlanted = 0;
 	%trustFailCount = 0;
 
 	ndUpdateSpawnedClientList();
 
 	//Process chunks until we reach the brick or chunk limit
-	while(%chunksDone < 600 && %bricksFound < 100)
+	while(%chunksDone < 600 && %bricksFound < 1000 && %bricksPlanted < 300)
 	{
 		%chunksDone++;
 
@@ -1423,6 +1423,7 @@ function ND_Selection::tickSuperCutChunk(%this)
 
 			$ND::FillBrickColorID = %obj.colorID;
 			$ND::FillBrickColorFxID = %obj.colorFxID;
+			$ND::FillBrickShapeFxID = %obj.shapeFxID;
 
 			$ND::FillBrickRendering = %obj.isRendering();
 			$ND::FillBrickColliding = %obj.isColliding();
@@ -1441,13 +1442,13 @@ function ND_Selection::tickSuperCutChunk(%this)
 			%deleted = true;
 			%cutCount++;
 
+			$ND::FillBrickCount = 0;
+
 			if((%boxX1 + 0.05) < %chunkX1)
 			{
 				ndFillAreaWithBricks(
 					%boxX1 SPC %boxY1 SPC %boxZ1,
 					%chunkX1 SPC %boxY2 SPC %boxZ2);
-
-				%deleted = false;
 			}
 
 			if((%boxX2 - 0.05) > %chunkX2)
@@ -1455,8 +1456,6 @@ function ND_Selection::tickSuperCutChunk(%this)
 				ndFillAreaWithBricks(
 					%chunkX2 SPC %boxY1 SPC %boxZ1,
 					%boxX2 SPC %boxY2 SPC %boxZ2);
-
-				%deleted = false;
 			}
 
 			if((%boxY1 + 0.05) < %chunkY1)
@@ -1464,8 +1463,6 @@ function ND_Selection::tickSuperCutChunk(%this)
 				ndFillAreaWithBricks(
 					getMax(%boxX1, %chunkX1) SPC %boxY1 SPC %boxZ1,
 					getMin(%boxX2, %chunkX2) SPC %chunkY1 SPC %boxZ2);
-
-				%deleted = false;
 			}
 
 			if((%boxY2 - 0.05) > %chunkY2)
@@ -1473,8 +1470,6 @@ function ND_Selection::tickSuperCutChunk(%this)
 				ndFillAreaWithBricks(
 					getMax(%boxX1, %chunkX1) SPC %chunkY2 SPC %boxZ1,
 					getMin(%boxX2, %chunkX2) SPC %boxY2 SPC %boxZ2);
-
-				%deleted = false;
 			}
 
 			if((%boxZ1 + 0.05) < %chunkZ1)
@@ -1482,8 +1477,6 @@ function ND_Selection::tickSuperCutChunk(%this)
 				ndFillAreaWithBricks(
 					getMax(%boxX1, %chunkX1) SPC getMax(%boxY1, %chunkY1) SPC %boxZ1,
 					getMin(%boxX2, %chunkX2) SPC getMin(%boxY2, %chunkY2) SPC %chunkZ1);
-
-				%deleted = false;
 			}
 
 			if((%boxZ2 - 0.05) > %chunkZ2)
@@ -1491,15 +1484,9 @@ function ND_Selection::tickSuperCutChunk(%this)
 				ndFillAreaWithBricks(
 					getMax(%boxX1, %chunkX1) SPC getMax(%boxY1, %chunkY1) SPC %chunkZ2,
 					getMin(%boxX2, %chunkX2) SPC getMin(%boxY2, %chunkY2) SPC %boxZ2);
-
-				%deleted = false;
 			}
 
-			if(%deleted)
-				%deleteCount++;
-
-			if(!$ND::SimpleBrickData[%db] && !%deleted)
-				%simplifiedCount++;
+			%bricksPlanted += $ND::FillBrickCount;
 		}
 
 		//Set next chunk index or break
@@ -1535,8 +1522,7 @@ function ND_Selection::tickSuperCutChunk(%this)
 
 	%this.trustFailCount += %trustFailCount;
 	%this.superCutCount += %cutCount;
-	%this.superCutDeleteCount += %deleteCount;
-	%this.superCutSimplifiedCount += %simplifiedCount;
+	%this.superCutPlacedCount += %bricksPlanted;
 
 	//If all chunks have been searched, start processing
 	if(%searchComplete)
@@ -1563,13 +1549,11 @@ function ND_Selection::finishSuperCut(%this)
 		messageClient(%this.client, 'MsgUploadEnd', "");
 
 	%s = %this.superCutCount == 1 ? "" : "s";
-	%msg = "<font:Verdana:20>\c6Modified \c3" @ %this.superCutCount @ "\c6 Brick" @ %s @ "!";
+	%msg = "<font:Verdana:20>\c6Deleted \c3" @ %this.superCutCount @ "\c6 Brick" @ %s @ "!";
 
-	if(%this.superCutSimplifiedCount > 0)
-		%msg = %msg @ "\n<font:Verdana:17>\c3" @ %this.superCutSimplifiedCount @ "\c6 approximated.";
-
-	if(%this.superCutDeleteCount > 0)
-		%msg = %msg @ "\n<font:Verdana:17>\c3" @ %this.superCutDeleteCount @ "\c6 deleted completely.";
+	%s = %this.superCutPlacedCount == 1 ? "" : "s";
+	if(%this.superCutPlacedCount > 0)
+		%msg = %msg @ "\n<font:Verdana:17>\c6Placed \c3" @ %this.superCutPlacedCount @ "\c6 new one" @ %s @ ".";
 
 	if(%this.trustFailCount > 0)
 		%msg = %msg @ "\n<font:Verdana:17>\c3" @ %this.trustFailCount @ "\c6 missing trust.";

@@ -660,6 +660,7 @@ function ndFillAreaWithBricks(%pos1, %pos2)
 
 		colorID = $ND::FillBrickColorID;
 		colorFxID = $ND::FillBrickColorFxID;
+		shapeFxID = $ND::FillBrickShapeFxID;
 
 		printID = 0;
 	};
@@ -696,18 +697,20 @@ function ndFillAreaWithBricks(%pos1, %pos2)
 			%brick.stackBL_ID = $ND::FillBrickBL_ID;
 
 		%brick.trustCheckFinished();
-	}
 
-	%brick.setRendering($ND::FillBrickRendering);
-	%brick.setColliding($ND::FillBrickColliding);
-	%brick.setRayCasting($ND::FillBrickRayCasting);
+		%brick.setRendering($ND::FillBrickRendering);
+		%brick.setColliding($ND::FillBrickColliding);
+		%brick.setRayCasting($ND::FillBrickRayCasting);
 
-	//Instantly ghost the brick to all spawned clients (wow hacks)
-	for(%j = 0; %j < $ND::NumSpawnedClients; %j++)
-	{
-		%cl = $ND::SpawnedClient[%j];
-		%brick.scopeToClient(%cl);
-		%brick.clearScopeToClient(%cl);
+		//Instantly ghost the brick to all spawned clients (wow hacks)
+		for(%j = 0; %j < $ND::NumSpawnedClients; %j++)
+		{
+			%cl = $ND::SpawnedClient[%j];
+			%brick.scopeToClient(%cl);
+			%brick.clearScopeToClient(%cl);
+		}
+
+		$ND::FillBrickCount++;
 	}
 
 	if((%pos3_x + 0.05) < %pos2_x)
