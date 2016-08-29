@@ -251,7 +251,10 @@ function NDM_BoxSelect::onRotateBrick(%this, %client, %direction)
 		return;
 	}
 
-	%client.ndSelectionBox.switchCorner();
+	if(!%client.ndMultiSelect)
+		%client.ndSelectionBox.switchCorner();
+	else
+		%client.ndSelectionBox.rotate(%direction);
 }
 
 //Plant Brick

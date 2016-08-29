@@ -418,10 +418,44 @@ function ND_SelectionBox::shiftCorner(%this, %offset, %limit)
 //Move the entire box
 function ND_SelectionBox::shift(%this, %offset)
 {
-	%size = %this.getSize();
-
-	%this.point1 = vectorAdd(getWords(%size, 0, 2), %offset);
-	%this.point2 = vectorAdd(getWords(%size, 3, 5), %offset);
+	%this.point1 = vectorAdd(%this.point1, %offset);
+	%this.point2 = vectorAdd(%this.point2, %offset);
 
 	%this.setSize(%this.point1, %this.point2);
+}
+
+//Rotate the entire box
+function ND_SelectionBox::rotate(%this, %direction)
+{
+	%point1 = %this.point1;
+	%point2 = %this.point2;
+	%center = vectorScale(vectorAdd(%point1, %point2), 0.5);
+
+	%brickSizeX = mAbs(mFloatLength((getWord(%point2, 0) - getWord(%point1, 0)) * 2, 0));
+	%brickSizeY = mAbs(mFloatLength((getWord(%point2, 1) - getWord(%point1, 1)) * 2, 0));
+
+	%shiftCorrect = "0 0 0";
+
+	if((%brickSizeX % 2) != (%brickSizeY % 2))
+	{
+		if(%brickSizeX % 2)
+			%shiftCorrect = "-0.25 -0.25 0";
+		else
+			%shiftCorrect = "0.25 0.25 0";
+	}
+
+	%point1 = vectorAdd(ndRotateVector(vectorSub(%point1, %center), %direction), %center);
+	%point2 = vectorAdd(ndRotateVector(vectorSub(%point2, %center), %direction), %center);
+	%this.setSize(vectorAdd(%point1, %shiftCorrect), vectorAdd(%point2, %shiftCorrect));
+}
+
+//Check if the box has a volume
+function ND_SelectionBox::hasVolume(%this)
+{
+	if(mAbs(getWord(%this.point1, 0) - getWord(%this.point2, 0)) < 0.05
+	|| mAbs(getWord(%this.point1, 1) - getWord(%this.point2, 1)) < 0.05
+	|| mAbs(getWord(%this.point1, 2) - getWord(%this.point2, 2)) < 0.05)
+		return false;
+
+	return true;
 }
