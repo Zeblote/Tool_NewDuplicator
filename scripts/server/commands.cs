@@ -275,6 +275,12 @@ function serverCmdSuperCut(%client)
 		return;
 	}
 
+	if(%client.ndSelectionAvailable)
+	{
+		messageClient(%client, '', "\c6Super-Cut can not be used with any bricks selected.");
+		return;
+	}
+
 	commandToClient(%client, 'messageBoxOkCancel', "New Duplicator | Super-Cut",
 		"Super-Cut is destructive and does\nNOT support undo at this time." @
 		"\n\nPlease make sure the box is correct,\nthen press OK below.",
@@ -296,8 +302,48 @@ function serverCmdNdConfirmSuperCut(%client)
 		return;
 	}
 
+	if(%client.ndSelectionAvailable)
+	{
+		messageClient(%client, '', "\c6Super-Cut can not be used with any bricks selected.");
+		return;
+	}
+
 	%client.ndMode.onSuperCut(%client);
 }
+
+//Fill volume with bricks
+function serverCmdFillBricks(%client)
+{
+	if(!isObject(%client.ndSelectionBox))
+	{
+		messageClient(%client, '', "\c6The fillBricks can only be used with a selection box.");
+		return;
+	}
+
+	if(!%client.ndSelectionBox.hasVolume())
+	{
+		messageClient(%client, '', "\c6The fillBricks can only be used with a selection box that has a volume.");
+		return;
+	}
+
+	//Set variables for the fill brick function
+	$ND::FillBrickGroup = %client.brickGroup;
+	$ND::FillBrickClient = %client;
+	$ND::FillBrickBL_ID = %client.bl_id;
+
+	$ND::FillBrickColorID = %client.currentColor;
+	$ND::FillBrickColorFxID = 0;
+
+	$ND::FillBrickRendering = true;
+	$ND::FillBrickColliding = true;
+	$ND::FillBrickRayCasting = true;
+
+	%box = %client.ndSelectionBox.getSize();
+
+	ndUpdateSpawnedClientList();
+	ndFillAreaWithBricks(getWords(%box, 0, 2), getWords(%box, 3, 5));
+}
+
 
 //MultiSelect toggle (ctrl)
 function serverCmdNdMultiSelect(%client, %bool)

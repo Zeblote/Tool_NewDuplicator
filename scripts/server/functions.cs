@@ -613,6 +613,9 @@ function ndFillAreaWithBricks(%pos1, %pos2)
 	%size_y = %pos2_y - %pos1_y;
 	%size_z = %pos2_z - %pos1_z;
 
+	if(%size_x < 0.05 || %size_y < 0.05 || %size_z < 0.05)
+		return;
+
 	if(%size_x > %size_y)
 	{
 		%tmp = %size_y;
@@ -679,8 +682,7 @@ function ndFillAreaWithBricks(%pos1, %pos2)
 
 	if(%error && %error != 2)
 	{
-		error("did not plant brick!!!!");
-		talk("did not plant brick!!!!");
+		talk("Failed to plant brick: " @ $ND::SimpleBrick[%brickId].getName() @ " at position " @ %plantPos);
 		%brick.delete();
 	}
 	else
@@ -703,7 +705,7 @@ function ndFillAreaWithBricks(%pos1, %pos2)
 	//Instantly ghost the brick to all spawned clients (wow hacks)
 	for(%j = 0; %j < $ND::NumSpawnedClients; %j++)
 	{
-		%cl = $ND::SpawnedClient[%i];
+		%cl = $ND::SpawnedClient[%j];
 		%brick.scopeToClient(%cl);
 		%brick.clearScopeToClient(%cl);
 	}
@@ -717,27 +719,4 @@ function ndFillAreaWithBricks(%pos1, %pos2)
 	if((%pos3_z + 0.02) < %pos2_z)
 		ndFillAreaWithBricks(%pos1_x SPC %pos1_y SPC %pos3_z, %pos3_x SPC %pos3_y SPC %pos2_z);
 
-}
-
-function servercmdfillbricks(%client)
-{
-	if(!isObject(%client.ndSelectionBox))
-		return;
-
-	//Set variables for the fill brick function
-	$ND::FillBrickGroup = %client.brickGroup;
-	$ND::FillBrickClient = %client;
-	$ND::FillBrickBL_ID = %client.bl_id;
-
-	$ND::FillBrickColorID = %client.currentColor;
-	$ND::FillBrickColorFxID = 0;
-
-	$ND::FillBrickRendering = true;
-	$ND::FillBrickColliding = true;
-	$ND::FillBrickRayCasting = true;
-
-	%box = %client.ndSelectionBox.getSize();
-
-	ndUpdateSpawnedClientList();
-	ndFillAreaWithBricks(getWords(%box, 0, 2), getWords(%box, 3, 5));
 }

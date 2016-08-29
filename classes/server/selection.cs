@@ -1380,15 +1380,10 @@ function ND_Selection::tickSuperCutChunk(%this)
 	%bricksFound = 0;
 	%trustFailCount = 0;
 
-	//Set variables for the fill brick function
-	$ND::FillBrickGroup = %group;
-	$ND::FillBrickClient = %this.client;
-	$ND::FillBrickBL_ID = %bl_id;
-	
 	ndUpdateSpawnedClientList();
 
 	//Process chunks until we reach the brick or chunk limit
-	while(%chunksDone < 600 && %bricksFound < 20)
+	while(%chunksDone < 600 && %bricksFound < 100)
 	{
 		%chunksDone++;
 
@@ -1417,6 +1412,14 @@ function ND_Selection::tickSuperCutChunk(%this)
 				%trustFailCount++;
 				continue;
 			}
+
+			if(%obj.getDatablock().isWaterBrick)
+				continue;
+
+			//Set variables for the fill brick function
+			$ND::FillBrickGroup = %obj.getGroup();
+			$ND::FillBrickClient = %obj.client;
+			$ND::FillBrickBL_ID = %obj.getGroup().bl_id;
 
 			$ND::FillBrickColorID = %obj.colorID;
 			$ND::FillBrickColorFxID = %obj.colorFxID;
