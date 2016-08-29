@@ -488,7 +488,7 @@ function ndCreateSimpleBrickTable()
 		if(%db.getClassName() $= "FxDtsBrickData")
 		{
 			//Skip zone bricks
-			if(%db.isWaterBrick)
+			if(%db.isWaterBrick || %brick.isSlyrBrick)
 				continue;
 
 			%file.openForRead(%db.brickFile);
