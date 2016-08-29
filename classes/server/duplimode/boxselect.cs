@@ -204,13 +204,21 @@ function NDM_BoxSelect::onShiftBrick(%this, %client, %x, %y, %z)
 	%newY = mFloor(%newY) / 2;
 	%z    = mFloor(%z   ) / 5;
 
-	if(%client.isAdmin)
-		%limit = $Pref::Server::ND::MaxBoxSizeAdmin;
-	else
-		%limit = $Pref::Server::ND::MaxBoxSizePlayer;
+	if(!%client.ndMultiSelect)
+	{
+		if(%client.isAdmin)
+			%limit = $Pref::Server::ND::MaxBoxSizeAdmin;
+		else
+			%limit = $Pref::Server::ND::MaxBoxSizePlayer;
 
-	if(%client.ndSelectionBox.shiftCorner(%newX SPC %newY SPC %z, %limit))
-		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Oops!\n<font:Verdana:17>\c6Your selection box is limited to \c3" @ mFloor(%limit * 2) @ " \c6studs.", 5);
+		if(%client.ndSelectionBox.shiftCorner(%newX SPC %newY SPC %z, %limit))
+			commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Oops!\n<font:Verdana:17>" @
+				"\c6Your selection box is limited to \c3" @ mFloor(%limit * 2) @ " \c6studs.", 5);
+	}
+	else
+	{
+		%client.ndSelectionBox.shift(%newX SPC %newY SPC %z);
+	}
 }
 
 //Super Shift Brick

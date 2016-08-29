@@ -414,3 +414,14 @@ function ND_SelectionBox::shiftCorner(%this, %offset, %limit)
 
 	return %limitReached;
 }
+
+//Move the entire box
+function ND_SelectionBox::shift(%this, %offset)
+{
+	%size = %this.getSize();
+
+	%this.point1 = vectorAdd(getWords(%size, 0, 2), %offset);
+	%this.point2 = vectorAdd(getWords(%size, 3, 5), %offset);
+
+	%this.setSize(%this.point1, %this.point2);
+}
