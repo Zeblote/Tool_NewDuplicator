@@ -27,10 +27,6 @@ function ndRegisterKeybinds()
 	$RemapCmd[$RemapCount]      = "ndInputCut";
 	$RemapCount++;
 
-	$RemapName[$RemapCount]     = "Super-Cut Bricks (Shift-Ctrl X)";
-	$RemapCmd[$RemapCount]      = "ndInputSuperCut";
-	$RemapCount++;
-
 	$RemapName[$RemapCount]     = "Multiselect (Ctrl, Hold to use)";
 	$RemapCmd[$RemapCount]      = "ndInputMultiSelect";
 	$RemapCount++;
@@ -63,6 +59,14 @@ function ndRegisterKeybinds()
 	$RemapCmd[$RemapCount]      = "ndInputMirrorZ";
 	$RemapCount++;
 
+	$RemapName[$RemapCount]     = "Send /SuperCut (Shift-Ctrl X)";
+	$RemapCmd[$RemapCount]      = "ndInputSuperCut";
+	$RemapCount++;
+
+	$RemapName[$RemapCount]     = "Send /FillBricks (Shift-Ctrl V)";
+	$RemapCmd[$RemapCount]      = "ndInputFillBricks";
+	$RemapCount++;
+
 	$ND::KeybindsRegistered = true;
 }
 
@@ -82,11 +86,14 @@ function clientCmdNdEnableKeybinds(%bool)
 		if(MoveMap.getBinding("ndInputCut") $= "")
 			%map.bind("keyboard", isWindows() ? "ctrl x" : "cmd x", "ndInputCut");
 
+		if(MoveMap.getBinding("ndInputMultiSelect") $= "")
+			%map.bind("keyboard", isWindows() ? "lcontrol" : "cmd", "ndInputMultiSelect");
+
 		if(MoveMap.getBinding("ndInputSuperCut") $= "")
 			%map.bind("keyboard", isWindows() ? "shift-ctrl x" : "shift-cmd x", "ndInputSuperCut");
 
-		if(MoveMap.getBinding("ndInputMultiSelect") $= "")
-			%map.bind("keyboard", isWindows() ? "lcontrol" : "cmd", "ndInputMultiSelect");
+		if(MoveMap.getBinding("ndInputFillBricks") $= "")
+			%map.bind("keyboard", isWindows() ? "shift-ctrl v" : "shift-cmd v", "ndInputFillBricks");
 
 		%map.push();
 		$ND::KeybindsEnabled = true;
@@ -104,12 +111,13 @@ function ndInputNewDuplicator   (%bool) {if(!%bool)return; commandToServer('newD
 function ndInputCopy            (%bool) {if(!%bool)return; commandToServer('ndCopy'          );}
 function ndInputPaste           (%bool) {if(!%bool)return; commandToServer('ndPaste'         );}
 function ndInputCut             (%bool) {if(!%bool)return; commandToServer('ndCut'           );}
-function ndInputSuperCut        (%bool) {if(!%bool)return; commandToServer('superCut'        );}
 function ndInputFillWrench      (%bool) {if(!%bool)return; commandToServer('fillWrench'      );}
 function ndInputForcePlant      (%bool) {if(!%bool)return; commandToServer('forcePlant'      );}
 function ndInputToggleForcePlant(%bool) {if(!%bool)return; commandToServer('toggleForcePlant');}
 function ndInputMirrorX         (%bool) {if(!%bool)return; commandToServer('mirrorX'         );}
 function ndInputMirrorY         (%bool) {if(!%bool)return; commandToServer('mirrorY'         );}
 function ndInputMirrorZ         (%bool) {if(!%bool)return; commandToServer('mirrorZ'         );}
+function ndInputSuperCut        (%bool) {if(!%bool)return; commandToServer('superCut'        );}
+function ndInputFillBricks      (%bool) {if(!%bool)return; commandToServer('fillBricks'      );}
 
 function ndInputMultiSelect(%bool) {commandToServer('ndMultiSelect', %bool);}

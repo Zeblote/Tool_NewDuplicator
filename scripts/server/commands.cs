@@ -308,6 +308,7 @@ function serverCmdNdConfirmSuperCut(%client)
 		return;
 	}
 
+	%client.fillBricksAfterSuperCut = false;
 	%client.ndMode.onSuperCut(%client);
 }
 
@@ -322,43 +323,58 @@ function serverCmdFillBricks(%client)
 
 	if(!isObject(%client.ndSelectionBox))
 	{
-		messageClient(%client, '', "\c6The fillBricks can only be used with a selection box.");
+		messageClient(%client, '', "\c6The fillBricks command can only be used with a selection box.");
 		return;
 	}
 
 	if(%client.ndSelectionAvailable)
 	{
-		messageClient(%client, '', "\c6Super-Cut can not be used with any bricks selected.");
+		messageClient(%client, '', "\c6The fillBricks command can not be used with any bricks selected.");
 		return;
 	}
 
 	if(!%client.ndSelectionBox.hasVolume())
 	{
-		messageClient(%client, '', "\c6The fillBricks can only be used with a selection box that has a volume.");
+		messageClient(%client, '', "\c6The fillBricks command can only be used with a selection box that has a volume.");
 		return;
 	}
 
-	//Set variables for the fill brick function
-	$ND::FillBrickGroup = %client.brickGroup;
-	$ND::FillBrickClient = %client;
-	$ND::FillBrickBL_ID = %client.bl_id;
+	commandToClient(%client, 'messageBoxOkCancel', "New Duplicator | /FillBricks",
+		"/FillBricks will first do a Super-Cut\nbefore placing bricks, to fix overlap." @
+		"\n\nSuper-Cut is destructive and does\nNOT support undo at this time." @
+		"\n\nPlease make sure the box is correct,\nthen press OK below to continue.",
+		'ndConfirmFillBricks');
+}
 
-	$ND::FillBrickColorID = %client.currentColor;
-	$ND::FillBrickColorFxID = 0;
-	$ND::FillBrickShapeFxID = 0;
+//Confirm fill volume with bricks
+function serverCmdNdConfirmFillBricks(%client)
+{
+	if($Pref::Server::ND::FillBricksAdminOnly && !%client.isAdmin)
+	{
+		messageClient(%client, '', "\c6Fill Bricks is admin only. Ask an admin for help.");
+		return;
+	}
 
-	$ND::FillBrickRendering = true;
-	$ND::FillBrickColliding = true;
-	$ND::FillBrickRayCasting = true;
+	if(!isObject(%client.ndSelectionBox))
+	{
+		messageClient(%client, '', "\c6The fillBricks command can only be used with a selection box.");
+		return;
+	}
 
-	%box = %client.ndSelectionBox.getSize();
+	if(%client.ndSelectionAvailable)
+	{
+		messageClient(%client, '', "\c6The fillBricks command can not be used with any bricks selected.");
+		return;
+	}
 
-	$ND::FillBrickCount = 0;
-	ndUpdateSpawnedClientList();
-	ndFillAreaWithBricks(getWords(%box, 0, 2), getWords(%box, 3, 5));
+	if(!%client.ndSelectionBox.hasVolume())
+	{
+		messageClient(%client, '', "\c6The fillBricks command can only be used with a selection box that has a volume.");
+		return;
+	}
 
-	%s = ($ND::FillBrickCount == 1 ? "" : "s");
-	messageClient(%client, '', "\c6Filled in \c3" @ $ND::FillBrickCount @ "\c6 brick" @ %s);
+	%client.fillBricksAfterSuperCut = true;
+	%client.ndMode.onSuperCut(%client);
 }
 
 //Alternative short command

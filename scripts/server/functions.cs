@@ -133,6 +133,31 @@ function ndGetPaintColorCode(%id)
 	return "<color:" @ %r1 @ %r2 @ %g1 @ %g2 @ %b1 @ %b2 @ ">";
 }
 
+//Get a plate world box from a raycast
+function getPlateBoxFromRayCast(%pos, %normal)
+{
+	//Get half size of world box for offset
+	%halfSize = "0.25 0.25 0.1";
+
+	//Point offset in correct direction based on normal
+    %offX = getWord(%halfSize, 0) * mFloatLength(-getWord(%normal, 0), 0);
+    %offY = getWord(%halfSize, 1) * mFloatLength(-getWord(%normal, 1), 0);
+    %offZ = getWord(%halfSize, 2) * mFloatLength(-getWord(%normal, 2), 0);
+    %offset = %offX SPC %offY SPC %offZ;
+
+    %newPos = vectorAdd(%pos, %offset);
+
+	%x1 = mFloor(getWord(%newPos, 0) * 2) / 2;
+	%y1 = mFloor(getWord(%newPos, 1) * 2) / 2;
+	%z1 = mFloor(getWord(%newPos, 2) * 5) / 5;
+
+	%x2 = mCeil(getWord(%newPos, 0) * 2) / 2;
+	%y2 = mCeil(getWord(%newPos, 1) * 2) / 2;
+	%z2 = mCeil(getWord(%newPos, 2) * 5) / 5;
+
+	return %x1 SPC %y1 SPC %z1 SPC %x2 SPC %y2 SPC %z2;
+}
+
 
 
 //Trust checks
@@ -501,10 +526,7 @@ function ndCreateSimpleBrickTable()
 			{
 				//Skip brick sizes that we already have
 				if(!$ND::SimpleBrickBlock[%db.brickSizeX, %db.brickSizeY, %db.BrickSizeZ])
-				{
 					%sorter.addRow(%db, %db.getVolume());
-					$ND::SimpleBrickData[%db] = true;
-				}
 
 				$ND::SimpleBrickBlock[%db.brickSizeX, %db.brickSizeY, %db.BrickSizeZ] = true;
 			}
@@ -681,12 +703,7 @@ function ndFillAreaWithBricks(%pos1, %pos2)
 	$Server_LoadFileObj = %prev1;
 	$LastLoadedBrick = %prev2;
 
-	if(%error && %error != 2)
-	{
-		talk("Failed to plant brick: " @ $ND::SimpleBrick[%brickId].getName() @ " at position " @ %plantPos);
-		%brick.delete();
-	}
-	else
+	if(!%error || %error == 2)
 	{
 		//Set trusted
 		if(%brick.getNumDownBricks())
@@ -712,6 +729,8 @@ function ndFillAreaWithBricks(%pos1, %pos2)
 
 		$ND::FillBrickCount++;
 	}
+	else
+		%brick.delete();
 
 	if((%pos3_x + 0.05) < %pos2_x)
 		ndFillAreaWithBricks(%pos3_x SPC %pos1_y SPC %pos1_z, %pos2_x SPC %pos2_y SPC %pos2_z);
@@ -722,4 +741,30 @@ function ndFillAreaWithBricks(%pos1, %pos2)
 	if((%pos3_z + 0.02) < %pos2_z)
 		ndFillAreaWithBricks(%pos1_x SPC %pos1_y SPC %pos3_z, %pos3_x SPC %pos3_y SPC %pos2_z);
 
+}
+
+//Client finished super-cut, now fill bricks
+function GameConnection::doFillBricks(%this)
+{
+	//Set variables for the fill brick function
+	$ND::FillBrickGroup = %this.brickGroup;
+	$ND::FillBrickClient = %this;
+	$ND::FillBrickBL_ID = %this.bl_id;
+
+	$ND::FillBrickColorID = %this.currentColor;
+	$ND::FillBrickColorFxID = 0;
+	$ND::FillBrickShapeFxID = 0;
+
+	$ND::FillBrickRendering = true;
+	$ND::FillBrickColliding = true;
+	$ND::FillBrickRayCasting = true;
+
+	%box = %this.ndSelectionBox.getSize();
+
+	$ND::FillBrickCount = 0;
+	ndUpdateSpawnedClientList();
+	ndFillAreaWithBricks(getWords(%box, 0, 2), getWords(%box, 3, 5));
+
+	%s = ($ND::FillBrickCount == 1 ? "" : "s");
+	messageClient(%this, '', "\c6Filled in \c3" @ $ND::FillBrickCount @ "\c6 brick" @ %s);
 }

@@ -115,7 +115,7 @@ function NDM_BoxSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 		if(%client.ndMultiSelect)
 		{
 			%box1 = %client.ndSelectionBox.getSize();
-			%box2 = %obj.getWorldBox();
+			%box2 = getPlateBoxFromRayCast(%pos, %normal);
 
 			%p1 = getMin(getWord(%box1, 0), getWord(%box2, 0))
 				SPC getMin(getWord(%box1, 1), getWord(%box2, 1))
@@ -143,7 +143,11 @@ function NDM_BoxSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 
 		%client.ndSelectionBox = ND_SelectionBox(%shapeName);
 
-		%box = %obj.getWorldBox();
+		if(%client.ndMultiSelect)
+			%box = getPlateBoxFromRayCast(%pos, %normal);
+		else
+			%box = %obj.getWorldBox();
+			
 		%p1 = getWords(%box, 0, 2);
 		%p2 = getWords(%box, 3, 5);
 	}

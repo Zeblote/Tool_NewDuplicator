@@ -1404,6 +1404,7 @@ function ND_Selection::tickSuperCutChunk(%this)
 
 		while(%obj = containerSearchNext())
 		{
+			%db = %obj.getDatablock();
 			%bricksFound++;
 
 			//Check trust
@@ -1413,7 +1414,8 @@ function ND_Selection::tickSuperCutChunk(%this)
 				continue;
 			}
 
-			if(%obj.getDatablock().isWaterBrick)
+			//Skip zone bricks
+			if(%db.isWaterBrick)
 				continue;
 
 			//Set variables for the fill brick function
@@ -1429,7 +1431,6 @@ function ND_Selection::tickSuperCutChunk(%this)
 			$ND::FillBrickColliding = %obj.isColliding();
 			$ND::FillBrickRayCasting = %obj.isRayCasting();
 
-			%db = %obj.getDatablock();
 			%box = %obj.getWorldBox();
 			%boxX1 = getWord(%box, 0);
 			%boxY1 = getWord(%box, 1);
@@ -1560,6 +1561,12 @@ function ND_Selection::finishSuperCut(%this)
 
 	commandToClient(%this.client, 'centerPrint', %msg, 12);
 	%this.client.ndSetMode(NDM_BoxSelect);
+
+	if(%this.client.fillBricksAfterSuperCut)
+	{
+		%this.client.fillBricksAfterSuperCut = false;
+		%this.client.doFillBricks();
+	}
 }
 
 //Cancel super cut
