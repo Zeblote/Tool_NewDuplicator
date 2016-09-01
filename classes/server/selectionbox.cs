@@ -82,10 +82,12 @@ function ND_SelectionBox::setNormalMode(%this)
 	%this.isNormalMode = true;
 
 	//Unhide the corners and inner/outer box (hidden in disabled mode)
-	%this.innerBox.setHidden(false);
-	%this.outerBox.setHidden(false);
-	%this.corner1.setHidden(false);
-	%this.corner2.setHidden(false);
+	%this.innerBox.unHideNode("ALL");
+	%this.corner1.unHideNode("ALL");
+	%this.corner2.unHideNode("ALL");
+
+	if(%this.hasVolume())
+		%this.outerBox.unHideNode("ALL");
 
 	//Apply changes
 	%this.applyColors();
@@ -102,10 +104,10 @@ function ND_SelectionBox::setDisabledMode(%this)
 	%this.isNormalMode = false;
 
 	//Hide the corners and inner/outer box (looks better)
-	%this.innerBox.setHidden(true);
-	%this.outerBox.setHidden(true);
-	%this.corner1.setHidden(true);
-	%this.corner2.setHidden(true);
+	%this.innerBox.hideNode("ALL");
+	%this.outerBox.hideNode("ALL");
+	%this.corner1.hideNode("ALL");
+	%this.corner2.hideNode("ALL");
 
 	//Apply changes
 	%this.applyColors();
@@ -411,6 +413,12 @@ function ND_SelectionBox::shiftCorner(%this, %offset, %limit)
 		serverPlay3d(BrickMoveSound, %soundPoint);
 	else
 		serverPlay3d(errorSound, %soundPoint);
+
+	//Hide outer box on selection boxes without volume
+	if(%this.hasVolume())
+		%this.outerBox.unHideNode("ALL");
+	else
+		%this.outerBox.hideNode("ALL");
 
 	return %limitReached;
 }
