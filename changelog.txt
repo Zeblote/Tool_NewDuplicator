@@ -1,5 +1,11 @@
 <just:center><color:ffffff><font:Arial Bold:20>New Duplicator Changelog<just:left>
-<br><br><lmargin:20><font:Arial:20>Version 1.4.4    <font:Arial:16>28/05/2016<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.5.0    <font:Arial:16>01/09/2016<br>
+•  Added supercut function: /superCut or shift-ctrl x in box selection mode<br>
+•  Added fillBricks function: /fillBricks or shift-ctrl v in box selection mode<br>
+•  Move/rotate the whole selection box by holding ctrl<br>
+<br>
+•  Fixed selection without volume flickering sometimes<br>
+<br><br><lmargin:20><font:Arial:20>Version 1.4.4    <font:Arial:16>18/08/2016<br>
 •  Added option to create the symmetry table on server start<br>
 •  Creating the symmetry table is now slightly faster<br>
 •  Added manual symmetry definitions for Brick_SmallBricks<br>
