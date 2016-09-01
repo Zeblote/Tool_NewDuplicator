@@ -165,7 +165,7 @@ function TCPClient::onConnected(%this)
 		%request = %this.request;
 	else
 		%request = %this.buildRequest();
-	
+
 	if(%this.options.debug)
 		echo(" > REQUEST:\n   >" SPC strReplace(%request, "\r\n", "\n   > "));
 	%this.send(%request);
@@ -414,7 +414,7 @@ function TCPClient::handleText(%this, %text)
 
 //Used to update a progress bar when downloading a binary file. To use with your mod, replace "TCPClient" with your class name.
 //Only called when in binary mode.
-//@param	float completed The amount completed, represented as a floating point value from 0.0 to 1.0.	
+//@param	float completed The amount completed, represented as a floating point value from 0.0 to 1.0.
 function TCPClient::setProgressBar(%this, %completed)
 {
 	if(isFunction(%this.className, "setProgressBar"))

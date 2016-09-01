@@ -181,6 +181,23 @@ function ND_SelectionBox::getSize(%this)
 	%min = getMin(%x1, %x2) SPC getMin(%y1, %y2) SPC getMin(%z1, %z2);
 	%max = getMax(%x1, %x2) SPC getMax(%y1, %y2) SPC getMax(%z1, %z2);
 
+	return vectorSub(%max, %min);
+}
+
+//Return current world box of selection box
+function ND_SelectionBox::getWorldBox(%this)
+{
+	%x1 = getWord(%this.point1, 0);
+	%y1 = getWord(%this.point1, 1);
+	%z1 = getWord(%this.point1, 2);
+
+	%x2 = getWord(%this.point2, 0);
+	%y2 = getWord(%this.point2, 1);
+	%z2 = getWord(%this.point2, 2);
+
+	%min = getMin(%x1, %x2) SPC getMin(%y1, %y2) SPC getMin(%z1, %z2);
+	%max = getMax(%x1, %x2) SPC getMax(%y1, %y2) SPC getMax(%z1, %z2);
+
 	return %min SPC %max;
 }
 
@@ -373,28 +390,33 @@ function ND_SelectionBox::shiftCorner(%this, %offset, %limit)
 		%point2[%dim] = getWord(%this.point2, %dim);
 
 		//Get the size of the box in the current axis after resizing
-		%ds = getWord(%this.point2, %dim) - getWord(%this.point1, %dim);
+		%size = getWord(%this.point2, %dim) - getWord(%this.point1, %dim);
 
 		if(%this.selectedCorner)
-			%ds += getWord(%offset, %dim);
-		else
-			%ds -= getWord(%offset, %dim);
-
-		//update the point being controlled
-		if(%this.selectedCorner)
+		{
+			//Update point2
+			%size += getWord(%offset, %dim);
 			%point2[%dim] += getWord(%offset, %dim);
+
+			//Check limits
+			if(mAbs(%size) > %limit)
+			{
+				%limitReached = true;
+				%point2[%dim] -= %size - %limit * (mAbs(%size) / %size);
+			}
+		}
 		else
+		{
+			//Update point1
+			%size -= getWord(%offset, %dim);
 			%point1[%dim] += getWord(%offset, %dim);
 
-		//Check limits
-		if(mAbs(%ds) > %limit)
-		{
-			%limitReached = true;
-
-			if(%this.selectedCorner)
-				%point2[%dim] -= %ds - %limit * (mAbs(%ds) / %ds);
-			else
-				%point1[%dim] += %ds - %limit * (mAbs(%ds) / %ds);
+			//Check limits
+			if(mAbs(%size) > %limit)
+			{
+				%limitReached = true;
+				%point1[%dim] += %size - %limit * (mAbs(%size) / %size);
+			}
 		}
 	}
 
@@ -405,11 +427,11 @@ function ND_SelectionBox::shiftCorner(%this, %offset, %limit)
 
 	//Play sounds
 	if(%this.selectedCorner)
-		%soundPoint = %this.point2;
+		%soundPoint = %point2;
 	else
-		%soundPoint = %this.point1;
+		%soundPoint = %point1;
 
-	if(%this.point1 !$= %oldP1 || %this.point2 !$= %oldP2)
+	if(%point1 !$= %oldP1 || %point2 !$= %oldP2)
 		serverPlay3d(BrickMoveSound, %soundPoint);
 	else
 		serverPlay3d(errorSound, %soundPoint);
@@ -430,6 +452,12 @@ function ND_SelectionBox::shift(%this, %offset)
 	%this.point2 = vectorAdd(%this.point2, %offset);
 
 	%this.setSize(%this.point1, %this.point2);
+
+	//Play sounds
+	if(%this.selectedCorner)
+		serverPlay3d(BrickMoveSound, %this.point1);
+	else
+		serverPlay3d(BrickMoveSound, %this.point2);
 }
 
 //Rotate the entire box
@@ -455,6 +483,12 @@ function ND_SelectionBox::rotate(%this, %direction)
 	%point1 = vectorAdd(ndRotateVector(vectorSub(%point1, %center), %direction), %center);
 	%point2 = vectorAdd(ndRotateVector(vectorSub(%point2, %center), %direction), %center);
 	%this.setSize(vectorAdd(%point1, %shiftCorrect), vectorAdd(%point2, %shiftCorrect));
+
+	//Play sounds
+	if(%this.selectedCorner)
+		serverPlay3d(BrickRotateSound, %this.point1);
+	else
+		serverPlay3d(BrickRotateSound, %this.point2);
 }
 
 //Check if the box has a volume

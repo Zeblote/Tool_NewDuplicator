@@ -134,7 +134,7 @@ function ndGetPaintColorCode(%id)
 }
 
 //Get a plate world box from a raycast
-function getPlateBoxFromRayCast(%pos, %normal)
+function ndGetPlateBoxFromRayCast(%pos, %normal)
 {
 	//Get half size of world box for offset
 	%halfSize = "0.25 0.25 0.1";
@@ -145,8 +145,10 @@ function getPlateBoxFromRayCast(%pos, %normal)
     %offZ = getWord(%halfSize, 2) * mFloatLength(-getWord(%normal, 2), 0);
     %offset = %offX SPC %offY SPC %offZ;
 
+    //Get offset position
     %newPos = vectorAdd(%pos, %offset);
 
+    //Get the plate box around the position
 	%x1 = mFloor(getWord(%newPos, 0) * 2) / 2;
 	%y1 = mFloor(getWord(%newPos, 1) * 2) / 2;
 	%z1 = mFloor(getWord(%newPos, 2) * 5) / 5;
@@ -494,7 +496,7 @@ function ndUnpack241_4(%subStr)
 
 
 
-//Super-Cut helpers
+//Supercut helpers
 ///////////////////////////////////////////////////////////////////////////
 
 //Creates simple brick lookup table
@@ -512,13 +514,11 @@ function ndCreateSimpleBrickTable()
 
 		if(%db.getClassName() $= "FxDtsBrickData")
 		{
-			//Skip zone bricks
-			if(%db.isWaterBrick || %brick.isSlyrBrick)
+			//Skip unsuitable bricks
+			if(%db.isWaterBrick || %db.hasPrint || %db.isSlyrBrick || %db.ndDontUseForFill)
 				continue;
 
 			%file.openForRead(%db.brickFile);
-
-			//Skip brick size
 			%file.readLine();
 
 			//We only want simple bricks here
@@ -608,13 +608,17 @@ function ndGetLargestBrickId(%x, %y, %z)
 		%start = %bound2;
 	}
 
+	%bestIndex = -1;
+
 	//Go down the list until a brick fits on all 3 axis
 	for(%i = %start; %i >= 0; %i--)
 	{
 		if($ND::SimpleBrickSizeX[%i] <= %x
 		&& $ND::SimpleBrickSizeY[%i] <= %y
 		&& $ND::SimpleBrickSizeZ[%i] <= %z)
+		{
 			return %i;
+		}
 	}
 
 	return -1;
@@ -664,11 +668,7 @@ function ndFillAreaWithBricks(%pos1, %pos2)
 	%plantPos = (%pos1_x + %pos3_x) / 2 SPC (%pos1_y + %pos3_y) / 2 SPC (%pos1_z + %pos3_z) / 2;
 
 	if(!isObject($ND::SimpleBrick[%brickId]))
-	{
-		error("did not find matching brick!!!!");
-		talk("did not find matching brick!!!!");
 		return;
-	}
 
 	%brick = new FxDTSBrick()
 	{
@@ -743,7 +743,7 @@ function ndFillAreaWithBricks(%pos1, %pos2)
 
 }
 
-//Client finished super-cut, now fill bricks
+//Client finished supercut, now fill bricks
 function GameConnection::doFillBricks(%this)
 {
 	//Set variables for the fill brick function
@@ -759,8 +759,7 @@ function GameConnection::doFillBricks(%this)
 	$ND::FillBrickColliding = true;
 	$ND::FillBrickRayCasting = true;
 
-	%box = %this.ndSelectionBox.getSize();
-
+	%box = %this.ndSelectionBox.getWorldBox();
 	$ND::FillBrickCount = 0;
 	ndUpdateSpawnedClientList();
 	ndFillAreaWithBricks(getWords(%box, 0, 2), getWords(%box, 3, 5));

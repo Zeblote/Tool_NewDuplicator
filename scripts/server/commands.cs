@@ -260,57 +260,60 @@ function serverCmdCut(%client)
 	serverCmdNdCut(%client);
 }
 
-//Super-Cut selection
+//Supercut selection
 function serverCmdSuperCut(%client)
 {
 	if(%client.ndModeIndex != $NDM::BoxSelect)
 	{
-		messageClient(%client, '', "\c6Super-Cut can only be used on box selection mode.");
+		messageClient(%client, '', "\c6Supercut can only be used on box selection mode.");
 		return;
 	}
 
 	if(!isObject(%client.ndSelectionBox))
 	{
-		messageClient(%client, '', "\c6Super-Cut can only be used with a selection box.");
+		messageClient(%client, '', "\c6Supercut can only be used with a selection box.");
 		return;
 	}
 
 	if(%client.ndSelectionAvailable)
 	{
-		messageClient(%client, '', "\c6Super-Cut can not be used with any bricks selected.");
+		messageClient(%client, '', "\c6Supercut can not be used with any bricks selected.");
 		return;
 	}
 
-	commandToClient(%client, 'messageBoxOkCancel', "New Duplicator | Super-Cut",
-		"Super-Cut is destructive and does\nNOT support undo at all." @
+	commandToClient(%client, 'messageBoxOkCancel', "New Duplicator | Supercut",
+		"Supercut is destructive and does\nNOT support undo at this time." @
 		"\n\nPlease make sure the box is correct,\nthen press OK below.",
 		'ndConfirmSuperCut');
 }
 
-//Confirm Super-Cut selection
+//Confirm Supercut selection
 function serverCmdNdConfirmSuperCut(%client)
 {
 	if(%client.ndModeIndex != $NDM::BoxSelect)
 	{
-		messageClient(%client, '', "\c6Super-Cut can only be used on box selection mode.");
+		messageClient(%client, '', "\c6Supercut can only be used on box selection mode.");
 		return;
 	}
 
 	if(!isObject(%client.ndSelectionBox))
 	{
-		messageClient(%client, '', "\c6Super-Cut can only be used with a selection box.");
+		messageClient(%client, '', "\c6Supercut can only be used with a selection box.");
 		return;
 	}
 
 	if(%client.ndSelectionAvailable)
 	{
-		messageClient(%client, '', "\c6Super-Cut can not be used with any bricks selected.");
+		messageClient(%client, '', "\c6Supercut can not be used with any bricks selected.");
 		return;
 	}
 
 	%client.fillBricksAfterSuperCut = false;
 	%client.ndMode.onSuperCut(%client);
 }
+
+//Alternative short command
+function serverCmdSC(%client){serverCmdSuperCut(%client);}
 
 //Fill volume with bricks
 function serverCmdFillBricks(%client)
@@ -340,8 +343,8 @@ function serverCmdFillBricks(%client)
 	}
 
 	commandToClient(%client, 'messageBoxOkCancel', "New Duplicator | /FillBricks",
-		"/FillBricks will first do a Super-Cut\nbefore placing bricks, to fix overlap." @
-		"\n\nSuper-Cut is destructive and does\nNOT support undo at this time." @
+		"/FillBricks will first do a Supercut\nbefore placing bricks, to fix overlap." @
+		"\n\nSupercut is destructive and does\nNOT support undo at this time." @
 		"\n\nPlease make sure the box is correct,\nthen press OK below to continue.",
 		'ndConfirmFillBricks');
 }

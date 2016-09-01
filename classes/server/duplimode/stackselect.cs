@@ -21,57 +21,16 @@ function NDM_StackSelect::onStartMode(%this, %client, %lastMode)
 //Switch away from this mode
 function NDM_StackSelect::onChangeMode(%this, %client, %nextMode)
 {
-	if(%nextMode == $NDM::BoxSelect)
-	{
-		if(%client.ndSelection.brickCount)
-		{
-			%s = %client.ndSelection;
-
-			%min = vectorAdd(%s.rootPosition, %s.minSize);
-			%max = vectorAdd(%s.rootPosition, %s.maxSize);
-
-			if(%client.isAdmin)
-				%limit = $Pref::Server::ND::MaxBoxSizeAdmin;
-			else
-				%limit = $Pref::Server::ND::MaxBoxSizePlayer;
-
-			if((getWord(%max, 0) - getWord(%min, 0) <= %limit)
-			&& (getWord(%max, 1) - getWord(%min, 1) <= %limit)
-			&& (getWord(%max, 2) - getWord(%min, 2) <= %limit))
-			{
-				%name = %client.name;
-
-				if(getSubStr(%name, strLen(%name - 1), 1) $= "s")
-					%shapeName = %name @ "' Selection Box";
-				else
-					%shapeName = %name @ "'s Selection Box";
-
-				%client.ndSelectionBox = ND_SelectionBox(%shapeName);
-				%client.ndSelectionBox.setSizeAligned(%min, %max, %client.getControlObject());
-			}
-			else
-				commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Oops!\n<font:Verdana:17>\c6Your selection box is limited to \c3" @ mFloor(%limit * 2) @ " \c6studs.", 5);
-		}
-
-		//Clear selection
-		if(isObject(%client.ndSelection))
-			%client.ndSelection.deleteData();
-	}
-	else if(%nextMode == $NDM::PlantCopy)
+	if(%nextMode == $NDM::FillColor
+	|| %nextMode == $NDM::PlantCopy
+	|| %nextMode == $NDM::WrenchProgress)
 	{
 		//Start de-highlighting the bricks
 		%client.ndSelection.deHighlight();
 	}
-	else if(%nextMode == $NDM::FillColor)
-	{
-		//Start de-highlighting the bricks
-		%client.ndSelection.deHighlight();
-	}
-	else if(%nextMode == $NDM::WrenchProgress)
-	{
-		//Start de-highlighting the bricks
-		%client.ndSelection.deHighlight();
-	}
+
+	//The transition to box select mode will be
+	//handled in NDM_BoxSelect::onStartMode
 }
 
 //Kill this mode
@@ -102,7 +61,9 @@ function NDM_StackSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 			%s = "s";
 
 		messageClient(%client, 'MsgError', "");
-		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You need to wait\c3 " @ %remain @ "\c6 second" @ %s @ " before selecting again!", 5);
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You need to wait\c3 " @
+			%remain @ "\c6 second" @ %s @ " before selecting again!", 5);
+
 		return;
 	}
 
@@ -244,8 +205,8 @@ function NDM_StackSelect::getBottomPrint(%this, %client)
 		%count = %client.ndSelection.brickCount;
 
 		%title = "Selection Mode (\c3" @ %count @ "\c6 Brick" @ (%count > 1 ? "s)" : ")");
-		%r0 = "Click Brick: Select again";
-		%r1 = "[Plant Brick]: Plant Mode";
+		%r0 = "Ctrl-Click Brick: Multiselect";
+		%r1 = "[Plant Brick]: Duplicate";
 	}
 
 	%l0 = "Type: \c3" @ (%client.ndMultiSelect ? "Multi-" : "") @ "Stack \c6[Light]";

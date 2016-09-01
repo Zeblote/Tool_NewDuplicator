@@ -251,7 +251,7 @@ function ndRegisterDuplicatorModes()
 		}
 	);
 
-	//Super-Cut Progress duplicator mode
+	//Supercut Progress duplicator mode
 	ND_ServerGroup.add(
 		new ScriptObject(NDM_SuperCutProgress)
 		{

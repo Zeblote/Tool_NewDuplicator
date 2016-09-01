@@ -14,16 +14,52 @@
 //Switch to this mode
 function NDM_BoxSelect::onStartMode(%this, %client, %lastMode)
 {
-	%client.ndLastSelectMode = %this;
-
-	if(%lastMode == $NDM::BoxSelectProgress && %client.ndSelection.brickCount > 0)
+	if(%lastMode == $NDM::StackSelect)
 	{
-		%client.ndSelectionAvailable = true;
+		if(isObject(%client.ndSelection) && %client.ndSelection.brickCount)
+		{
+			//Create selection box from the size of the previous selection
+			%root = %client.ndSelection.rootPosition;
+			%min = vectorAdd(%root, %client.ndSelection.minSize);
+			%max = vectorAdd(%root, %client.ndSelection.maxSize);
+
+			if(%client.isAdmin)
+				%limit = $Pref::Server::ND::MaxBoxSizeAdmin;
+			else
+				%limit = $Pref::Server::ND::MaxBoxSizePlayer;
+
+			if((getWord(%max, 0) - getWord(%min, 0) <= %limit)
+			&& (getWord(%max, 1) - getWord(%min, 1) <= %limit)
+			&& (getWord(%max, 2) - getWord(%min, 2) <= %limit))
+			{
+				%name = %client.name;
+
+				if(getSubStr(%name, strLen(%name - 1), 1) $= "s")
+					%shapeName = %name @ "' Selection Box";
+				else
+					%shapeName = %name @ "'s Selection Box";
+
+				%client.ndSelectionBox = ND_SelectionBox(%shapeName);
+				%client.ndSelectionBox.setSizeAligned(%min, %max, %client.getControlObject());
+			}
+			else
+				commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Oops!\n<font:Verdana:17>" @
+					"\c6Your selection box is limited to \c3" @ mFloor(%limit * 2) @ " \c6studs.", 5);
+
+			%client.ndSelection.deleteData();
+		}
+
+		%client.ndSelectionAvailable = false;
+	}
+	else if(%lastMode == $NDM::BoxSelectProgress && %client.ndSelection.brickCount > 0)
+	{
 		%client.ndSelectionBox.setDisabledMode();
+		%client.ndSelectionAvailable = true;
 	}
 	else if(%lastMode != $NDM::FillColor && %lastMode != $NDM::WrenchProgress)
 		%client.ndSelectionAvailable = false;
 
+	%client.ndLastSelectMode = %this;
 	%client.ndUpdateBottomPrint();
 }
 
@@ -102,7 +138,8 @@ function NDM_BoxSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 	if(%client.ndSelectionAvailable)
 	{
 		messageClient(%client, 'MsgError', "");
-		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection canceled! You can now edit the box again.", 5);
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection canceled! " @
+			"You can now edit the box again.", 5);
 
 		%client.ndSelectionAvailable = false;
 		%client.ndSelection.deleteData();
@@ -114,8 +151,8 @@ function NDM_BoxSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 	{
 		if(%client.ndMultiSelect)
 		{
-			%box1 = %client.ndSelectionBox.getSize();
-			%box2 = getPlateBoxFromRayCast(%pos, %normal);
+			%box1 = %client.ndSelectionBox.getWorldBox();
+			%box2 = ndGetPlateBoxFromRayCast(%pos, %normal);
 
 			%p1 = getMin(getWord(%box1, 0), getWord(%box2, 0))
 				SPC getMin(getWord(%box1, 1), getWord(%box2, 1))
@@ -144,10 +181,10 @@ function NDM_BoxSelect::onSelectObject(%this, %client, %obj, %pos, %normal)
 		%client.ndSelectionBox = ND_SelectionBox(%shapeName);
 
 		if(%client.ndMultiSelect)
-			%box = getPlateBoxFromRayCast(%pos, %normal);
+			%box = ndGetPlateBoxFromRayCast(%pos, %normal);
 		else
 			%box = %obj.getWorldBox();
-			
+
 		%p1 = getWords(%box, 0, 2);
 		%p2 = getWords(%box, 3, 5);
 	}
@@ -218,6 +255,8 @@ function NDM_BoxSelect::onShiftBrick(%this, %client, %x, %y, %z)
 		if(%client.ndSelectionBox.shiftCorner(%newX SPC %newY SPC %z, %limit))
 			commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Oops!\n<font:Verdana:17>" @
 				"\c6Your selection box is limited to \c3" @ mFloor(%limit * 2) @ " \c6studs.", 5);
+
+		%client.ndUpdateBottomPrint();
 	}
 	else
 	{
@@ -258,7 +297,11 @@ function NDM_BoxSelect::onRotateBrick(%this, %client, %direction)
 	if(!%client.ndMultiSelect)
 		%client.ndSelectionBox.switchCorner();
 	else
+	{
 		%client.ndSelectionBox.rotate(%direction);
+		%client.ndUpdateBottomPrint();
+	}
+
 }
 
 //Plant Brick
@@ -283,7 +326,9 @@ function NDM_BoxSelect::onPlantBrick(%this, %client)
 			%s = "s";
 
 		messageClient(%client, 'MsgError', "");
-		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You need to wait\c3 " @ %remain @ "\c6 second" @ %s @ " before selecting again!", 5);
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You need to wait\c3 " @
+			%remain @ "\c6 second" @ %s @ " before selecting again!", 5);
+
 		return;
 	}
 
@@ -296,7 +341,7 @@ function NDM_BoxSelect::onPlantBrick(%this, %client)
 		%client.ndSelection = ND_Selection(%client);
 
 	//Start selection
-	%box = %client.ndSelectionBox.getSize();
+	%box = %client.ndSelectionBox.getWorldBox();
 
 	%client.ndSetMode(NDM_BoxSelectProgress);
 	%client.ndSelection.startBoxSelection(%box, %client.ndLimited);
@@ -311,7 +356,8 @@ function NDM_BoxSelect::onCancelBrick(%this, %client)
 	if(%client.ndSelectionAvailable)
 	{
 		messageClient(%client, 'MsgError', "");
-		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection canceled! You can now edit the box again.", 5);
+		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Selection canceled! " @
+			"You can now edit the box again.", 5);
 
 		%client.ndSelectionAvailable = false;
 		%client.ndSelection.deleteData();
@@ -351,7 +397,7 @@ function NDM_BoxSelect::onCut(%this, %client)
 	%client.ndSelection.startCutting();
 }
 
-//Super-Cut selection
+//Supercut selection
 function NDM_BoxSelect::onSuperCut(%this, %client)
 {
 	if(!isObject(%client.ndSelectionBox))
@@ -366,8 +412,8 @@ function NDM_BoxSelect::onSuperCut(%this, %client)
 	if(!$ND::SimpleBrickTableCreated)
 		ndCreateSimpleBrickTable();
 
-	//Start super-cut
-	%box = %client.ndSelectionBox.getSize();
+	//Start supercut
+	%box = %client.ndSelectionBox.getWorldBox();
 
 	%client.ndSetMode(NDM_SuperCutProgress);
 	%client.ndSelection.startSuperCut(%box);
@@ -391,7 +437,15 @@ function NDM_BoxSelect::getBottomPrint(%this, %client)
 
 	%l0 = "Type: \c3Box \c6[Light]";
 	%l1 = "Limited: " @ (%client.ndLimited ? "\c3Yes" : "\c0No") @ " \c6[Prev Seat]";
-	%l2 = "";
+
+	if(isObject(%client.ndSelectionBox))
+	{
+		%size = %client.ndSelectionBox.getSize();
+		%x = mFloatLength(getWord(%size, 0) * 2, 0);
+		%y = mFloatLength(getWord(%size, 1) * 2, 0);
+		%z = mFloatLength(getWord(%size, 2) * 5, 0);
+		%l2 = "Size: \c3" @ %x @ "\c6 x \c3" @ %y @ "\c6 x \c3" @ %z @ "\c6 Plates";
+	}
 
 	if(!isObject(%client.ndSelectionBox))
 	{
@@ -403,12 +457,11 @@ function NDM_BoxSelect::getBottomPrint(%this, %client)
 	{
 		%r0 = "[Shift Brick]: Move corner";
 		%r1 = "[Rotate Brick]: Switch corner";
-		%r2 = "[Plant Brick]: Select bricks";
 	}
 	else
 	{
-		%r0 = "[Plant Brick]: Plant Mode";
-		%r1 = "[Cancel Brick]: Adjust box";
+		%r0 = "[Cancel Brick]: Adjust box";
+		%r1 = "[Plant Brick]: Duplicate";
 	}
 
 	return ndFormatMessage(%title, %l0, %r0, %l1, %r1, %l2, %r2);

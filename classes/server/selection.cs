@@ -1305,10 +1305,10 @@ function ND_Selection::cancelCutting(%this)
 
 
 
-//Super-Cut
+//Supercut
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//Begin super-cut
+//Begin supercut
 function ND_Selection::startSuperCut(%this, %box)
 {
 	//Ensure there is no highlight group
@@ -1339,7 +1339,7 @@ function ND_Selection::startSuperCut(%this, %box)
 	%this.superCutPlacedCount = 0;
 
 	//Process first tick
-	if($Pref::Server::ND::PlayMenuSounds)
+	if(%client && $Pref::Server::ND::PlayMenuSounds)
 		messageClient(%this.client, 'MsgUploadStart', "");
 
 	%this.tickSuperCutChunk();
@@ -1371,9 +1371,12 @@ function ND_Selection::tickSuperCutChunk(%this)
 	%chunkZ2 = %this.chunkZ2;
 
 	//Variables for trust checks
-	%admin = %this.client.isAdmin;
-	%group = %this.client.brickGroup.getId();
-	%bl_id = %this.client.bl_id;
+	if(%this.client)
+	{
+		%admin = %this.client.isAdmin;
+		%group = %this.client.brickGroup.getId();
+		%bl_id = %this.client.bl_id;
+	}
 
 	%chunksDone = 0;
 	%bricksFound = 0;
@@ -1408,7 +1411,7 @@ function ND_Selection::tickSuperCutChunk(%this)
 			%bricksFound++;
 
 			//Check trust
-			if(!ndTrustCheckModify(%obj, %group, %bl_id, %admin))
+			if(%this.client && !ndTrustCheckModify(%obj, %group, %bl_id, %admin))
 			{
 				%trustFailCount++;
 				continue;
@@ -1528,12 +1531,12 @@ function ND_Selection::tickSuperCutChunk(%this)
 	//If all chunks have been searched, start processing
 	if(%searchComplete)
 	{
-		%this.finishSuperCut(%client);
+		%this.finishSuperCut();
 		return;
 	}
 
 	//Tell the client which chunks we just processed
-	if(%this.client.ndLastMessageTime + 0.1 < $Sim::Time)
+	if(%this.client && %this.client.ndLastMessageTime + 0.1 < $Sim::Time)
 	{
 		%this.client.ndUpdateBottomPrint();
 		%this.client.ndLastMessageTime = $Sim::Time;
@@ -1546,15 +1549,20 @@ function ND_Selection::tickSuperCutChunk(%this)
 //Finish super cut
 function ND_Selection::finishSuperCut(%this)
 {
+	if(!%this.client)
+		return;
+
 	if($Pref::Server::ND::PlayMenuSounds)
 		messageClient(%this.client, 'MsgUploadEnd', "");
 
 	%s = %this.superCutCount == 1 ? "" : "s";
 	%msg = "<font:Verdana:20>\c6Deleted \c3" @ %this.superCutCount @ "\c6 Brick" @ %s @ "!";
 
-	%s = %this.superCutPlacedCount == 1 ? "" : "s";
 	if(%this.superCutPlacedCount > 0)
+	{
+		%s = %this.superCutPlacedCount == 1 ? "" : "s";
 		%msg = %msg @ "\n<font:Verdana:17>\c6Placed \c3" @ %this.superCutPlacedCount @ "\c6 new one" @ %s @ ".";
+	}
 
 	if(%this.trustFailCount > 0)
 		%msg = %msg @ "\n<font:Verdana:17>\c3" @ %this.trustFailCount @ "\c6 missing trust.";
@@ -1565,7 +1573,11 @@ function ND_Selection::finishSuperCut(%this)
 	if(%this.client.fillBricksAfterSuperCut)
 	{
 		%this.client.fillBricksAfterSuperCut = false;
-		%this.client.doFillBricks();
+
+		if(%this.trustFailCount)
+			messageClient(%this.client, '', "\c6Cannot run fill bricks, you do not have enough trust bricks already in the area.");
+		else
+			%this.client.doFillBricks();
 	}
 }
 
