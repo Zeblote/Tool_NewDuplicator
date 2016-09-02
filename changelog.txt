@@ -1,4 +1,7 @@
 <just:center><color:ffffff><font:Arial Bold:20>New Duplicator Changelog<just:left>
+<br><br><lmargin:20><font:Arial:20>Version 1.5.1    <font:Arial:16>02/09/2016<br>
+•  Fixed supercut placing bricks with no uiname set in the datablock<br>
+•  Fixed supercut not working with bricks where the X axis is longer than the Y axis
 <br><br><lmargin:20><font:Arial:20>Version 1.5.0    <font:Arial:16>01/09/2016<br>
 •  Added supercut function: /superCut or shift-ctrl x in box selection mode<br>
 •  Added fillBricks function: /fillBricks or shift-ctrl v in box selection mode<br>
