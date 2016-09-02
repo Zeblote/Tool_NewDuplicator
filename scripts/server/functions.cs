@@ -515,7 +515,8 @@ function ndCreateSimpleBrickTable()
 		if(%db.getClassName() $= "FxDtsBrickData")
 		{
 			//Skip unsuitable bricks
-			if(%db.isWaterBrick || %db.hasPrint || %db.isSlyrBrick || %db.ndDontUseForFill)
+			if(%db.isWaterBrick || %db.hasPrint || %db.isSlyrBrick
+			|| %db.uiName $= "" || %db.ndDontUseForFill)
 				continue;
 
 			%file.openForRead(%db.brickFile);
@@ -651,7 +652,6 @@ function ndFillAreaWithBricks(%pos1, %pos2)
 	}
 
 	%brickId = ndGetLargestBrickId(%size_x * 2 + 0.05, %size_y * 2 + 0.05, %size_z * 5 + 0.02);
-	%rotated = %rotated ^ $ND::SimpleBrickRotated[%brickId];
 
 	if(!%rotated)
 	{
@@ -677,7 +677,7 @@ function ndFillAreaWithBricks(%pos1, %pos2)
 		client = $ND::FillBrickClient;
 
 		position = %plantPos;
-		rotation = %rotated ? "0 0 1 90.0002" : "1 0 0 0";
+		rotation = (%rotated ^ $ND::SimpleBrickRotated[%brickId]) ? "0 0 1 90.0002" : "1 0 0 0";
 		angleID = %rotated;
 
 		colorID = $ND::FillBrickColorID;
