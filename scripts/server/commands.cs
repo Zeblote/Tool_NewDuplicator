@@ -560,18 +560,19 @@ package NewDuplicator_Server
 				%client.currentColor = %index;
 				%client.currentFxColor = "";
 				%client.ndSetMode(NDM_FillColor);
+				return;
 			}
-			else
-				parent::serverCmdUseSprayCan(%client, %index);
 		}
 		else if(%mode == $NDM::FillColor || %client.ndModeIndex == $NDM::FillColorProgress)
 		{
 			%client.currentColor = %index;
 			%client.currentFxColor = "";
 			%client.ndUpdateBottomPrint();
+			return;
 		}
-		else
-			parent::serverCmdUseSprayCan(%client, %index);
+
+		cancel(%client.ndToolSchedule);
+		parent::serverCmdUseSprayCan(%client, %index);
 	}
 
 	//Enable fill color mode or show the current color
