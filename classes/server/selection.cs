@@ -19,6 +19,7 @@
 // $NS[%s, "R", %i] - Rotation
 
 // $NS[%s, "NT", %i] - Brick name
+// $NS[%s, "HN", %n] - Name exists in selection
 // $NS[%s, "PR", %i] - Print
 
 // $NS[%s, "CO", %i] - Color id
@@ -1041,7 +1042,10 @@ function ND_Selection::recordBrickData(%this, %i)
 
 	//Wrench settings
 	if((%tmp = %brick.getName()) !$= "")
+	{
+		$NS[%this, "HN", %tmp] = true;
 		$NS[%this, "NT", %i] = getSubStr(%tmp, 1, 254);
+	}
 
 	if(%tmp = %brick.light | 0)
 		$NS[%this, "LD", %i] = %tmp.getDatablock();
@@ -2632,49 +2636,56 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 			%brick.eventInput[%j] = $NS[%this, "EI", %i, %j];
 			%brick.eventInputIdx[%j] = %inputIdx;
 
-			%output = $NS[%this, "EO", %i, %j];
-			%outputIdx = $NS[%this, "EOI", %i, %j];
-			%brick.eventOutputAppendClient[%j] = $NS[%this, "EOC", %i, %j];
+			%target = $NS[%this, "ET", %i, %j];
+			%targetIdx = $NS[%this, "ETI", %i, %j];
 
-			//Rotate fireRelay events
-			switch$(%output)
+			if(%targetIdx == -1)
 			{
-				case "fireRelayUp":    %dir = 0;
-				case "fireRelayDown":  %dir = 1;
-				case "fireRelayNorth": %dir = 2;
-				case "fireRelayEast":  %dir = 3;
-				case "fireRelaySouth": %dir = 4;
-				case "fireRelayWest":  %dir = 5;
-				default: %dir = -1;
+				%nt = $NS[%this, "ENT", %i, %j];
+				%brick.eventNT[%j] = %nt;
 			}
 
-			if(%dir >= 0)
-			{
-				%rotated = ndTransformDirection(%dir, %angleID, %mirrX, %mirrY, %mirrZ);
-				%outputIdx += %rotated - %dir;
+			%brick.eventTarget[%j] = %target;
+			%brick.eventTargetIdx[%j] = %targetIdx;
 
-				switch(%rotated)
+			%output = $NS[%this, "EO", %i, %j];
+			%outputIdx = $NS[%this, "EOI", %i, %j];
+
+			//Only rotate outputs for named bricks if they are selected
+			if(%targetIdx >= 0 || $NS[%this, "HN", %nt])
+			{
+				//Rotate fireRelay events
+				switch$(%output)
 				{
-					case 0: %output = "fireRelayUp";
-					case 1: %output = "fireRelayDown";
-					case 2: %output = "fireRelayNorth";
-					case 3: %output = "fireRelayEast";
-					case 4: %output = "fireRelaySouth";
-					case 5: %output = "fireRelayWest";
+					case "fireRelayUp":    %dir = 0;
+					case "fireRelayDown":  %dir = 1;
+					case "fireRelayNorth": %dir = 2;
+					case "fireRelayEast":  %dir = 3;
+					case "fireRelaySouth": %dir = 4;
+					case "fireRelayWest":  %dir = 5;
+					default: %dir = -1;
+				}
+
+				if(%dir >= 0)
+				{
+					%rotated = ndTransformDirection(%dir, %angleID, %mirrX, %mirrY, %mirrZ);
+					%outputIdx += %rotated - %dir;
+
+					switch(%rotated)
+					{
+						case 0: %output = "fireRelayUp";
+						case 1: %output = "fireRelayDown";
+						case 2: %output = "fireRelayNorth";
+						case 3: %output = "fireRelayEast";
+						case 4: %output = "fireRelaySouth";
+						case 5: %output = "fireRelayWest";
+					}
 				}
 			}
 
 			%brick.eventOutput[%j] = %output;
 			%brick.eventOutputIdx[%j] = %outputIdx;
-
-			%target = $NS[%this, "ET", %i, %j];
-			%targetIdx = $NS[%this, "ETI", %i, %j];
-
-			if(%targetIdx == -1)
-				%brick.eventNT[%j] = $NS[%this, "ENT", %i, %j];
-
-			%brick.eventTarget[%j] = %target;
-			%brick.eventTargetIdx[%j] = %targetIdx;
+			%brick.eventOutputAppendClient[%j] = $NS[%this, "EOC", %i, %j];
 
 			//Why does this need to be so complicated?
 			if(%targetIdx >= 0)
@@ -2688,57 +2699,62 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 			for(%k = 0; %k < %paramCount; %k++)
 			{
 				%param = $NS[%this, "EP", %i, %j, %k];
-				%paramType = getField(%paramList, %k);
 
-				switch$(getWord(%paramType, 0))
+				//Only rotate outputs for named bricks if they are selected
+				if(%targetIdx >= 0 || $NS[%this, "HN", %nt])
 				{
-					case "vector":
-						//Apply mirror effects
-						if(%mirrX)
-							%param = -firstWord(%param) SPC restWords(%param);
-						else if(%mirrY)
-							%param = getWord(%param, 0) SPC -getWord(%param, 1) SPC getWord(%param, 2);
+					%paramType = getField(%paramList, %k);
 
-						if(%mirrZ)
-							%param = getWord(%param, 0) SPC getWord(%param, 1) SPC -getWord(%param, 2);
+					switch$(getWord(%paramType, 0))
+					{
+						case "vector":
+							//Apply mirror effects
+							if(%mirrX)
+								%param = -firstWord(%param) SPC restWords(%param);
+							else if(%mirrY)
+								%param = getWord(%param, 0) SPC -getWord(%param, 1) SPC getWord(%param, 2);
 
-						%param = ndRotateVector(%param, %angleID);
+							if(%mirrZ)
+								%param = getWord(%param, 0) SPC getWord(%param, 1) SPC -getWord(%param, 2);
 
-					case "list":
-						%value = getWord(%paramType, %param * 2 + 1);
+							%param = ndRotateVector(%param, %angleID);
 
-						switch$(%value)
-						{
-							case "Up":    %dir = 0;
-							case "Down":  %dir = 1;
-							case "North": %dir = 2;
-							case "East":  %dir = 3;
-							case "South": %dir = 4;
-							case "West":  %dir = 5;
-							default: %dir = -1;
-						}
+						case "list":
+							%value = getWord(%paramType, %param * 2 + 1);
 
-						if(%dir >= 0)
-						{
-							switch(ndTransformDirection(%dir, %angleID, %mirrX, %mirrY, %mirrZ))
+							switch$(%value)
 							{
-								case 0: %value = "Up";
-								case 1: %value = "Down";
-								case 2: %value = "North";
-								case 3: %value = "East";
-								case 4: %value = "South";
-								case 5: %value = "West";
+								case "Up":    %dir = 0;
+								case "Down":  %dir = 1;
+								case "North": %dir = 2;
+								case "East":  %dir = 3;
+								case "South": %dir = 4;
+								case "West":  %dir = 5;
+								default: %dir = -1;
 							}
 
-							for(%l = 1; %l < getWordCount(%paramType); %l += 2)
+							if(%dir >= 0)
 							{
-								if(getWord(%paramType, %l) $= %value)
+								switch(ndTransformDirection(%dir, %angleID, %mirrX, %mirrY, %mirrZ))
 								{
-									%param = getWord(%paramType, %l + 1);
-									break;
+									case 0: %value = "Up";
+									case 1: %value = "Down";
+									case 2: %value = "North";
+									case 3: %value = "East";
+									case 4: %value = "South";
+									case 5: %value = "West";
+								}
+
+								for(%l = 1; %l < getWordCount(%paramType); %l += 2)
+								{
+									if(getWord(%paramType, %l) $= %value)
+									{
+										%param = getWord(%paramType, %l + 1);
+										break;
+									}
 								}
 							}
-						}
+					}
 				}
 
 				%brick.eventOutputParameter[%j, %k + 1] = %param;
