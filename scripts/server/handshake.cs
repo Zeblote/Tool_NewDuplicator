@@ -79,3 +79,10 @@ function ndCompareVersion(%ver1, %ver2)
 
 	return 0;
 }
+
+//Send handshakes to all clients
+function ndResendHandshakes()
+{
+	for(%i = 0; %i < ClientGroup.getCount(); %i++)
+		commandToClient(ClientGroup.getObject(%i), 'ndHandshake', $ND::Version);
+}

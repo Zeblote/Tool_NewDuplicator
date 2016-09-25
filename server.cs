@@ -65,6 +65,7 @@ schedule(10, 0, activatePackage, NewDuplicator_Server_Final);
 $ND::BrickHighlightColor = ndGetClosestColorID("255 255 0");
 ndRegisterDuplicatorModes();
 ndAutoRegisterPrefs();
+ndResendHandshakes();
 
 if($Pref::Server::ND::SymTableOnStart)
 	schedule(10, 0, ndCreateSymmetryTable);
