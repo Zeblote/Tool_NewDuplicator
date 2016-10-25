@@ -173,7 +173,13 @@ function Player::ndFired(%this)
 		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6Oops! Building is disabled.", 5);
 		return;
 	}
-	%mask = $TypeMasks::FxBrickAlwaysObjectType | $TypeMasks::TerrainObjectType;
+
+	//Support for Script_RaycastOffTools by Conan
+	if(%this.isRaycastTool)
+		%mask = $TypeMasks::FxBrickObjectType | $TypeMasks::TerrainObjectType;
+	else
+		%mask = $TypeMasks::FxBrickAlwaysObjectType | $TypeMasks::TerrainObjectType;
+
 	%start = %this.getEyePoint();
 	%dir = %this.getEyeVector();
 
