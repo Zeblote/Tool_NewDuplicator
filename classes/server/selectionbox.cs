@@ -375,7 +375,7 @@ function ND_SelectionBox::switchCorner(%this)
 function ND_SelectionBox::shiftCorner(%this, %offset, %limit)
 {
 	%oldP1 = %this.point1;
-	%oldP2 = %this.point2;        
+	%oldP2 = %this.point2;
 	%limitReached = false;
 
 	//Size of a plate in TU

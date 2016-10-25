@@ -425,7 +425,7 @@ function TCPClient::setProgressBar(%this, %completed)
 // Utility Functions
 //----------------------------------------------------------------------
 
-//Takes a full URL, like http://example.com/somepage.php?argument=blah&whatever, 
+//Takes a full URL, like http://example.com/somepage.php?argument=blah&whatever,
 // and breaks it down into its components.
 //@param	string url
 //@return	string	protocol TAB server TAB port TAB path TAB query
@@ -506,7 +506,7 @@ function urlGetComponents(%url)
 // Deprecated Functions - DO NOT USE
 //----------------------------------------------------------------------
 
-//Creates a TCP connection and sends a POST request to the specified server. 
+//Creates a TCP connection and sends a POST request to the specified server.
 // Additional debugging is available by setting %this.options.debug to true.
 //@param	string server	The URL and (optionally) port of the server to connect to.
 //@param	string path	The location of the file on the server.
@@ -528,7 +528,7 @@ function TCPClientPOST(%server, %path, %query, %savePath, %class)
 	return TCPClient("POST", %server, %port, %path, %query, %savePath, %class);
 }
 
-//Creates a TCP connection and sends a GET request to the specified server. 
+//Creates a TCP connection and sends a GET request to the specified server.
 // Additional debugging is available by setting %this.options.debug to true.
 //@param	string server	The URL and (optionally) port of the server to connect to.
 //@param	string path	The location of the file on the server.

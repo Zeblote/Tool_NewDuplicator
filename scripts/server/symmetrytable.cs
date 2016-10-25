@@ -57,7 +57,7 @@ function ndTickCreateSymmetryTable(%lastIndex, %max)
 			if(%processed > %limit)
 			{
 				schedule(30, 0, ndTickCreateSymmetryTable, %i + 1, %max);
-				return; 
+				return;
 			}
 		}
 	}
@@ -261,7 +261,7 @@ function ndTestBrickSymmetry(%datablock)
 		%manualSym = true;
 	}
 	else
-	{   
+	{
 		%failX = ndTestSelfSymmetry(%dbi, 0);
 		%failY = ndTestSelfSymmetry(%dbi, 1);
 

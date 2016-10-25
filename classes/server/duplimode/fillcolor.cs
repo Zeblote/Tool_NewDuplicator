@@ -121,7 +121,7 @@ function NDM_FillColor::getBottomPrint(%this, %client)
 		%alpha = mFloor(100 * getWord(getColorIdTable(%client.currentColor), 3));
 
 		if(%alpha != 100)
-			%color = %color SPC %alpha @ "%"; 
+			%color = %color SPC %alpha @ "%";
 	}
 
 

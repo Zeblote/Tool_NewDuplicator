@@ -1,6 +1,6 @@
 // * ######################################################################
 // *
-// *    New Duplicator - Scripts - Server 
+// *    New Duplicator - Scripts - Server
 // *    Functions
 // *
 // *    -------------------------------------------------------------------
@@ -140,15 +140,15 @@ function ndGetPlateBoxFromRayCast(%pos, %normal)
 	%halfSize = "0.25 0.25 0.1";
 
 	//Point offset in correct direction based on normal
-    %offX = getWord(%halfSize, 0) * mFloatLength(-getWord(%normal, 0), 0);
-    %offY = getWord(%halfSize, 1) * mFloatLength(-getWord(%normal, 1), 0);
-    %offZ = getWord(%halfSize, 2) * mFloatLength(-getWord(%normal, 2), 0);
-    %offset = %offX SPC %offY SPC %offZ;
+	%offX = getWord(%halfSize, 0) * mFloatLength(-getWord(%normal, 0), 0);
+	%offY = getWord(%halfSize, 1) * mFloatLength(-getWord(%normal, 1), 0);
+	%offZ = getWord(%halfSize, 2) * mFloatLength(-getWord(%normal, 2), 0);
+	%offset = %offX SPC %offY SPC %offZ;
 
-    //Get offset position
-    %newPos = vectorAdd(%pos, %offset);
+	//Get offset position
+	%newPos = vectorAdd(%pos, %offset);
 
-    //Get the plate box around the position
+	//Get the plate box around the position
 	%x1 = mFloor(getWord(%newPos, 0) * 2) / 2;
 	%y1 = mFloor(getWord(%newPos, 1) * 2) / 2;
 	%z1 = mFloor(getWord(%newPos, 2) * 5) / 5;

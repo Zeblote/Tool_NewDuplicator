@@ -63,7 +63,7 @@ datablock ParticleEmitterData(ND_HitEmitter)
 	velocityVariance = 0;
 };
 
-//Explosion 
+//Explosion
 datablock ExplosionData(ND_HitExplosion)
 {
 	camShakeDuration = 0.5;
@@ -270,7 +270,7 @@ datablock ParticleEmitterData(ND_HitEmitter_Blue : ND_HitEmitter)
 	particles = ND_HitParticle_Blue;
 };
 
-//Explosion 
+//Explosion
 datablock ExplosionData(ND_HitExplosion_Blue : ND_HitExplosion)
 {
 	emitter[0] = ND_HitEmitter_Blue;

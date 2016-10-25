@@ -191,10 +191,10 @@ function NDM_PlantCopy::moveBricksTo(%his, %client, %pos, %normal)
 	%halfSize = vectorScale(vectorSub(getWords(%box, 3, 5), getWords(%box, 0, 2)), 0.5);
 
 	//Point offset in correct direction based on normal
-    %offX = getWord(%halfSize, 0) * mFloatLength(getWord(%normal, 0), 0);
-    %offY = getWord(%halfSize, 1) * mFloatLength(getWord(%normal, 1), 0);
-    %offZ = getWord(%halfSize, 2) * mFloatLength(getWord(%normal, 2), 0);
-    %offset = %offX SPC %offY SPC %offZ;
+	%offX = getWord(%halfSize, 0) * mFloatLength(getWord(%normal, 0), 0);
+	%offY = getWord(%halfSize, 1) * mFloatLength(getWord(%normal, 1), 0);
+	%offZ = getWord(%halfSize, 2) * mFloatLength(getWord(%normal, 2), 0);
+	%offset = %offX SPC %offY SPC %offZ;
 
 	//Get shift vector
 	%pos = vectorSub(vectorAdd(%pos, %offset), %client.ndSelection.ghostPosition);

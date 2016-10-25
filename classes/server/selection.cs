@@ -3743,7 +3743,7 @@ function ND_Selection::tickSaveConnections(%this, %numberSize, %indexSize)
 		}
 		else if(%numberSize == 2)
 		{
-			%lineBuffer = %lineBuffer @ 
+			%lineBuffer = %lineBuffer @
 			    $ND::Byte241ToChar[(%cnt / 241) | 0] @
 			    $ND::Byte241ToChar[%cnt % 241];
 
@@ -3751,7 +3751,7 @@ function ND_Selection::tickSaveConnections(%this, %numberSize, %indexSize)
 		}
 		else
 		{
-			%lineBuffer = %lineBuffer @ 
+			%lineBuffer = %lineBuffer @
 			    $ND::Byte241ToChar[(((%cnt / 241) | 0) / 241) | 0] @
 			    $ND::Byte241ToChar[((%cnt / 241) | 0) % 241] @
 			    $ND::Byte241ToChar[%cnt % 241];
@@ -3780,7 +3780,7 @@ function ND_Selection::tickSaveConnections(%this, %numberSize, %indexSize)
 			{
 				%conn = $NS[%this, "C", %i, %j];
 
-				%lineBuffer = %lineBuffer @ 
+				%lineBuffer = %lineBuffer @
 				    $ND::Byte241ToChar[(%conn / 241) | 0] @
 				    $ND::Byte241ToChar[%conn % 241];
 
@@ -3790,7 +3790,7 @@ function ND_Selection::tickSaveConnections(%this, %numberSize, %indexSize)
 			{
 				%conn = $NS[%this, "C", %i, %j];
 
-				%lineBuffer = %lineBuffer @ 
+				%lineBuffer = %lineBuffer @
 				    $ND::Byte241ToChar[(((%conn / 241) | 0) / 241) | 0] @
 				    $ND::Byte241ToChar[((%conn / 241) | 0) % 241] @
 				    $ND::Byte241ToChar[%conn % 241];
@@ -4359,7 +4359,7 @@ function ND_Selection::tickLoadConnections(%this, %numberSize, %indexSize)
 				{
 					%tmp = getSubStr(%line, %pos, 3);
 
-					$NS[%this, "C", %connectionIndex, %connectionIndex2] = 
+					$NS[%this, "C", %connectionIndex, %connectionIndex2] =
 					    ((strStr($ND::Byte241Lookup, getSubStr(%tmp, 0, 1)) * 58081) | 0) +
 					      strStr($ND::Byte241Lookup, getSubStr(%tmp, 1, 1)) *   241       +
 					      strStr($ND::Byte241Lookup, getSubStr(%tmp, 2, 1));
@@ -4399,7 +4399,7 @@ function ND_Selection::tickLoadConnections(%this, %numberSize, %indexSize)
 				{
 					%tmp = getSubStr(%line, %pos, 3);
 
-					%connectionsRemaining = 
+					%connectionsRemaining =
 					    ((strStr($ND::Byte241Lookup, getSubStr(%tmp, 0, 1)) * 58081) | 0) +
 					      strStr($ND::Byte241Lookup, getSubStr(%tmp, 1, 1)) *   241       +
 					      strStr($ND::Byte241Lookup, getSubStr(%tmp, 2, 1));
