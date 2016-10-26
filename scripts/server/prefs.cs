@@ -8,13 +8,16 @@
 // *
 // * ######################################################################
 
-//Detect pref service and register preferences
+//Detect pref service and register prefs
 function ndAutoRegisterPrefs()
 {
 	if($RTB::Hooks::ServerControl)
 		ndRegisterRTBPrefs();
 	else
 		ndExtendDefaultPrefs();
+
+	//Remove outdated prefs
+	ndDeleteOutdatedPrefs();
 }
 
 //Register preferences to RTB
@@ -104,7 +107,7 @@ function ndExtendDefaultPrefs()
 }
 
 //Set default values
-function ndApplyDefaultPrefs(%this)
+function ndApplyDefaultPrefs()
 {
 	echo("ND: Applying default prefs");
 	messageAll('', "\c6(\c3New Duplicator\c6) \c6Prefs reset to default values.");
@@ -151,4 +154,71 @@ function ndResetPrefs()
 {
 	if($ND::RestoreDefaultPrefs)
 		ndApplyDefaultPrefs();
+}
+
+//Erases outdated prefs from the config file
+function ndDeleteOutdatedPrefs()
+{
+	//Step 1: Copy all current prefs
+	//Limits
+	%adminOnly           = $Pref::Server::ND::AdminOnly;
+	%paintAdminOnly      = $Pref::Server::ND::PaintAdminOnly;
+	%paintFxAdminOnly    = $Pref::Server::ND::PaintFxAdminOnly;
+	%wrenchAdminOnly     = $Pref::Server::ND::WrenchAdminOnly;
+	%floatAdminOnly      = $Pref::Server::ND::FloatAdminOnly;
+	%saveAdminOnly       = $Pref::Server::ND::SaveAdminOnly;
+	%loadAdminOnly       = $Pref::Server::ND::LoadAdminOnly;
+	%fillBricksAdminOnly = $Pref::Server::ND::FillBricksAdminOnly;
+	//Settings
+	%trustLimit          = $Pref::Server::ND::TrustLimit;
+	%adminTrustBypass1   = $Pref::Server::ND::AdminTrustBypass1;
+	%adminTrustBypass2   = $Pref::Server::ND::AdminTrustBypass2;
+	%selectPublicBricks  = $Pref::Server::ND::SelectPublicBricks;
+	%maxBricksAdmin      = $Pref::Server::ND::MaxBricksAdmin;
+	%maxBricksPlayer     = $Pref::Server::ND::MaxBricksPlayer;
+	%maxBoxSizeAdmin     = $Pref::Server::ND::MaxBoxSizeAdmin;
+	%maxBoxSizePlayer    = $Pref::Server::ND::MaxBoxSizePlayer;
+	%selectTimeout       = $Pref::Server::ND::SelectTimeout;
+	%plantTimeout        = $Pref::Server::ND::PlantTimeout;
+	//Advanced
+	%playMenuSounds      = $Pref::Server::ND::PlayMenuSounds;
+	%maxGhostBricks      = $Pref::Server::ND::MaxGhostBricks;
+	%instantGhostBricks  = $Pref::Server::ND::InstantGhostBricks;
+	%scatterGhostBricks  = $Pref::Server::ND::ScatterGhostBricks;
+	%processPerTick      = $Pref::Server::ND::ProcessPerTick;
+	%boxSelectChunkDim   = $Pref::Server::ND::BoxSelectChunkDim;
+	%symTableOnStart     = $Pref::Server::ND::SymTableOnStart;
+
+	//Step 2: Delete everything
+	deleteVariables("$Pref::Server::ND::*");
+
+	//Step 3: Set current prefs
+	//Limits
+	$Pref::Server::ND::AdminOnly           = %adminOnly;
+	$Pref::Server::ND::PaintAdminOnly      = %paintAdminOnly;
+	$Pref::Server::ND::PaintFxAdminOnly    = %paintFxAdminOnly;
+	$Pref::Server::ND::WrenchAdminOnly     = %wrenchAdminOnly;
+	$Pref::Server::ND::FloatAdminOnly      = %floatAdminOnly;
+	$Pref::Server::ND::SaveAdminOnly       = %saveAdminOnly;
+	$Pref::Server::ND::LoadAdminOnly       = %loadAdminOnly;
+	$Pref::Server::ND::FillBricksAdminOnly = %fillBricksAdminOnl;
+	//Settings
+	$Pref::Server::ND::TrustLimit          = %trustLimit;
+	$Pref::Server::ND::AdminTrustBypass1   = %adminTrustBypass1;
+	$Pref::Server::ND::AdminTrustBypass2   = %adminTrustBypass2;
+	$Pref::Server::ND::SelectPublicBricks  = %selectPublicBricks;
+	$Pref::Server::ND::MaxBricksAdmin      = %maxBricksAdmin;
+	$Pref::Server::ND::MaxBricksPlayer     = %maxBricksPlayer;
+	$Pref::Server::ND::MaxBoxSizeAdmin     = %maxBoxSizeAdmin;
+	$Pref::Server::ND::MaxBoxSizePlayer    = %maxBoxSizePlayer;
+	$Pref::Server::ND::SelectTimeout       = %selectTimeout;
+	$Pref::Server::ND::PlantTimeout        = %plantTimeout;
+	//Advanced
+	$Pref::Server::ND::PlayMenuSounds      = %playMenuSounds;
+	$Pref::Server::ND::MaxGhostBricks      = %maxGhostBricks;
+	$Pref::Server::ND::InstantGhostBricks  = %instantGhostBricks;
+	$Pref::Server::ND::ScatterGhostBricks  = %scatterGhostBricks;
+	$Pref::Server::ND::ProcessPerTick      = %processPerTick;
+	$Pref::Server::ND::BoxSelectChunkDim   = %boxSelectChunkDim;
+	$Pref::Server::ND::SymTableOnStart     = %symTableOnStart;
 }
