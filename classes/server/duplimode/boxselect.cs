@@ -318,9 +318,9 @@ function NDM_BoxSelect::onPlantBrick(%this, %client)
 	}
 
 	//Check timeout
-	if(!%client.isAdmin && %client.ndLastSelectTime + $Pref::Server::ND::SelectTimeout > $Sim::Time)
+	if(!%client.isAdmin && %client.ndLastSelectTime + ($Pref::Server::ND::SelectTimeoutMS / 1000) > $Sim::Time)
 	{
-		%remain = mCeil(%client.ndLastSelectTime + $Pref::Server::ND::SelectTimeout - $Sim::Time);
+		%remain = mCeil(%client.ndLastSelectTime + ($Pref::Server::ND::SelectTimeoutMS / 1000) - $Sim::Time);
 
 		if(%remain != 1)
 			%s = "s";

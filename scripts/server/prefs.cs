@@ -48,8 +48,8 @@ function ndRegisterRTBPrefs()
 	RTB_registerPref("Max Box Size (Admin)",        "New Duplicator | Settings", "$Pref::Server::ND::MaxBoxSizeAdmin",     "int 1 50000",      "Tool_NewDuplicator", 1024,    false, false, "");
 	RTB_registerPref("Max Box Size (Player)",       "New Duplicator | Settings", "$Pref::Server::ND::MaxBoxSizePlayer",    "int 1 50000",      "Tool_NewDuplicator", 64,      false, false, "");
 
-	RTB_registerPref("Selecting Timeout (Player)",  "New Duplicator | Settings", "$Pref::Server::ND::SelectTimeout",       "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
-	RTB_registerPref("Planting Timeout (Player)",   "New Duplicator | Settings", "$Pref::Server::ND::PlantTimeout",        "int 0 20",         "Tool_NewDuplicator", 1,       false, false, "");
+	RTB_registerPref("Selecting Timeout (Player)",  "New Duplicator | Settings", "$Pref::Server::ND::SelectTimeoutMS",     "int 0 5000",       "Tool_NewDuplicator", 400,     false, false, "");
+	RTB_registerPref("Planting Timeout (Player)",   "New Duplicator | Settings", "$Pref::Server::ND::PlantTimeoutMS",      "int 0 5000",       "Tool_NewDuplicator", 400,     false, false, "");
 
 	//Advanced
 	RTB_registerPref("Enable Menu Sounds",          "New Duplicator | Advanced", "$Pref::Server::ND::PlayMenuSounds",      "bool",             "Tool_NewDuplicator", true,    false, false, "");
@@ -90,8 +90,8 @@ function ndExtendDefaultPrefs()
 	if($Pref::Server::ND::MaxBoxSizeAdmin     $= "") $Pref::Server::ND::MaxBoxSizeAdmin     = 1024;
 	if($Pref::Server::ND::MaxBoxSizePlayer    $= "") $Pref::Server::ND::MaxBoxSizePlayer    = 64;
 
-	if($Pref::Server::ND::SelectTimeout       $= "") $Pref::Server::ND::SelectTimeout       = 1;
-	if($Pref::Server::ND::PlantTimeout        $= "") $Pref::Server::ND::PlantTimeout        = 1;
+	if($Pref::Server::ND::SelectTimeoutMS     $= "") $Pref::Server::ND::SelectTimeoutMS     = 400;
+	if($Pref::Server::ND::PlantTimeoutMS      $= "") $Pref::Server::ND::PlantTimeoutMS      = 400;
 
 	//Advanced
 	if($Pref::Server::ND::PlayMenuSounds      $= "") $Pref::Server::ND::PlayMenuSounds      = true;
@@ -133,8 +133,8 @@ function ndApplyDefaultPrefs()
 	$Pref::Server::ND::MaxBoxSizeAdmin     = 1024;
 	$Pref::Server::ND::MaxBoxSizePlayer    = 64;
 
-	$Pref::Server::ND::SelectTimeout       = 1;
-	$Pref::Server::ND::PlantTimeout        = 1;
+	$Pref::Server::ND::SelectTimeoutMS     = 400;
+	$Pref::Server::ND::PlantTimeoutMS      = 400;
 
 	//Advanced
 	$Pref::Server::ND::PlayMenuSounds      = true;
@@ -178,8 +178,8 @@ function ndDeleteOutdatedPrefs()
 	%maxBricksPlayer     = $Pref::Server::ND::MaxBricksPlayer;
 	%maxBoxSizeAdmin     = $Pref::Server::ND::MaxBoxSizeAdmin;
 	%maxBoxSizePlayer    = $Pref::Server::ND::MaxBoxSizePlayer;
-	%selectTimeout       = $Pref::Server::ND::SelectTimeout;
-	%plantTimeout        = $Pref::Server::ND::PlantTimeout;
+	%selectTimeoutMS     = $Pref::Server::ND::SelectTimeoutMS;
+	%plantTimeoutMS      = $Pref::Server::ND::PlantTimeoutMS;
 	//Advanced
 	%playMenuSounds      = $Pref::Server::ND::PlayMenuSounds;
 	%maxGhostBricks      = $Pref::Server::ND::MaxGhostBricks;
@@ -211,8 +211,8 @@ function ndDeleteOutdatedPrefs()
 	$Pref::Server::ND::MaxBricksPlayer     = %maxBricksPlayer;
 	$Pref::Server::ND::MaxBoxSizeAdmin     = %maxBoxSizeAdmin;
 	$Pref::Server::ND::MaxBoxSizePlayer    = %maxBoxSizePlayer;
-	$Pref::Server::ND::SelectTimeout       = %selectTimeout;
-	$Pref::Server::ND::PlantTimeout        = %plantTimeout;
+	$Pref::Server::ND::SelectTimeoutMS     = %selectTimeoutMS;
+	$Pref::Server::ND::PlantTimeoutMS      = %plantTimeoutMS;
 	//Advanced
 	$Pref::Server::ND::PlayMenuSounds      = %playMenuSounds;
 	$Pref::Server::ND::MaxGhostBricks      = %maxGhostBricks;

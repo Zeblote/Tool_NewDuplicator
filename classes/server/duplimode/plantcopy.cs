@@ -228,9 +228,9 @@ function NDM_PlantCopy::moveBricksTo(%his, %client, %pos, %normal)
 function NDM_PlantCopy::conditionalPlant(%this, %client, %force)
 {
 	//Check timeout
-	if(!%client.isAdmin && %client.ndLastPlantTime + $Pref::Server::ND::SelectTimeout > $Sim::Time)
+	if(!%client.isAdmin && %client.ndLastPlantTime + ($Pref::Server::ND::PlantTimeoutMS / 1000) > $Sim::Time)
 	{
-		%remain = mCeil(%client.ndLastPlantTime + $Pref::Server::ND::SelectTimeout - $Sim::Time);
+		%remain = mCeil(%client.ndLastPlantTime + ($Pref::Server::ND::PlantTimeoutMS / 1000) - $Sim::Time);
 
 		if(%remain != 1)
 			%s = "s";
