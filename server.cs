@@ -53,6 +53,7 @@ exec($ND::ScriptPath @ "server/handshake.cs");
 exec($ND::ScriptPath @ "server/highlight.cs");
 exec($ND::ScriptPath @ "server/images.cs");
 exec($ND::ScriptPath @ "server/modes.cs");
+exec($ND::ScriptPath @ "server/namedtargets.cs");
 exec($ND::ScriptPath @ "server/prefs.cs");
 exec($ND::ScriptPath @ "server/symmetrydefinitions.cs");
 exec($ND::ScriptPath @ "server/symmetrytable.cs");
