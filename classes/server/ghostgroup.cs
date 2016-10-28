@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Classes - Server
-// *    ND_GhostGroup
-// *
-// *    -------------------------------------------------------------------
-// *    Holds ghost bricks to remove without causing lag
-// *
-// * ######################################################################
+// Deletes large numbers of ghost bricks without causing lag.
+// -------------------------------------------------------------------
 
 //Create a new ghost group
 function ND_GhostGroup()

@@ -1,13 +1,6 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Server
-// *    Named Targets
-// *
-// *    -------------------------------------------------------------------
-// *    Improved versions of setNTObjectName and clearNTObjectName with much
-// *    higher performance. Required to fix lag when clearing named bricks.
-// *
-// * ######################################################################
+// Improved versions of setNTObjectName and clearNTObjectName with much
+// higher performance. Required to fix lag when clearing named bricks.
+// -------------------------------------------------------------------
 
 function SimObject::setNTObjectName(%this, %name)
 {

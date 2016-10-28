@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Client
-// *    Controls
-// *
-// *    -------------------------------------------------------------------
-// *    Adds keybinds for copy, paste, cut when active
-// *
-// * ######################################################################
+// Registers hotkeys used to control the new duplicator.
+// -------------------------------------------------------------------
 
 //Register rebind-able controls
 function ndRegisterKeybinds()

@@ -1,13 +1,6 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Client
-// *    Updater Install
-// *
-// *    -------------------------------------------------------------------
-// *    Installs copy of Support_Updater to handle automatic updates
-// *    Based on http://forum.blockland.us/index.php?topic=255382.0
-// *
-// * ######################################################################
+// Installs a copy of Support_Updater to handle automatic updates.
+// Based on http://forum.blockland.us/index.php?topic=255382.0
+// -------------------------------------------------------------------
 
 function ndInstallUpdaterPrompt()
 {

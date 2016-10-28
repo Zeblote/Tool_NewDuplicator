@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Classes - Server
-// *    ND_SelectionBox
-// *
-// *    -------------------------------------------------------------------
-// *    Resizable and recolorable box using 16 static shapes
-// *
-// * ######################################################################
+// Resizeable box to select all bricks inside a volume.
+// -------------------------------------------------------------------
 
 //Create a new selection box
 function ND_SelectionBox(%shapeName)

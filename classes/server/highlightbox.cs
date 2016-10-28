@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Classes - Server
-// *    ND_HighlightBox
-// *
-// *    -------------------------------------------------------------------
-// *    Resizable and recolorable box frame using 12 static shapes
-// *
-// * ######################################################################
+// Resizable highlight box to visualize the size of the selection.
+// -------------------------------------------------------------------
 
 //Create a new highlight box
 function ND_HighlightBox()

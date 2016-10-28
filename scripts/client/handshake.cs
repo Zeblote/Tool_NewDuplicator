@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Client
-// *    Handshake
-// *
-// *    -------------------------------------------------------------------
-// *    Responds to handshake request sent from server side
-// *
-// * ######################################################################
+// Responds to the handshake request sent by the server.
+// -------------------------------------------------------------------
 
 //Assume server doesn't have the new duplicator
 $ND::ServerVersion = "0.0.0";

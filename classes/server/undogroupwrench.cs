@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Classes - Server
-// *    ND_UndoGroupWrench
-// *
-// *    -------------------------------------------------------------------
-// *    Handles undoing wrenching selections
-// *
-// * ######################################################################
+// This file should not exist. Fix later...
+// -------------------------------------------------------------------
 
 //Delete this undo group
 function ND_UndoGroupWrench::onRemove(%this)

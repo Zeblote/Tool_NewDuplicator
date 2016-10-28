@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Classes - Server
-// *    ND_UndoGroupPaint
-// *
-// *    -------------------------------------------------------------------
-// *    Handles undoing painting selections
-// *
-// * ######################################################################
+// This file should not exist. Fix later...
+// -------------------------------------------------------------------
 
 //Delete this undo group
 function ND_UndoGroupPaint::onRemove(%this)

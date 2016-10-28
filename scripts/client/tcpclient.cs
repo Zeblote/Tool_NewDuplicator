@@ -1,13 +1,6 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Client
-// *    TCP Client Support Script (by Greek2Me)
-// *
-// *    -------------------------------------------------------------------
-// *    Used by updater.cs to download the updater add-on.
-// *    http://greek2me.us/code/Support_TCPClient.cs
-// *
-// * ######################################################################
+// Third party script to downloads things from the internet. Unmodified.
+// http://greek2me.us/code/Support_TCPClient.cs
+// -------------------------------------------------------------------
 
 if($TCPClient::version >= 14 && !$Debug)
 	return;

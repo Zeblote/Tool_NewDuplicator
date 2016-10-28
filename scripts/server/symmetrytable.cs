@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Scripts - Server
-// *    Symmetry Table
-// *
-// *    -------------------------------------------------------------------
-// *    Detect and store symmetry planes of bricks to mirror selections
-// *
-// * ######################################################################
+// Analyzes brick geometry to detect common symmetry planes.
+// -------------------------------------------------------------------
 
 //Begin generating the symmetry table
 function ndCreateSymmetryTable()

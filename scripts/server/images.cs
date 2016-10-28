@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Classes - Server
-// *    ND_Image
-// *
-// *    -------------------------------------------------------------------
-// *    Handles equipping and using a new duplicator
-// *
-// * ######################################################################
+// Handles interactions with the handheld duplicator item.
+// -------------------------------------------------------------------
 
 //Set which image a client should use
 function GameConnection::ndSetImage(%this, %image)

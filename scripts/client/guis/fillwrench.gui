@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Client
-// *    Fill Wrench Gui
-// *
-// *    -------------------------------------------------------------------
-// *    Modified WrenchDlg with enable boxes for each element
-// *
-// * ######################################################################
+// Modified wrench dialog window with toggle-able settings.
+// -------------------------------------------------------------------
 
 new GuiControl(ND_WrenchDlg)
 {

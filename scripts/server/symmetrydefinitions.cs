@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Scripts - Server
-// *    Symmetry Definitions
-// *
-// *    -------------------------------------------------------------------
-// *    Manual Symmetry definitions for bricks with bad blbs
-// *
-// * ######################################################################
+// Manually sets up symmetry planes for certain bricks with bad geometry.
+// -------------------------------------------------------------------
 
 //Manual symmetry can be set using the following variables:
 // $ND::ManualSymmetry[UIName] = {0 - 5}

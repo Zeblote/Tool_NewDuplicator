@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Scripts - Server
-// *    Pref Manager
-// *
-// *    -------------------------------------------------------------------
-// *    Detect services like RTB to register preferences
-// *
-// * ######################################################################
+// Detects common services like RTB and registers perferences to them.
+// -------------------------------------------------------------------
 
 //Detect pref service and register prefs
 function ndAutoRegisterPrefs()

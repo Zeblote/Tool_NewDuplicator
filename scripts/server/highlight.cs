@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Scripts - Server
-// *    Highlight
-// *
-// *    -------------------------------------------------------------------
-// *    Handles highlighting and de-highlighting groups of bricks
-// *
-// * ######################################################################
+// Handles highlighting and de-highlighting large groups of bricks.
+// -------------------------------------------------------------------
 
 //Highlight group data $NDH::*
 // $NDH::LastId : The id of the last created highlight group

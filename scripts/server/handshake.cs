@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Server
-// *    Handshake
-// *
-// *    -------------------------------------------------------------------
-// *    Sends handshake request to new clients, advertises new duplicator
-// *
-// * ######################################################################
+// Sends a handshake to new clients to obtain their duplicator version.
+// -------------------------------------------------------------------
 
 package NewDuplicator_Server
 {
@@ -17,19 +10,9 @@ package NewDuplicator_Server
 		%this.ndVersion = "0.0.0";
 
 		commandToClient(%this, 'ndHandshake', $ND::Version);
-
-		//Client has 5 seconds to respond
-		//%this.ndHandshakeTimeout = %this.schedule(5000, "ndHandshakeTimeout");
-
 		return parent::autoAdminCheck(%this);
 	}
 };
-
-//Handshake request timed out, client doesn't have new duplicator
-//function GameConnection::ndHandshakeTimeout(%this)
-//{
-//
-//}
 
 //Client responded, so he has new duplicator
 function serverCmdNdHandshake(%this, %version)

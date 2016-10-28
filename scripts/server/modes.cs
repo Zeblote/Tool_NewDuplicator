@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Scripts - Server
-// *    Duplicator Modes
-// *
-// *    -------------------------------------------------------------------
-// *    Handles registering and switching between duplicator modes
-// *
-// * ######################################################################
+// Handles the duplicator state machine. Does not validate transitions!
+// -------------------------------------------------------------------
 
 //Base class for all duplicator modes
 ///////////////////////////////////////////////////////////////////////////

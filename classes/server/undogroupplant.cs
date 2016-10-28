@@ -1,12 +1,5 @@
-// * ######################################################################
-// *
-// *    New Duplicator - Classes - Server
-// *    ND_UndoGroupPlant
-// *
-// *    -------------------------------------------------------------------
-// *    Handles undoing planting selections
-// *
-// * ######################################################################
+// This file should not exist. Fix later...
+// -------------------------------------------------------------------
 
 //Start undo bricks
 function SimSet::ndStartUndo(%this, %client)
