@@ -37,15 +37,10 @@ function ndTransformDirection(%dir, %steps, %mirrX, %mirrY, %mirrZ)
 function ndGetClosestColorID(%rgb)
 {
 	//Set initial value
-	%color = getColorI(getColorIdTable(0));
-
 	%best = 0;
-	%bestDiff = vectorLen(vectorSub(%rgb, %color));
+	%bestDiff = 999999;
 
-	if(getWord(%color, 3) != 255)
-		%bestDiff += 1000;
-
-	for(%i = 1; %i < 64; %i++)
+	for(%i = 0; %i < 64; %i++)
 	{
 		%color = getColorI(getColorIdTable(%i));
 
@@ -71,25 +66,17 @@ function ndGetClosestColorID2(%rgba)
 	%a = getWord(%rgba, 3);
 
 	//Set initial value
-	%color = getColorI(getColorIdTable(0));
-	%alpha = getWord(%color, 3);
-
 	%best = 0;
-	%bestDiff = vectorLen(vectorSub(%rgb, %color));
+	%bestDiff = 999999;
 
-	if((%alpha > 254 && %a < 254) || (%alpha < 254 && %a > 254))
-		%bestDiff += 1000;
-	else
-		%bestDiff += mAbs(%alpha - %a) * 0.5;
-
-	for(%i = 1; %i < 64; %i++)
+	for(%i = 0; %i < 64; %i++)
 	{
 		%color = getColorI(getColorIdTable(%i));
 		%alpha = getWord(%color, 3);
 
 		%diff = vectorLen(vectorSub(%rgb, %color));
 
-		if((%alpha > 254 && %a < 254) || (%alpha < 254 && %a > 254))
+		if((%alpha > 254) != (%a > 254))
 			%diff += 1000;
 		else
 			%diff += mAbs(%alpha - %a) * 0.5;
