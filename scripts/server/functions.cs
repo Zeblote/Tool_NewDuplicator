@@ -220,6 +220,23 @@ function ndTrustCheckModify(%obj, %group2, %bl_id, %admin)
 	return false;
 }
 
+//Fast check whether a client has enough trust to plant on a brick
+function ndFastTrustCheck(%brick, %bl_id, %brickGroup)
+{
+	%group = %brick.getGroup();
+
+	if(%group == %brickGroup)
+		return true;
+
+	if(%group.Trust[%bl_id] > 0)
+		return true;
+
+	if(%group.bl_id == 888888)
+		return true;
+
+	return false;
+}
+
 
 
 //General stuff
