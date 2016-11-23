@@ -448,7 +448,7 @@ package NewDuplicator_Server
 
 		for(%i = %stack.tail; %i < %max; %i++)
 		{
-			%val = %stack.val[%i % %start.size];
+			%val = %stack.val[%i % %stack.size];
 
 			if(getFieldCount(%val) == 2)
 			{
