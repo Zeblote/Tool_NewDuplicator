@@ -1,4 +1,14 @@
 <just:center><color:ffffff><font:Arial Bold:20>New Duplicator Changelog<just:left>
+<br><br><lmargin:20><font:Arial:20>Version 1.6.0    <font:Arial:16>23/11/2016<br>
+•  Reduced default selecting timeout to 400ms<br>
+•  Added support for Script_RaycastOffTools by Conan<br>
+•  Added support for Event_Apartment by mctwist<br>
+•  Added option to plant bricks in a different brick group<br>
+•  Added /DupHelp command to show all commands you can use<br>
+•  Optimized clearing large numbers of named bricks. Used to freeze server<br>
+<br>
+•  Fixed undo groups not being deleted properly<br>
+•  Automatically clean up old, unused preferences<br>
 <br><br><lmargin:20><font:Arial:20>Version 1.5.2    <font:Arial:16>06/10/2016<br>
 •  Output events to named bricks are only rotated if the target brick is selected<br>
 <br>
