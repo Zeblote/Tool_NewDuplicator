@@ -159,7 +159,11 @@ function NDM_PlantCopy::getBottomPrint(%this, %client)
 		%title = "Plant Mode (\c3" @ %count @ "\c6 Bricks, \c3" @ mFloor($Pref::Server::ND::MaxGhostBricks * 100 / %count) @ "%\c6 Ghosted)";
 
 	%l0 = "Pivot: \c3" @ (%client.ndPivot ? "Whole Selection" : "Start Brick") @ "\c6 [Prev Seat]";
-	%l1 = "Size: \c3" @ %x @ "\c6 x \c3" @ %y @ "\c6 x \c3" @ %z @ "\c6 Plates";
+
+	if(isObject(%client.ndSelection.targetGroup))
+		%l1 = "Planting as: \c3" @ %client.ndSelection.targetGroup.name;
+	else
+		%l1 = "Size: \c3" @ %x @ "\c6 x \c3" @ %y @ "\c6 x \c3" @ %z @ "\c6 Plates";
 
 	%r0 = "Use normal ghost brick controls";
 	%r1 = "[Cancel Brick] to exit plant mode";
@@ -240,6 +244,17 @@ function NDM_PlantCopy::conditionalPlant(%this, %client, %force)
 	{
 		messageClient(%client, 'MsgError', "");
 		commandToClient(%client, 'centerPrint', "<font:Verdana:20>\c6You can't plant so far away!", 5);
+		return;
+	}
+
+	//Validate target group
+	if(isObject(%client.ndSelection.targetGroup) &&
+		getTrustLevel(%client, %client.ndSelection.targetGroup) < 1 &&
+		(!%client.isAdmin || !$Pref::Server::ND::AdminTrustBypass2))
+	{
+		messageClient(%client, '', "\c6You need build trust with \c3"
+			@ %client.ndSelection.targetGroup.name @ "\c6 to plant bricks in their group.");
+
 		return;
 	}
 

@@ -43,6 +43,7 @@ function serverCmdDupHelp(%client)
 
 	messageClient(%client, '', "<tab:220>\c3/ForcePlant\t\c6 Plant a selection in mid air; bricks can float.");
 	messageClient(%client, '', "<tab:220>\c3/ToggleForcePlant\t\c6 Enable force plant for normal planting, so you dont have to type it all the time.");
+	messageClient(%client, '', "<tab:220>\c3/PlantAs\c6 [\c3target\c6]\t\c6 Plant bricks in a different brick group. Target can be a name or blid.");
 	messageClient(%client, '', "<font:Arial:8> ");
 
 	messageClient(%client, '', "<tab:220>\c3/FillWrench\t\c6 Open the fill wrench gui to change settings on all selected bricks.");
@@ -1010,3 +1011,76 @@ function serverCmdClearDups(%client)
 			%cl.ndKillMode();
 	}
 }
+
+//Plant as a different brick group
+function serverCmdPlantAs(%client, %t0, %t1, %t2, %t3, %t4)
+{
+	//Check mode
+	if(%client.ndModeIndex != $NDM::PlantCopy)
+	{
+		messageClient(%client, '', "\c6This command can only be used in Plant Mode.");
+		return;
+	}
+
+	//Empty target to clear
+	if(!strLen(%t0))
+	{
+		messageClient(%client, '', "\c6Bricks will be planted in your own group!");
+		%client.ndSelection.targetGroup = "";
+		%client.ndSelection.targetBlid = "";
+		%client.ndUpdateBottomPrint();
+		return;
+	}
+
+	for(%i = 0; strLen(%t[%i]); %i++)
+		%target = %target SPC %t[%i];
+
+	//Attempt to find the brick group by name or blid
+	%target = trim(%target);
+	%targetClient = findClientByName(%target);
+
+	if(!isObject(%targetClient))
+		%targetClient = findClientByBL_ID(%target);
+
+	if(isObject(%targetClient))
+		%targetGroup = %targetClient.brickGroup;
+	else if((%target | 0) $= %target)
+		%targetGroup = nameToId("BrickGroup_" @ %target);
+
+	if(!isObject(%targetGroup))
+	{
+		messageClient(%client, '', "\c6No brick group was found for \"\c3" @ %target @ "\c6\".");
+		messageClient(%client, '', "\c6Bricks will be planted in your own group!");
+		%client.ndSelection.targetGroup = "";
+		%client.ndSelection.targetBlid = "";
+		%client.ndUpdateBottomPrint();
+		return;
+	}
+
+	//Check whether we have trust to the target group
+	if(getTrustLevel(%client, %targetGroup) < 1 &&
+		(!%client.isAdmin || !$Pref::Server::ND::AdminTrustBypass2))
+	{
+		messageClient(%client, '', "\c6You need build trust with \c3"
+			@ %targetGroup.name @ "\c6 to plant bricks in their group.");
+
+		%client.ndSelection.targetGroup = "";
+		%client.ndSelection.targetBlid = "";
+		%client.ndUpdateBottomPrint();
+		return;
+	}
+
+	//Should be good to go
+	%name = %targetGroup.name;
+	if(getSubStr(%name, strLen(%name) - 1, 1) $= "s")
+		messageClient(%client, '', "\c6Bricks will now be planted in \c3" @ %name @ "\c6' group!");
+	else
+		messageClient(%client, '', "\c6Bricks will now be planted in \c3" @ %name @ "\c6's group!");
+
+	%client.ndSelection.targetGroup = %targetGroup;
+	%client.ndSelection.targetBlid = %targetGroup.bl_id;
+	%client.ndUpdateBottomPrint();
+}
+
+//Alternative short command
+function serverCmdPA(%client, %t0, %t1, %t2, %t3, %t4) {serverCmdPlantAs(%client, %t0, %t1, %t2, %t3, %t4);}

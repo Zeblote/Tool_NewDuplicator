@@ -98,6 +98,9 @@ function ND_Selection::deleteData(%this)
 	%this.queueCount = 0;
 	%this.brickCount = 0;
 
+	%this.targetGroup = "";
+	%this.targetBlid = "";
+
 	%this.deHighlight();
 	%this.deleteHighlightBox();
 	%this.deleteGhostBricks();
@@ -2117,8 +2120,17 @@ function ND_Selection::tickPlantSearch(%this, %remainingPlants, %position, %angl
 		%end = %this.brickCount;
 
 	%client = %this.client;
-	%group = %client.brickGroup.getId();
-	%bl_id = %client.bl_id;
+
+	if(isObject(%this.targetGroup))
+	{
+		%group = %this.targetGroup;
+		%bl_id = %this.targetBlid;
+	}
+	else
+	{
+		%group = %client.brickGroup.getId();
+		%bl_id = %client.bl_id;
+	}
 
 	%qCount = %this.plantQueueCount;
 	%numClients = %this.numClients;
@@ -2221,8 +2233,17 @@ function ND_Selection::tickPlantTree(%this, %remainingPlants, %position, %angleI
 	%end = %start + %remainingPlants;
 
 	%client = %this.client;
-	%group = %client.brickGroup.getId();
-	%bl_id = %client.bl_id;
+
+	if(isObject(%this.targetGroup))
+	{
+		%group = %this.targetGroup;
+		%bl_id = %this.targetBlid;
+	}
+	else
+	{
+		%group = %client.brickGroup.getId();
+		%bl_id = %client.bl_id;
+	}
 
 	%qCount = %this.plantQueueCount;
 	%numClients = %this.numClients;
@@ -2490,9 +2511,6 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 		case 2: %bRot = "0 0 1 180";
 		case 3: %bRot = "0 0 -1 90.0002";
 	}
-
-	//Somehow quota applies to bricks?????
-	//clearCurrentQuotaObject();
 
 	//Attempt to plant brick
 	%brick = new FxDTSBrick()
