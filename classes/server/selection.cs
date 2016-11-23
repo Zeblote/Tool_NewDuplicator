@@ -2571,7 +2571,7 @@ function ND_Selection::plantBrick(%this, %i, %position, %angleID, %brickGroup, %
 
 		for(%j = 0; %j < %upCount; %j++)
 		{
-			if(ndFastTrustCheck(%brick.getUpBrick(%j), %bl_id, %brickGroup))
+			if(!ndFastTrustCheck(%brick.getUpBrick(%j), %bl_id, %brickGroup))
 			{
 				%brick.delete();
 				return -2;
