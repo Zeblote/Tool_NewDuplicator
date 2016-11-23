@@ -15,7 +15,6 @@ if(isObject(ND_ServerGroup))
 
 new ScriptGroup(ND_ServerGroup);
 
-echo(" \n--- Loading Server Classes ---");
 exec($ND::ClassPath @ "server/ghostgroup.cs");
 exec($ND::ClassPath @ "server/highlightbox.cs");
 exec($ND::ClassPath @ "server/selection.cs");
@@ -38,7 +37,6 @@ exec($ND::ClassPath @ "server/duplimode/stackselectprogress.cs");
 exec($ND::ClassPath @ "server/duplimode/supercutprogress.cs");
 exec($ND::ClassPath @ "server/duplimode/wrenchprogress.cs");
 
-echo(" \n--- Loading Server Scripts ---");
 exec($ND::ScriptPath @ "common/bytetable.cs");
 exec($ND::ScriptPath @ "server/commands.cs");
 exec($ND::ScriptPath @ "server/datablocks.cs");
@@ -53,11 +51,9 @@ exec($ND::ScriptPath @ "server/symmetrydefinitions.cs");
 exec($ND::ScriptPath @ "server/symmetrytable.cs");
 exec($ND::ScriptPath @ "server/undo.cs");
 
-echo(" \n--- Initializing Server ---");
 activatePackage(NewDuplicator_Server);
 schedule(10, 0, activatePackage, NewDuplicator_Server_Final);
 
-$ND::BrickHighlightColor = ndGetClosestColorID("255 255 0");
 ndRegisterDuplicatorModes();
 ndAutoRegisterPrefs();
 ndResendHandshakes();

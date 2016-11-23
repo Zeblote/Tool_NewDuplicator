@@ -3514,7 +3514,7 @@ function ND_Selection::tickSaveBricks(%this)
 
 			if(%path !$= "" && %fileName !$= "base/data/shapes/bricks/brickTop.png")
 			{
-				%dirName = getSubStr(%path, strLen("Add-Ons/"), (strLen(%path) - strLen("Add-Ons/")));
+				%dirName = getSubStr(%path, 8, 999);
 
 				%posA = strStr(%dirName, "_");
 				%posB = strPos(%dirName, "_", %posA + 1);

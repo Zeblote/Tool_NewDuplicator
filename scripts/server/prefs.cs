@@ -1,23 +1,20 @@
 // Detects common services like RTB and registers perferences to them.
 // -------------------------------------------------------------------
 
-//Detect pref service and register prefs
-function ndAutoRegisterPrefs()
+function ndRegisterPrefs()
 {
+	//Glass prefs also set this variable so we don't need to add them seperately
 	if($RTB::Hooks::ServerControl)
-		ndRegisterRTBPrefs();
+		ndRegisterPrefsToRtb();
 	else
-		ndExtendDefaultPrefs();
+		ndExtendDefaultPrefValues();
 
-	//Remove outdated prefs
 	ndDeleteOutdatedPrefs();
 }
 
-//Register preferences to RTB
-function ndRegisterRTBPrefs()
+function ndRegisterPrefsToRtb()
 {
 	echo("ND: Registering RTB prefs");
-
 	%trustDropDown = "list None 0 Build 1 Full 2 Self 3";
 
 	//Limits
@@ -54,13 +51,19 @@ function ndRegisterRTBPrefs()
 	RTB_registerPref("Create Sym Table on Start",   "New Duplicator | Advanced", "$Pref::Server::ND::SymTableOnStart",     "bool",             "Tool_NewDuplicator", false,   false, false, "");
 
 	//Restore default prefs
-	RTB_registerPref("Check to restore defaults", "New Duplicator | Reset Prefs", "$ND::RestoreDefaultPrefs", "bool", "Tool_NewDuplicator", false, false, false, "ndResetPrefs");
+	RTB_registerPref("Check to restore defaults", "New Duplicator | Reset Prefs", "$ND::RestoreDefaultPrefs", "bool", "Tool_NewDuplicator", false, false, false, "ndRestoreDefaultPrefs");
 }
 
-//Set default values, if they haven't been set already
-function ndExtendDefaultPrefs()
+//Callback function for "Reset Prefs"
+function ndRestoreDefaultPrefs()
 {
-	echo("ND: Extending default prefs");
+	if($ND::RestoreDefaultPrefs)
+		ndApplyDefaultPrefValues();
+}
+
+function ndExtendDefaultPrefValues()
+{
+	echo("ND: Extending default pref values");
 
 	//Limits
 	if($Pref::Server::ND::AdminOnly           $= "") $Pref::Server::ND::AdminOnly           = false;
@@ -95,14 +98,13 @@ function ndExtendDefaultPrefs()
 	if($Pref::Server::ND::BoxSelectChunkDim   $= "") $Pref::Server::ND::BoxSelectChunkDim   = 6;
 	if($Pref::Server::ND::SymTableOnStart     $= "") $Pref::Server::ND::SymTableOnStart     = false;
 
-	//Always set this to false
+	//Always set this to false so we don't accidently reset the prefs
 	$ND::RestoreDefaultPrefs = false;
 }
 
-//Set default values
-function ndApplyDefaultPrefs()
+function ndApplyDefaultPrefValues()
 {
-	echo("ND: Applying default prefs");
+	echo("ND: Applying default pref values");
 	messageAll('', "\c6(\c3New Duplicator\c6) \c6Prefs reset to default values.");
 
 	//Limits
@@ -138,15 +140,8 @@ function ndApplyDefaultPrefs()
 	$Pref::Server::ND::BoxSelectChunkDim   = 6;
 	$Pref::Server::ND::SymTableOnStart     = false;
 
-	//Always set this to false
+	//Always set this to false so we don't accidently reset the prefs
 	$ND::RestoreDefaultPrefs = false;
-}
-
-//Callback function to restore default prefs
-function ndResetPrefs()
-{
-	if($ND::RestoreDefaultPrefs)
-		ndApplyDefaultPrefs();
 }
 
 //Erases outdated prefs from the config file
@@ -185,7 +180,7 @@ function ndDeleteOutdatedPrefs()
 	//Step 2: Delete everything
 	deleteVariables("$Pref::Server::ND::*");
 
-	//Step 3: Set current prefs
+	//Step 3: Set current prefs again
 	//Limits
 	$Pref::Server::ND::AdminOnly           = %adminOnly;
 	$Pref::Server::ND::PaintAdminOnly      = %paintAdminOnly;
