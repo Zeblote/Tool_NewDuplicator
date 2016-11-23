@@ -31,9 +31,51 @@ function serverCmdDupClients(%client)
 	}
 }
 
+//Shows list of commands
+function serverCmdDupHelp(%client)
+{
+	messageClient(%client, '', " ");
+	messageClient(%client, '', "\c6You can use the following commands with your new duplicator:");
+	messageClient(%client, '', "\c7--------------------------------------------------------------------------------");
+
+	messageClient(%client, '', "<tab:220>\c3/Duplicator\t\c6 Equip a new duplicator!");
+	messageClient(%client, '', "<font:Arial:8> ");
+
+	messageClient(%client, '', "<tab:220>\c3/ForcePlant\t\c6 Plant a selection in mid air; bricks can float.");
+	messageClient(%client, '', "<tab:220>\c3/ToggleForcePlant\t\c6 Enable force plant for normal planting, so you dont have to type it all the time.");
+	messageClient(%client, '', "<font:Arial:8> ");
+
+	messageClient(%client, '', "<tab:220>\c3/FillWrench\t\c6 Open the fill wrench gui to change settings on all selected bricks.");
+	messageClient(%client, '', "<font:Arial:8> ");
+
+	messageClient(%client, '', "<tab:220>\c3/MirrorX\t\c6 Mirror your ghost selection left/right on screen.");
+	messageClient(%client, '', "<tab:220>\c3/MirrorY\t\c6 Mirror your ghost selection front/back on screen.");
+	messageClient(%client, '', "<tab:220>\c3/MirrorZ\t\c6 Mirror your ghost selection up/down on screen.");
+	messageClient(%client, '', "<tab:220>\c3/MirErrors\t\c6 List potential mirror errors after planting a mirrored ghost selection.");
+	messageClient(%client, '', "<font:Arial:8> ");
+
+	messageClient(%client, '', "<tab:220>\c3/SuperCut\t\c6 Delete everything in your selection box, cutting bricks in half on its sides!");
+	messageClient(%client, '', "<tab:220>\c3/FillBricks\t\c6 First supercut, then completely fill your selection box with few bricks.");
+	messageClient(%client, '', "<font:Arial:8> ");
+
+	messageClient(%client, '', "<tab:220>\c3/SaveDup\c6 [\c3name\c6]\t\c6 Save your current selection to a file.");
+	messageClient(%client, '', "<tab:220>\c3/LoadDup\c6 [\c3name\c6]\t\c6 Load a selection from a file. Your current selection will be deleted.");
+	messageClient(%client, '', "<tab:220>\c3/AllDups\c6 [\c3filter\c6]\t\c6 Show all known saved duplications that match the filter. Leave blank to show all.");
+	messageClient(%client, '', "<font:Arial:8> ");
+
+	messageClient(%client, '', "<tab:220>\c3/DupVersion\t\c6 Show the duplicator and blockland versions running on the server.");
+	messageClient(%client, '', "<tab:220>\c3/DupClients\t\c6 Show the duplicator versions of other clients on the server.");
+
+	messageClient(%client, '', "\c7--------------------------------------------------------------------------------");
+	messageClient(%client, '', "\c6All of the commands can be shortened by just typing a \c3/\c6 and the capital letters!");
+	messageClient(%client, '', "\c6You might have to use \c3PageUp\c6/\c3PageDown\c6 to see all of them.");
+	messageClient(%client, '', " ");
+}
+
 //Alternative short commands
 function serverCmdDV(%client){serverCmdDupVersion(%client);}
 function serverCmdDC(%client){serverCmdDupClients(%client);}
+function serverCmdDH(%client){serverCmdDupHelp(%client);}
 
 
 
@@ -484,6 +526,9 @@ function serverCmdMirErrors(%client)
 	if(!%xerr && !%zerr)
 		messageClient(%client, '', "\c6There were no mirror errors in your last plant attempt.");
 }
+
+//Alternative short command
+function serverCmdME(%client){serverCmdMirErrors(%client);}
 
 
 
