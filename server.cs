@@ -55,7 +55,7 @@ activatePackage(NewDuplicator_Server);
 schedule(10, 0, activatePackage, NewDuplicator_Server_Final);
 
 ndRegisterDuplicatorModes();
-ndAutoRegisterPrefs();
+ndRegisterPrefs();
 ndResendHandshakes();
 
 if($Pref::Server::ND::SymTableOnStart)
