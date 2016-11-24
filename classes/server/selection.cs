@@ -1421,6 +1421,10 @@ function ND_Selection::tickSuperCutChunk(%this)
 			if(%db.isWaterBrick)
 				continue;
 
+			//Skip dead bricks
+			if(%obj.isDead())
+				continue;
+
 			//Set variables for the fill brick function
 			$ND::FillBrickGroup = %obj.getGroup();
 			$ND::FillBrickClient = %obj.client;
