@@ -1260,6 +1260,13 @@ function ND_Selection::tickCutting(%this)
 			continue;
 		}
 
+		// Support for hole bots
+		if(isObject(%brick.hBot))
+		{
+			%brick.hBot.spawnProjectile("audio2d", "deathProjectile", "0 0 0", 1);
+			%brick.hBot.delete();
+		}
+
 		%brick.delete();
 		%cutSuccessCount++;
 	}
