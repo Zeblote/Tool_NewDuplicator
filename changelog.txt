@@ -1,4 +1,7 @@
 <just:center><color:ffffff><font:Arial Bold:20>New Duplicator Changelog<just:left>
+<br><br><lmargin:20><font:Arial:20>Version 1.6.2    <font:Arial:16>29/01/2018<br>
+•  Fixed hole bots not being destroyed when cutting bricks<br>
+•  Fixed ghost brick limit not working with scattering disabled<br>
 <br><br><lmargin:20><font:Arial:20>Version 1.6.1    <font:Arial:16>24/11/2016<br>
 •  Fixed preferences not being registered<br>
 •  Fixed supercut modifying dead bricks<br>

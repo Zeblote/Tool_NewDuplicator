@@ -1,7 +1,7 @@
 // Executes all required scripts and initializes the server side.
 // -------------------------------------------------------------------
 
-$ND::Version = "1.6.1";
+$ND::Version = "1.6.2";
 
 $ND::FilePath = filePath($Con::File) @ "/";
 $ND::ConfigPath = "config/NewDuplicator/";
