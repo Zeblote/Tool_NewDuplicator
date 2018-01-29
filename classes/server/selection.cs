@@ -1626,7 +1626,7 @@ function ND_Selection::spawnGhostBricks(%this, %position, %angleID)
 		if($Pref::Server::ND::ScatterGhostBricks)
 			%increment = %max / $Pref::Server::ND::MaxGhostBricks;
 		else
-			%max = 5000;
+			%max = $Pref::Server::ND::MaxGhostBricks;
 	}
 
 	%ghostGroup = %this.ghostGroup;
