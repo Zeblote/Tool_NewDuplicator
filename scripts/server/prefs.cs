@@ -189,7 +189,7 @@ function ndDeleteOutdatedPrefs()
 	$Pref::Server::ND::FloatAdminOnly      = %floatAdminOnly;
 	$Pref::Server::ND::SaveAdminOnly       = %saveAdminOnly;
 	$Pref::Server::ND::LoadAdminOnly       = %loadAdminOnly;
-	$Pref::Server::ND::FillBricksAdminOnly = %fillBricksAdminOnl;
+	$Pref::Server::ND::FillBricksAdminOnly = %fillBricksAdminOnly;
 	//Settings
 	$Pref::Server::ND::TrustLimit          = %trustLimit;
 	$Pref::Server::ND::AdminTrustBypass1   = %adminTrustBypass1;
