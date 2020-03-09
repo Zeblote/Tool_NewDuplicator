@@ -1,4 +1,7 @@
 <just:center><color:ffffff><font:Arial Bold:20>New Duplicator Changelog<just:left>
+<br><br><lmargin:20><font:Arial:20>Version 1.6.3    <font:Arial:16>09/03/2020<br>
+•  Fixed fill bricks admin only setting not working<br>
+•  This fix was actually ready nearly 2 years ago, woops!<br>
 <br><br><lmargin:20><font:Arial:20>Version 1.6.2    <font:Arial:16>29/01/2018<br>
 •  Fixed hole bots not being destroyed when cutting bricks<br>
 •  Fixed ghost brick limit not working with scattering disabled<br>
